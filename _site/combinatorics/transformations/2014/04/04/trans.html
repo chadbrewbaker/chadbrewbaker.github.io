@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Transformation Combinatorics</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Blogofbrew</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Transformation Combinatorics</h2>
+<p class="meta">04 Apr 2014</p>
+
+<div class="post">
+<p>Transformations, also known as endofunctions, are superset of permutations where repeated elements in the codomain are allowed. Composing transformations can be done with the same algorithm as permutations.</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">trans_mult</span><span class="p">(</span><span class="n">transa</span><span class="p">,</span> <span class="n">transb</span><span class="p">)</span>
+  <span class="n">trans_ret</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">transa</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="n">trans_ret</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">transa</span><span class="o">[</span><span class="n">transb</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="n">trans_ret</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>My particiular interest in transformations is their application sofware testing, but they are a ubiquitous concept in mathematics and sofware engineering.</p>
+
+<p>As we play with transformations it will be nice to have the following enumerator that generates natural numbers starting at zero.</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span> 
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<p>Now if we want to print all transformations of size k we can use an enumerator.</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">each</span><span class="p">{</span><span class="o">|</span><span class="n">t</span><span class="o">|</span>
+    <span class="nb">puts</span> <span class="n">t</span><span class="o">.</span><span class="n">inspect</span>
+<span class="p">}</span>
+</code></pre></div>
+
+<p>A first question we should ask ourselves, &quot;Since transformations are a superset of permutations, do they have any analogues?&quot;</p>
+
+<p>The answer is a resounding yes!</p>
+
+<p>As we explore transformations and related mathematical structures many will be crossreferenced with their <a href="%09https://oeis.org">OEIS</a> sequence. I have a few dozen queued up so this should take a few posts :)</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Chad Brewbaker<br />
+                Contract Software Enginer in the Des Moines area <br />
+                Recreational Mathematician <br />
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
+                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>
