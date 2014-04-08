@@ -5,45 +5,61 @@ date:   2014-04-07 12:38:19
 categories: combinatorics transformations permutations
 ---
 
-Transformations, also known as endofunctions, are superset of permutations where repeated elements in the codomain are allowed. Composing transformations can be done with the same algorithm as permutations.
+DRAFT VERSION
+
+
+Today we will go over some properties of transoformations that are similar to properties of permutations. 
+
+Lets start with the most basic, the number of transformations on n elements, [OEIS_A000312](https://oeis.org/A000312).
+
+$$a(n) = n^n $$
+
+One ubiquitous equation involving permutations are the binomial coefficients. 
+$${n\choose k} = {n!\over k! (n-k)!}$$
+
+If we subsitute the factorial function for a(n) we get :
+
+$${a(n)\over a(k) a(n-k)}$$
+
+Combinatorially this equation takes all elements of order n then removes elements that match a pair consisting of one order k element and one order n-k element. By replacing a(n) with the number of transformations on n elements we obtain [OEIS_A069322](http://oeis.org/A069322).
+
+
+$${n^{n}\over k^{k} (n-k)^{n-k}}$$
+
+
+Another property of permutations is the [Eulerian numbers] (http://en.wikipedia.org/wiki/Eulerian_number), which count the number of elements that are greater than their previous element. For transformations they form [OEIS_A22573](https://www.oeis.org/A225753).
 
 {% highlight ruby %}
-def trans_mult(transa, transb)
-  trans_ret = Array.new
-  0.upto(transa.length-1) do |index|
-    trans_ret.push(transa[transb[index]])
+def mono_runs(trans)
+  count =1
+  1.upto(trans.length-1) do |index|
+    if (trans[index-1]>trans[index])
+      count = count +1
+    end
   end
-  return trans_ret
+  count
+end
+1.upto(10) do |index|
+  tran_size =index
+  counts = []
+  0.upto(index) do
+    counts.push(0)
+  end
+  counting_numbers.take(tran_size).repeated_permutation(tran_size).each { |x|
+    runs = mono_runs(x)
+    counts[runs] = counts[runs]+1
+  }
+  puts index.inspect + "|" + counts.inspect # + "|" + counts.inject(:+).inspect
 end
 {% endhighlight %}
 
-My particiular interest in transformations is their application in sofware testing, but they are a ubiquitous concept in mathematics and sofware engineering.
 
-As we play with transformations it will be nice to have the following enumerator that generates natural numbers starting at zero.
 
-{% highlight ruby %}
-counting_numbers = Enumerator.new do |yielder|
-  (0..1.0/0).each do |number| 
-  	yielder.yield number
-  end
-end
-{% endhighlight %}
 
-Now if we want to print all transformations of size k we can use an enumerator.
 
-{% highlight ruby %}
-counting_numbers.take(k).repeated_permutation(k).each{|t|
-	puts t.inspect
-}
-{% endhighlight %}
-
-A first question we should ask ourselves, "Since transformations are a superset of permutations, do they have any analogues?"
-
-The answer is a resounding yes!
-
-As we explore transformations and related mathematical structures many will be crossreferenced with their [OEIS][OEIS] sequence. I have a few dozen queued up so this should take a few posts :)
 
 
 [OEIS]:	https://oeis.org
+[OEISA000312]:	https://oeis.org/A000312
 [jekyll-gh]: https://github.com/mojombo/jekyll
 [jekyll]:    http://jekyllrb.com
