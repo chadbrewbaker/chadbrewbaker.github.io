@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Transformation Analogues of Permutations</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Blogofbrew</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Transformation Analogues of Permutations</h2>
+<p class="meta">07 Apr 2014</p>
+
+<div class="post">
+<p>We will go over some properties of transoformations that are similar to properties of permutations. </p>
+
+<p>Lets start with the most basic, the number of transformations on n elements, <a href="https://oeis.org/A000312">OEIS_A000312</a>.</p>
+
+<p>$$a(n) = n^n $$</p>
+
+<p>One ubiquitous equation involving permutations are the binomial coefficients. 
+$${n\choose k} = {n!\over k! (n-k)!}$$</p>
+
+<p>If we subsitute the factorial function for a(n) we get :</p>
+
+<p>$${a(n)\over a(k) a(n-k)}$$</p>
+
+<p>Combinatorially this equation takes all elements of order n then removes elements that match a pair consisting of one order k element and one order n-k element. By replacing a(n) with the number of transformations on n elements we obtain <a href="http://oeis.org/A069322">OEIS_A069322</a>.</p>
+
+<p>$${n^{n}\over k^{k} (n-k)^{n-k}}$$</p>
+
+<h2>Monotonic runs</h2>
+
+<p>Another property of permutations is the <a href="http://en.wikipedia.org/wiki/Eulerian_number">Eulerian numbers</a>, which count the number of elements that are greater than their previous element. For transformations they form <a href="https://www.oeis.org/A225753">OEIS_A22573</a>.</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">mono_runs</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">count</span> <span class="o">=</span><span class="mi">1</span>
+  <span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="o">]&gt;</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]</span><span class="p">)</span>
+      <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">count</span>
+<span class="k">end</span>
+<span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">counts</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">runs</span> <span class="o">=</span> <span class="n">mono_runs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">counts</span><span class="o">[</span><span class="n">runs</span><span class="o">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">[</span><span class="n">runs</span><span class="o">]+</span><span class="mi">1</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="n">index</span><span class="o">.</span><span class="n">inspect</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="n">counts</span><span class="o">.</span><span class="n">inspect</span> <span class="c1"># + &quot;|&quot; + counts.inject(:+).inspect</span>
+<span class="k">end</span>
+</code></pre></div>
+
+<h2>Monogenic sizes</h2>
+
+<p>The histogram of single transformation generated (monogenic) semigroup sizes. The first column is <a href="http://oeis.org/A000248">OEIS_A000248</a>, these are the idempotent transformations. </p>
+
+<p>One theme that will come up reguarly is the connection between transformation composition and trees. OEIS_A00248 also counts forests with n nodes and height at most one.</p>
+
+<p>Another way to view idempotent transofrmations is to partition the transformation elements into k nonempty parts, then designate a representitive of each to send all the other elements within that partition to. </p>
+
+<p>The entire table is <a href="http://oeis.org/A225725">OEIS_A225725</a>.</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">trans_powers</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">trans_hash</span> <span class="o">=</span><span class="p">{}</span>
+  <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+  <span class="n">last</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans</span><span class="o">.</span><span class="n">clone</span>
+  <span class="k">while</span>  <span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">last</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans_mult</span><span class="p">(</span><span class="n">trans_current</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+    <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">.</span><span class="n">clone</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="n">trans_hash</span><span class="o">.</span><span class="n">keys</span>
+<span class="k">end</span>
+
+<span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">tran_size</span><span class="o">|</span>
+  <span class="n">histo_hash</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">trans_powers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">length</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]</span> <span class="o">==</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+    <span class="k">else</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]</span> <span class="o">=</span> <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">tran_size</span><span class="si">}</span><span class="s2">|&quot;</span> <span class="o">+</span> <span class="n">histo_hash</span><span class="o">.</span><span class="n">inspect</span>
+<span class="k">end</span>
+
+<span class="c1">#Output:</span>
+<span class="c1">#0|{1=&gt;1}</span>
+<span class="c1">#1|{1=&gt;1}</span>
+<span class="c1">#2|{1=&gt;3, 2=&gt;1}</span>
+<span class="c1">#3|{1=&gt;10, 2=&gt;15, 3=&gt;2}</span>
+<span class="c1">#4|{1=&gt;41, 2=&gt;129, 3=&gt;80, 4=&gt;6}</span>
+<span class="c1">#5|{1=&gt;196, 2=&gt;1115, 3=&gt;1260, 4=&gt;510, 6=&gt;20, 5=&gt;24}</span>
+<span class="c1">#6|{1=&gt;1057, 2=&gt;10395, 3=&gt;17780, 4=&gt;12840, 5=&gt;3744, 6=&gt;840}</span>
+<span class="c1">#7|{1=&gt;6322, 2=&gt;105315, 3=&gt;258510, 4=&gt;264810, 5=&gt;135492, 6=&gt;47250, 7=&gt;4920, 10=&gt;504, 12=&gt;420}</span>
+ 
+</code></pre></div>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Chad Brewbaker<br />
+                Contract Software Engineer in the Des Moines area <br />
+                Recreational Mathematician <br />
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
+                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

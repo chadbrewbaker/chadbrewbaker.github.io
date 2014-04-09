@@ -8,7 +8,7 @@ categories: combinatorics transformations permutations
 DRAFT VERSION
 
 
-Today we will go over some properties of transoformations that are similar to properties of permutations. 
+We will go over some properties of transoformations that are similar to properties of permutations. 
 
 Lets start with the most basic, the number of transformations on n elements, [OEIS_A000312](https://oeis.org/A000312).
 
@@ -26,6 +26,7 @@ Combinatorially this equation takes all elements of order n then removes element
 
 $${n^{n}\over k^{k} (n-k)^{n-k}}$$
 
+##Monotonic runs
 
 Another property of permutations is the [Eulerian numbers] (http://en.wikipedia.org/wiki/Eulerian_number), which count the number of elements that are greater than their previous element. For transformations they form [OEIS_A22573](https://www.oeis.org/A225753).
 
@@ -52,6 +53,56 @@ end
   puts index.inspect + "|" + counts.inspect # + "|" + counts.inject(:+).inspect
 end
 {% endhighlight %}
+
+##Monogenic sizes
+
+The histogram of single transformation generated (monogenic) semigroup sizes. The first column is [OEIS_A000248](http://oeis.org/A000248), these are the idempotent transformations. 
+
+One theme that will come up reguarly is the connection between transformation composition and trees. OEIS_A00248 also counts forests with n nodes and height at most one.
+
+Another way to view idempotent transofrmations is to partition the transformation elements into k nonempty parts, then designate a representitive of each to send all the other elements within that partition to. 
+
+The entire table is [OEIS_A225725](http://oeis.org/A225725).
+ 
+
+{% highlight ruby %}
+
+def trans_powers(trans)
+  trans_hash ={}
+  trans_hash[trans] =1
+  last = 0
+  trans_current = trans.clone
+  while  trans_hash.size != last
+    last = trans_hash.size
+    trans_current = trans_mult(trans_current, trans)
+    trans_hash[trans_current.clone] =1
+  end
+  return trans_hash.keys
+end
+
+0.upto(10).each do |tran_size|
+  histo_hash = {}
+  counting_numbers.take(tran_size).repeated_permutation(tran_size).each { |x|
+    size = trans_powers(x).length
+    if (histo_hash[size] == nil)
+      histo_hash[size] =1
+    else
+      histo_hash[size] = histo_hash[size]+1
+    end
+  }
+  puts "#{tran_size}|" + histo_hash.inspect
+end
+
+#Output:
+#0|{1=>1}
+#1|{1=>1}
+#2|{1=>3, 2=>1}
+#3|{1=>10, 2=>15, 3=>2}
+#4|{1=>41, 2=>129, 3=>80, 4=>6}
+#5|{1=>196, 2=>1115, 3=>1260, 4=>510, 6=>20, 5=>24}
+#6|{1=>1057, 2=>10395, 3=>17780, 4=>12840, 5=>3744, 6=>840}
+#7|{1=>6322, 2=>105315, 3=>258510, 4=>264810, 5=>135492, 6=>47250, 7=>4920, 10=>504, 12=>420}
+ {% endhighlight %}
 
 
 

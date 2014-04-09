@@ -1,4 +1,0 @@
-chadbrewbaker.github.io
-=======================
-
-blog
