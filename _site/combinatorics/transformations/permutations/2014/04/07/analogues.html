@@ -29,6 +29,8 @@
 <p class="meta">07 Apr 2014</p>
 
 <div class="post">
+<p>DRAFT VERSION</p>
+
 <p>We will go over some properties of transoformations that are similar to properties of permutations. </p>
 
 <p>Lets start with the most basic, the number of transformations on n elements, <a href="https://oeis.org/A000312">OEIS_A000312</a>.</p>
@@ -119,6 +121,62 @@ $${n\choose k} = {n!\over k! (n-k)!}$$</p>
 <span class="c1">#6|{1=&gt;1057, 2=&gt;10395, 3=&gt;17780, 4=&gt;12840, 5=&gt;3744, 6=&gt;840}</span>
 <span class="c1">#7|{1=&gt;6322, 2=&gt;105315, 3=&gt;258510, 4=&gt;264810, 5=&gt;135492, 6=&gt;47250, 7=&gt;4920, 10=&gt;504, 12=&gt;420}</span>
  
+</code></pre></div>
+
+<h2>Unlabeled transformations</h2>
+
+<p>The number of unlabeled transoformations of $T_{n}$ is <a href="http://oeis.org/A001372">OEIS_A001372</a>.</p>
+
+<div class="highlight"><pre><code class="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">rebase_with_perm</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+  <span class="n">arr</span> <span class="o">=[]</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="n">arr</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="o">[</span><span class="n">perm</span><span class="o">[</span><span class="n">index</span><span class="o">]</span><span class="p">,</span> <span class="n">perm</span><span class="o">[</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]]]</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+  <span class="n">arr</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">result</span><span class="o">[</span><span class="n">x</span><span class="o">[</span><span class="mi">0</span><span class="o">]]</span> <span class="o">=</span><span class="n">x</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
+  <span class="p">}</span>
+  <span class="n">result</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">cannonize</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+    <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+      <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">min</span> <span class="o">=</span> <span class="n">trans</span><span class="o">.</span><span class="n">clone</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">perm</span><span class="o">|</span>
+    <span class="n">candidate</span> <span class="o">=</span> <span class="n">rebase_with_perm</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">min</span><span class="o">.</span><span class="n">inspect</span> <span class="o">&lt;=&gt;</span> <span class="n">candidate</span><span class="o">.</span><span class="n">inspect</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">min</span> <span class="o">=</span> <span class="n">candidate</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">min</span>
+<span class="k">end</span>
+
+<span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">stuff</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">cannonize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">inspect</span>
+    <span class="n">stuff</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">index</span><span class="si">}</span><span class="s2">| &quot;</span><span class="o">+</span><span class="n">stuff</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="c1">#Outputs:</span>
+<span class="c1">#1| 1</span>
+<span class="c1">#2| 3</span>
+<span class="c1">#3| 7</span>
+<span class="c1">#4| 19</span>
+<span class="c1">#5| 47</span>
+<span class="c1">#6| 130</span>
 </code></pre></div>
 
 </div>

@@ -26,6 +26,8 @@ Combinatorially this equation takes all elements of order n then removes element
 
 $${n^{n}\over k^{k} (n-k)^{n-k}}$$
 
+
+
 ##Monotonic runs
 
 Another property of permutations is the [Eulerian numbers] (http://en.wikipedia.org/wiki/Eulerian_number), which count the number of elements that are greater than their previous element. For transformations they form [OEIS_A22573](https://www.oeis.org/A225753).
@@ -104,11 +106,63 @@ end
 #7|{1=>6322, 2=>105315, 3=>258510, 4=>264810, 5=>135492, 6=>47250, 7=>4920, 10=>504, 12=>420}
  {% endhighlight %}
 
+##Unlabeled transformations
 
 
 
+The number of unlabeled transoformations of $T_{n}$ is [OEIS_A001372](http://oeis.org/A001372).
+{% highlight ruby %}
+counting_numbers = Enumerator.new do |yielder|
+  (0..1.0/0).each do |number|
+    yielder.yield number
+  end
+end
 
+def rebase_with_perm(trans, perm)
+  arr =[]
+  0.upto(trans.length-1) do |index|
+    arr.push([perm[index], perm[trans[index]]])
+  end
+  result = Array.new(trans.length)
+  arr.each { |x|
+    result[x[0]] =x[1]
+  }
+  result
+end
 
+def cannonize(trans)
+  counting_numbers = Enumerator.new do |yielder|
+    (0..1.0/0).each do |number|
+      yielder.yield number
+    end
+  end
+  min = trans.clone
+  counting_numbers.take(trans.length).permutation(trans.length).each { |perm|
+    candidate = rebase_with_perm(trans, perm)
+    if ((min.inspect <=> candidate.inspect) > 0)
+      min = candidate
+    end
+  }
+  return min
+end
+
+1.upto(7) do |index|
+  tran_size =index
+  stuff = []
+  counting_numbers.take(tran_size).repeated_permutation(tran_size).each { |x|
+    s = cannonize(x).inspect
+    stuff.push(s)
+  }
+  puts("#{index}| "+stuff.uniq.size.to_s)
+end
+#Outputs:
+#1| 1
+#2| 3
+#3| 7
+#4| 19
+#5| 47
+#6| 130
+{% endhighlight %}
 
 [OEIS]:	https://oeis.org
 [OEISA000312]:	https://oeis.org/A000312
