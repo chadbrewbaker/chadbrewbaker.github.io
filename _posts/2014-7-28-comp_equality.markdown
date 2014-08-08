@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Compositional Equality"
-date:   2014-07-28 14:00:00
+date:   2014-07-28 14:05:00
 categories: combinatorics transformations permutations equivalence
 ---
 

@@ -1,0 +1,40 @@
+---
+layout: post
+title:  "Iterated Endomorphisms: Forgetful function forests around a group like structure"
+date:   2014-08-07 18:00:00
+categories: combinatorics transformations permutations
+---
+In this post we will discuss the structure of endofunctions under self-composition. Big thanks to Gershom Bazerman and Edward Kmett for their discussions at Lambda Jam and pointing out references to Rota's work.
+
+As we compose powers of a function what structure does it have?
+
+$$f(x), f(f(x)), f^{3}(x), f^{4}(x)...$$ 
+
+Here is a diagram of all endofunctions (transformations) on four elements under self composition pointing from f(x) -> f(f(x)).  You will have scroll down a bit as I am displaying them at a legible resolution.
+
+![T4 squared]({{ site.url }}/assets/t4_squared.svg)
+
+Here is a similar diagram, but this time we also put an arrow to all powers of every endofunction on four elements. Notice the connected component in the upper left corner with the identity permutation at the center and all arrows bidirectional. This is the symmetric group on four elements.
+
+![T4 mono powers]({{ site.url }}/assets/t4_mono_powers.svg)
+
+Gian-Carlo Rota studied these back in the 60s and 70s.  The trees on the outside of each connected component were termed "forgetful functions", as they blow away elements with copies and are never to return to their original state under composition. At the center of every connected component is something group-like with an idempotent at the center and all arrows bidirectional. 
+
+
+The longest path before reaching a cycle is bounded by n because it must forget at least one element under self composition to be a forgetful function. If we can check if a function is forgetful using an oracle, then we can find the first cycle element in log(n) time with binary doubling.  
+
+Like groups, the longest cycle will be [Landau's Function](https://oeis.org/A000793), the largest least common multiple of any partition of n. Finding the cycle length of an endofunction under self composition is a bit more tricky. If we use brute force and compute every element we are bounded by Landau's function in the worst case.
+
+As an aside if we denote Landau's function as g(n),  Landau proved in 1902 that the number of bits it takes to represent g(n) approaches sqrt(n*log(n)) for large n.  We need n*log(n) bits to uniquely label every endofunction, so these large cycles are atypical.
+
+Also, this statement for large n is equivalent to the Rieman Hypothesis,
+
+$$log(g(n))<\sqrt{\mathrm{Li}^{-1}(n)}$$ 
+
+$$\sqrt{n*log(n)}<\sqrt{\mathrm{Li}^{-1}(n)}$$
+
+$$n*log(n) < \mathrm{Li}^{-1}(n)  < inverse({n \over log(n)})$$ 
+
+Translating that back into English, for large n, the number of bits we need to uniquely label every endofunction on n elements is less than the inverse of n divided by the number of bits it takes to uniquely represent every element of an n element set.
+
+I don't have much intuition about that inverse but I can definitely see why an information theory appraoch to cracking the Rieman Hypothesis might win out over all the real analysis thrown at it the past century.
