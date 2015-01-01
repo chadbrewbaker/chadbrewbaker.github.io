@@ -1,0 +1,468 @@
+---
+layout: post
+title:  "Introduction to Haskell Lab Session"
+date:   2014-11-01 10:00:00
+categories: Haskell
+---
+<style>
+  a:link {color:white}
+  a:visited {color:white}
+  a:hover{color:white}
+  a:active {color:white}
+</style>
+
+Haskell Lab
+
+
+<a href="sxx"></a>
+
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+{% highlight c %}
+// C++
+int f( int x, int y){
+	return x+y;
+} 
+{% endhighlight %}
+
+
+{% highlight haskell %}
+-- Haskell
+f :: Int -> Int -> Int
+f x y = x + y   
+{% endhighlight %}
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Getting familiar with ghci
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Help!
+
+:?
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+
+Get information
+
+:info
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Shell commands
+
+:! 
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Get the type
+
+:t 
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Loading a file
+
+:load 
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+How to read Haskell code
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Function arrows associate to the right
+
+{% highlight haskell %}
+a -> a -> a -> a
+a ->(a -> (a -> a))  
+{% endhighlight %}
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Function application associates to the left
+{% highlight haskell %}
+f g h
+((f g) h)
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+We can partially apply functions
+{% highlight haskell %}
+add a b = a + b
+incrament x = add 1 x
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Typeclasses 
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+  
+{% highlight haskell %}
+class Eq a where 
+	(==) :: a -> a -> Bool 
+	(/=) :: a -> a -> Bool
+instance Eq Int where
+	i1 == i2 = eqInt i1 i2
+	i1 /= i2 = not (i1 == i2)
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Ordering: Ord
+
+Showable: Show
+
+Enumerable: Enum
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Alternate Haskell Syntax
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+
+The function right association operator, $
+{% highlight haskell %}
+f (g x )
+f $ g x
+{% endhighlight %}
+
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+
+
+The function composition operator
+{% highlight haskell %}
+f(g(h(k x)))
+f.g.h.k x
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+
+Converting an infix function to a prefix function 
+{% highlight haskell %}
+f x = x + 3
+f x = (+3) x
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+Turn your functions into a pipeline of compositions
+{% highlight haskell %}
+f x = 3 + 7/x
+f = (3+).(7/) x
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+
+Avoid the 'do' notation for IO
+{% highlight haskell %}
+main = do
+  putStrLn "Username:"
+  name <- getLine
+  putStrLn ("Hello " ++ name)
+	      
+
+main = putStrLn "Username:" >> getLine >>= putStrLn.("Hello " ++)
+{% endhighlight %}
+<a href="xxx">_</a>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+</br>
+
+<!-- http://haskell.cs.yale.edu/wp-content/uploads/2011/02/history.pdf -->
+
+
+
+
