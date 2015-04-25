@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
 {% endhighlight %}
 
 
-[How to write Ruby extensions in C](https://github.com/ruby/rubyruby/doc/extension.rdoc)
+[How to write Ruby extensions in C](https://github.com/ruby/ruby/blob/trunk/doc/extension.rdoc)
 
 #Example C extension, fib-example
 
