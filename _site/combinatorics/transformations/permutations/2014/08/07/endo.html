@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Iterated Endomorphisms: Forgetful function forests around a group like structure</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Blogofbrew</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Iterated Endomorphisms: Forgetful function forests around a group like structure</h2>
+<p class="meta">07 Aug 2014</p>
+
+<div class="post">
+<p>In this post we will discuss the structure of endofunctions under self-composition. Big thanks to Gershom Bazerman and Edward Kmett for their discussions at Lambda Jam and pointing out references to Rota&#39;s work.</p>
+
+<p>As we compose powers of a function what structure does it have?</p>
+
+<p>$$f(x), f(f(x)), f^{3}(x), f^{4}(x)...$$ </p>
+
+<p>Here is a diagram of all endofunctions (transformations) on four elements under self composition pointing from f(x) -&gt; f(f(x)).  You will have scroll down a bit as I am displaying them at a legible resolution.</p>
+
+<p><img src="/assets/t4_squared.svg" alt="T4 squared"></p>
+
+<p>Here is a similar diagram, but this time we also put an arrow to all powers of every endofunction on four elements. Notice the connected component in the upper left corner with the identity permutation at the center and all arrows bidirectional. This is the symmetric group on four elements.</p>
+
+<p><img src="/assets/t4_mono_powers.svg" alt="T4 mono powers"></p>
+
+<p>Gian-Carlo Rota studied these back in the 60s and 70s.  The trees on the outside of each connected component were termed &quot;forgetful functions&quot;, as they blow away elements with copies and are never to return to their original state under composition. At the center of every connected component is something group-like with an idempotent at the center and all arrows bidirectional. </p>
+
+<p>The longest path before reaching a cycle is bounded by n because it must forget at least one element under self composition to be a forgetful function. If we can check if a function is forgetful using an oracle, then we can find the first cycle element in log(n) time with binary doubling.  </p>
+
+<p>Like groups, the longest cycle will be <a href="https://oeis.org/A000793">Landau&#39;s Function</a>, the largest least common multiple of any partition of n. Finding the cycle length of an endofunction under self composition is a bit more tricky. If we use brute force and compute every element we are bounded by Landau&#39;s function in the worst case.</p>
+
+<p>As an aside if we denote Landau&#39;s function as g(n),  Landau proved in 1902 that the number of bits it takes to represent g(n) approaches sqrt(n<em>log(n)) for large n.  We need n</em>log(n) bits to uniquely label every endofunction, so these large cycles are atypical.</p>
+
+<p>Also, this statement for large n is equivalent to the Rieman Hypothesis,</p>
+
+<p>$$log(g(n))&lt;\sqrt{\mathrm{Li}^{-1}(n)}$$ </p>
+
+<p>$$\sqrt{n*log(n)}&lt;\sqrt{\mathrm{Li}^{-1}(n)}$$</p>
+
+<p>$$n*log(n) &lt; \mathrm{Li}^{-1}(n)  &lt; inverse({n \over log(n)})$$ </p>
+
+<p>Translating that back into English, for large n, the number of bits we need to uniquely label every endofunction on n elements is less than the inverse of n divided by the number of bits it takes to uniquely represent every element of an n element set.</p>
+
+<p>I don&#39;t have much intuition about that inverse but I can definitely see why an information theory appraoch to cracking the Rieman Hypothesis might win out over all the real analysis thrown at it the past century.</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Chad Brewbaker<br />
+                Software Engineer in the Des Moines area <br />
+                Recreational Mathematician <br />
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
+                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

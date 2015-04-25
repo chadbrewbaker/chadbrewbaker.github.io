@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Transformation Analogues of Permutations</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Blogofbrew</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Transformation Analogues of Permutations</h2>
+<p class="meta">28 Jul 2014</p>
+
+<div class="post">
+<p>We will go over some properties of transoformations that are similar to properties of permutations.</p>
+
+<p>Lets start with the most basic, the number of transformations on n elements, <a href="https://oeis.org/A000312">OEIS_A000312</a>.</p>
+
+<p>$$a(n) = n^n $$</p>
+
+<p>One ubiquitous equation involving permutations are the binomial coefficients. 
+$${n\choose k} = {n!\over k! (n-k)!}$$</p>
+
+<p>If we subsitute the factorial function for a(n) we get :</p>
+
+<p>$${a(n)\over a(k) a(n-k)}$$</p>
+
+<p>Combinatorially this equation takes all elements of order n then removes elements that match a pair consisting of one order k element and one order n-k element. By replacing a(n) with the number of transformations on n elements we obtain <a href="http://oeis.org/A069322">OEIS_A069322</a>.</p>
+
+<p>$${n^{n}\over k^{k} (n-k)^{n-k}}$$</p>
+
+<h2>Monotonic runs</h2>
+
+<p>Another property of permutations is the <a href="http://en.wikipedia.org/wiki/Eulerian_number">Eulerian numbers</a>, which count the number of elements that are greater than their previous element. For transformations they form <a href="https://www.oeis.org/A225753">OEIS_A22573</a>.</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">mono_runs</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">count</span> <span class="o">=</span><span class="mi">1</span>
+  <span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">-</span><span class="mi">1</span><span class="o">]&gt;</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]</span><span class="p">)</span>
+      <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">count</span>
+<span class="k">end</span>
+<span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">counts</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">runs</span> <span class="o">=</span> <span class="n">mono_runs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="n">counts</span><span class="o">[</span><span class="n">runs</span><span class="o">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">[</span><span class="n">runs</span><span class="o">]+</span><span class="mi">1</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="n">index</span><span class="o">.</span><span class="n">inspect</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="n">counts</span><span class="o">.</span><span class="n">inspect</span> <span class="c1"># + &quot;|&quot; + counts.inject(:+).inspect</span>
+<span class="k">end</span></code></pre></div>
+
+<h2>Unlabeled transformations</h2>
+
+<p>The number of unlabeled transoformations of $T_{n}$ is <a href="http://oeis.org/A001372">OEIS_A001372</a>.</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">rebase_with_perm</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+  <span class="n">arr</span> <span class="o">=[]</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="n">arr</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="o">[</span><span class="n">perm</span><span class="o">[</span><span class="n">index</span><span class="o">]</span><span class="p">,</span> <span class="n">perm</span><span class="o">[</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]]]</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+  <span class="n">arr</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">result</span><span class="o">[</span><span class="n">x</span><span class="o">[</span><span class="mi">0</span><span class="o">]]</span> <span class="o">=</span><span class="n">x</span><span class="o">[</span><span class="mi">1</span><span class="o">]</span>
+  <span class="p">}</span>
+  <span class="n">result</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">cannonize</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+    <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+      <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="n">min</span> <span class="o">=</span> <span class="n">trans</span><span class="o">.</span><span class="n">clone</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">perm</span><span class="o">|</span>
+    <span class="n">candidate</span> <span class="o">=</span> <span class="n">rebase_with_perm</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">perm</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">((</span><span class="n">min</span><span class="o">.</span><span class="n">inspect</span> <span class="o">&lt;=&gt;</span> <span class="n">candidate</span><span class="o">.</span><span class="n">inspect</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+      <span class="n">min</span> <span class="o">=</span> <span class="n">candidate</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">min</span>
+<span class="k">end</span>
+
+<span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">stuff</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">cannonize</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">inspect</span>
+    <span class="n">stuff</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">#{</span><span class="n">index</span><span class="si">}</span><span class="s2">| &quot;</span><span class="o">+</span><span class="n">stuff</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">size</span><span class="o">.</span><span class="n">to_s</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="c1">#Outputs:</span>
+<span class="c1">#1| 1</span>
+<span class="c1">#2| 3</span>
+<span class="c1">#3| 7</span>
+<span class="c1">#4| 19</span>
+<span class="c1">#5| 47</span>
+<span class="c1">#6| 130</span></code></pre></div>
+
+<h2>Monogenic sizes</h2>
+
+<p>The histogram of single transformation generated (monogenic) semigroup sizes. The first column is <a href="http://oeis.org/A000248">OEIS_A000248</a>, these are the idempotent transformations.</p>
+
+<p>One theme that will come up reguarly is the connection between transformation composition and trees. OEIS_A00248 also counts forests with n nodes and height at most one.</p>
+
+<p>Another way to view idempotent transformations is to partition the transformation elements into k nonempty parts, then designate a representitive of each to send all the other elements within that partition to. </p>
+
+<p>The entire table is <a href="http://oeis.org/A225725">OEIS_A225725</a>.</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">trans_powers</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">trans_hash</span> <span class="o">=</span><span class="p">{}</span>
+  <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+  <span class="n">last</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans</span><span class="o">.</span><span class="n">clone</span>
+  <span class="k">while</span>  <span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span> <span class="o">!=</span> <span class="n">last</span>
+    <span class="n">last</span> <span class="o">=</span> <span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans_mult</span><span class="p">(</span><span class="n">trans_current</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+    <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">.</span><span class="n">clone</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="n">trans_hash</span><span class="o">.</span><span class="n">keys</span>
+<span class="k">end</span>
+
+<span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">tran_size</span><span class="o">|</span>
+  <span class="n">histo_hash</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">size</span> <span class="o">=</span> <span class="n">trans_powers</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">length</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]</span> <span class="o">==</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+    <span class="k">else</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]</span> <span class="o">=</span> <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">]+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">tran_size</span><span class="si">}</span><span class="s2">|&quot;</span> <span class="o">+</span> <span class="n">histo_hash</span><span class="o">.</span><span class="n">inspect</span>
+<span class="k">end</span>
+
+<span class="c1">#Output:</span>
+<span class="c1">#0|{1=&gt;1}</span>
+<span class="c1">#1|{1=&gt;1}</span>
+<span class="c1">#2|{1=&gt;3, 2=&gt;1}</span>
+<span class="c1">#3|{1=&gt;10, 2=&gt;15, 3=&gt;2}</span>
+<span class="c1">#4|{1=&gt;41, 2=&gt;129, 3=&gt;80, 4=&gt;6}</span>
+<span class="c1">#5|{1=&gt;196, 2=&gt;1115, 3=&gt;1260, 4=&gt;510, 6=&gt;20, 5=&gt;24}</span>
+<span class="c1">#6|{1=&gt;1057, 2=&gt;10395, 3=&gt;17780, 4=&gt;12840, 5=&gt;3744, 6=&gt;840}</span>
+<span class="c1">#7|{1=&gt;6322, 2=&gt;105315, 3=&gt;258510, 4=&gt;264810, 5=&gt;135492, 6=&gt;47250, 7=&gt;4920, 10=&gt;504, 12=&gt;420}</span></code></pre></div>
+
+<h2>Lolipop graphs of monogenic transformations</h2>
+
+<p>So what do monogenic transformation semigroups look like? Sort of like a lolipop. They have a tail then enter a cycle. The length of the tail is refered to as the index, and the length of the cycle is referred to as the period.  Permutations are transformations with index zero. We can think of the tail as where elements get anhilated, and the cycle as when we reach a steady state number of elements.</p>
+
+<p>Here is the lolipop generation graph triangle of cycle lengths 
+First column is <a href="https://oeis.org/A000272">OEIS_A000272</a> 
+Second column is <a href="https://oeis.org/A163951">OEIS_A163951</a> 
+Third column is <a href="https://oeis.org/A163952">OEIS_A163952</a> 
+Triangle is provisionally <a href="https://oeis.org/A222029">OEIS_A222029</a> </p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">trans_mult</span><span class="p">(</span><span class="n">transa</span><span class="p">,</span> <span class="n">transb</span><span class="p">)</span>
+  <span class="n">trans_ret</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">transa</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="n">trans_ret</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">transa</span><span class="o">[</span><span class="n">transb</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="n">trans_ret</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">lolipop</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">trans_hash</span> <span class="o">=</span><span class="p">{}</span>
+  <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans</span><span class="o">.</span><span class="n">clone</span><span class="o">]</span> <span class="o">=</span><span class="mi">0</span>
+  <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans_mult</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+  <span class="k">while</span>  <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">]</span> <span class="o">==</span> <span class="kp">nil</span>
+    <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">.</span><span class="n">clone</span><span class="o">]</span> <span class="o">=</span> <span class="n">index</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span><span class="mi">1</span>
+    <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans_mult</span><span class="p">(</span><span class="n">trans_current</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">cycle_length</span> <span class="o">=</span><span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">]</span>
+  <span class="k">return</span> <span class="o">[</span><span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">cycle_length</span><span class="o">]</span>
+<span class="k">end</span>
+
+<span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">histo_hash</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">size</span><span class="p">,</span> <span class="n">cycle_length</span> <span class="o">=</span> <span class="n">lolipop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1">#tail_length = size-cycle_length</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo_hash</span><span class="o">[</span><span class="n">cycle_length</span><span class="o">]</span> <span class="o">==</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">cycle_length</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+    <span class="k">else</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">cycle_length</span><span class="o">]</span> <span class="o">=</span> <span class="n">histo_hash</span><span class="o">[</span><span class="n">cycle_length</span><span class="o">]+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">tran_size</span><span class="si">}</span><span class="s2">|&quot;</span> <span class="o">+</span> <span class="n">histo_hash</span><span class="o">.</span><span class="n">inspect</span>
+<span class="k">end</span>
+<span class="c1">#Output:</span>
+<span class="c1">#1|{1=&gt;1}</span>
+<span class="c1">#2|{1=&gt;3, 2=&gt;1}</span>
+<span class="c1">#3|{1=&gt;16, 2=&gt;9, 3=&gt;2}</span>
+<span class="c1">#4|{1=&gt;125, 2=&gt;93, 3=&gt;32, 4=&gt;6}</span>
+<span class="c1">#5|{1=&gt;1296, 2=&gt;1155, 3=&gt;480, 4=&gt;150, 6=&gt;20, 5=&gt;24}</span>
+<span class="c1">#6|{1=&gt;16807, 2=&gt;17025, 3=&gt;7880, 4=&gt;3240, 6=&gt;840, 5=&gt;864}</span>
+<span class="c1">#7|{1=&gt;262144, 2=&gt;292383, 3=&gt;145320, 4=&gt;71610, 6=&gt;26250, 5=&gt;24192, 10=&gt;504, 12=&gt;420, 7=&gt;720}</span>
+<span class="c1">#8|{1=&gt;4782969, 2=&gt;5752131, 3=&gt;3009888, 4=&gt;1692180, 6=&gt;773920, 5=&gt;653184, 10=&gt;32256, 12=&gt;26880, 7=&gt;46080, 15=&gt;2688, 8=&gt;5040}</span></code></pre></div>
+
+<p>Looking at the histogram of lolipop tail lengths for transformations generated by a single element 
+The first column is <a href="http://oeis.org/A006153">OEIS_A006153</a> 
+The table is OEIS provisionally http://oeis.org/A225540 </p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">trans_mult</span><span class="p">(</span><span class="n">transa</span><span class="p">,</span> <span class="n">transb</span><span class="p">)</span>
+  <span class="n">trans_ret</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">transa</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="n">trans_ret</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">transa</span><span class="o">[</span><span class="n">transb</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="n">trans_ret</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">lolipop</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">trans_hash</span> <span class="o">=</span><span class="p">{}</span>
+  <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans</span><span class="o">.</span><span class="n">clone</span><span class="o">]</span> <span class="o">=</span><span class="mi">0</span>
+  <span class="n">index</span> <span class="o">=</span> <span class="mi">1</span>
+  <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans_mult</span><span class="p">(</span><span class="n">trans</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+  <span class="k">while</span>  <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">]</span> <span class="o">==</span> <span class="kp">nil</span>
+    <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">.</span><span class="n">clone</span><span class="o">]</span> <span class="o">=</span> <span class="n">index</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="n">index</span> <span class="o">+</span><span class="mi">1</span>
+    <span class="n">trans_current</span> <span class="o">=</span> <span class="n">trans_mult</span><span class="p">(</span><span class="n">trans_current</span><span class="p">,</span> <span class="n">trans</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="n">cycle_length</span> <span class="o">=</span><span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span> <span class="o">-</span> <span class="n">trans_hash</span><span class="o">[</span><span class="n">trans_current</span><span class="o">]</span>
+  <span class="k">return</span> <span class="o">[</span><span class="n">trans_hash</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">cycle_length</span><span class="o">]</span>
+<span class="k">end</span>
+
+<span class="mi">1</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">histo_hash</span> <span class="o">=</span> <span class="p">{}</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="n">size</span><span class="p">,</span> <span class="n">cycle_length</span> <span class="o">=</span> <span class="n">lolipop</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+    <span class="c1">#tail_length = size-cycle_length</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">-</span><span class="n">cycle_length</span><span class="o">]</span> <span class="o">==</span> <span class="kp">nil</span><span class="p">)</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">-</span><span class="n">cycle_length</span><span class="o">]</span> <span class="o">=</span><span class="mi">1</span>
+    <span class="k">else</span>
+      <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">-</span><span class="n">cycle_length</span><span class="o">]</span> <span class="o">=</span> <span class="n">histo_hash</span><span class="o">[</span><span class="n">size</span><span class="o">-</span><span class="n">cycle_length</span><span class="o">]+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="s2">&quot;</span><span class="si">#{</span><span class="n">tran_size</span><span class="si">}</span><span class="s2">|&quot;</span> <span class="o">+</span> <span class="n">histo_hash</span><span class="o">.</span><span class="n">inspect</span>
+<span class="k">end</span>
+<span class="c1">#Output:</span>
+<span class="c1">#1|{0=&gt;1}</span>
+<span class="c1">#2|{0=&gt;4}</span>
+<span class="c1">#3|{0=&gt;21, 1=&gt;6}</span>
+<span class="c1">#4|{0=&gt;148, 1=&gt;84, 2=&gt;24}</span>
+<span class="c1">#5|{0=&gt;1305, 1=&gt;1160, 2=&gt;540, 3=&gt;120}</span>
+<span class="c1">#6|{0=&gt;13806, 1=&gt;17610, 2=&gt;10560, 3=&gt;3960, 4=&gt;720}</span>
+<span class="c1">#7|{0=&gt;170401, 1=&gt;296772, 2=&gt;214410, 3=&gt;104160, 4=&gt;32760, 5=&gt;5040}</span>
+<span class="c1">#8|{0=&gt;2403640, 1=&gt;5536440, 2=&gt;4692576, 3=&gt;2686320, 4=&gt;1115520, 5=&gt;302400, 6=&gt;40320}</span>
+<span class="c1">#9|{0=&gt;38143377, 1=&gt;113680800, 2=&gt;111488328, 3=&gt;72080064, 4=&gt;35637840, 5=&gt;12942720, 6=&gt;3084480, 7=&gt;362880}</span>
+<span class="c1">#10|{0=&gt;672552730, 1=&gt;2553111990, 2=&gt;2872039680, 3=&gt;2053089360, 4=&gt;1147184640, 5=&gt;501832800, 6=&gt;162086400, 7=&gt;34473600, 8=&gt;3628800}</span></code></pre></div>
+
+<h2>Transformations with k outputs</h2>
+
+<p><a href="http://oeis.org/A090657">OEIS_A090657</a></p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">counts</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+      <span class="n">counts</span><span class="o">[</span><span class="n">x</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">length</span><span class="o">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">[</span><span class="n">x</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">length</span><span class="o">]</span> <span class="o">+</span><span class="mi">1</span>
+   <span class="p">}</span>
+   <span class="nb">puts</span> <span class="n">index</span><span class="o">.</span><span class="n">inspect</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="n">counts</span><span class="o">.</span><span class="n">inspect</span>  <span class="c1">#  + &quot;|&quot; + counts.inject(:+).inspect     + &quot;|&quot; + (index**index).inspect</span>
+
+<span class="k">end</span>
+<span class="c1">#Output:</span>
+<span class="c1">#0|[1]</span>
+<span class="c1">#1|[0, 1]</span>
+<span class="c1">#2|[0, 2, 2]</span>
+<span class="c1">#3|[0, 3, 18, 6]</span>
+<span class="c1">#4|[0, 4, 84, 144, 24]</span>
+<span class="c1">#5|[0, 5, 300, 1500, 1200, 120]</span>
+<span class="c1">#6|[0, 6, 930, 10800, 23400, 10800, 720]</span>
+<span class="c1">#7|[0, 7, 2646, 63210, 294000, 352800, 105840, 5040]</span></code></pre></div>
+
+<h2>Closed subsets</h2>
+
+<p><a href="http://oeis.org/A001865">OEIS_A001865</a> second column </p>
+
+<p><a href="http://oeis.org/A065456">OEIS_A065456</a> third column </p>
+
+<p>1,18,305,5595 Forth column new to OEIS </p>
+
+<p><a href="http://oeis.org/A060281">OEIS_A060281</a> The entire triangle (without zeros)</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
+    <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="c1"># Hook and shortcut from  AN EFFICIENT PARALLEL BICONNECTIVITY ALGORITHM</span>
+<span class="c1">#Tarjan and Vishkin</span>
+<span class="c1"># http://www.umiacs.umd.edu/users/vishkin/TEACHING/ENEE759KS12/TV85.pdf</span>
+
+<span class="k">def</span> <span class="nf">partitions</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="n">parent</span> <span class="o">=</span><span class="nb">Array</span><span class="o">.</span><span class="n">new</span><span class="p">()</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+    <span class="n">parent</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
+  <span class="k">end</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">outer_index</span><span class="o">|</span>
+    <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+      <span class="c1">#shortcut</span>
+      <span class="n">parent</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">=</span> <span class="n">parent</span><span class="o">[</span><span class="n">parent</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span>
+    <span class="k">end</span>
+    <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+      <span class="c1">#hook</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">parent</span><span class="o">[</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span> <span class="o">&lt;</span> <span class="n">parent</span><span class="o">[</span><span class="n">parent</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span><span class="p">)</span>
+        <span class="n">parent</span><span class="o">[</span><span class="n">parent</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span> <span class="o">=</span> <span class="n">parent</span><span class="o">[</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span>
+      <span class="k">end</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">parent</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">&lt;</span> <span class="n">parent</span><span class="o">[</span><span class="n">parent</span><span class="o">[</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]]]</span><span class="p">)</span>
+        <span class="n">parent</span><span class="o">[</span><span class="n">parent</span><span class="o">[</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]]]</span> <span class="o">=</span> <span class="n">parent</span><span class="o">[</span><span class="n">index</span><span class="o">]</span>
+      <span class="k">end</span>
+    <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="n">parent</span>
+<span class="k">end</span>
+
+<span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">counts</span> <span class="o">=</span> <span class="o">[]</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">do</span>
+    <span class="n">counts</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+  <span class="k">end</span>
+
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+   <span class="n">counts</span><span class="o">[</span><span class="n">partitions</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">length</span><span class="o">]</span> <span class="o">=</span> <span class="n">counts</span><span class="o">[</span><span class="n">partitions</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">uniq</span><span class="o">.</span><span class="n">length</span><span class="o">]</span> <span class="o">+</span><span class="mi">1</span>
+
+  <span class="p">}</span>
+   <span class="nb">puts</span> <span class="n">index</span><span class="o">.</span><span class="n">inspect</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="n">counts</span><span class="o">.</span><span class="n">inspect</span>  <span class="c1">#  + &quot;|&quot; + counts.inject(:+).inspect     + &quot;|&quot; + (index**index).inspect</span>
+
+<span class="k">end</span>
+<span class="c1">#Outputs:</span>
+<span class="c1">#0|[1]</span>
+<span class="c1">#1|[0, 1]</span>
+<span class="c1">#2|[0, 3, 1]</span>
+<span class="c1">#3|[0, 17, 9, 1]</span>
+<span class="c1">#4|[0, 142, 95, 18, 1]</span>
+<span class="c1">#5|[0, 1569, 1220, 305, 30, 1]</span>
+<span class="c1">#6|[0, 21576, 18694, 5595, 745, 45, 1]</span></code></pre></div>
+
+<h2>Derangements for $T_{n} =  {(n-1)}^n$</h2>
+
+<p><a href="http://oeis.org/A065440">OEIS_A065440</a>
+<a href="http://oeis.org/A007778">OEIS_A007778</a> 
+<a href="http://en.wikipedia.org/wiki/Derangement">Derangements (for permutations)</a></p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+  <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>     <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
+  <span class="k">end</span>
+<span class="k">end</span>
+
+<span class="k">def</span> <span class="nf">is_derangement</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
+  <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">trans</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+   <span class="k">if</span><span class="p">(</span><span class="n">trans</span><span class="o">[</span><span class="n">index</span><span class="o">]</span> <span class="o">==</span> <span class="n">index</span><span class="p">)</span>
+           <span class="k">return</span> <span class="kp">false</span>
+   <span class="k">end</span>
+  <span class="k">end</span>
+  <span class="k">return</span> <span class="kp">true</span>
+<span class="k">end</span>
+
+<span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
+  <span class="n">tran_size</span> <span class="o">=</span><span class="n">index</span>
+  <span class="n">count</span> <span class="o">=</span><span class="mi">0</span>
+  <span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">tran_size</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="p">{</span> <span class="o">|</span><span class="n">x</span><span class="o">|</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">is_derangement</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+      <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span><span class="mi">1</span>
+    <span class="k">end</span>
+  <span class="p">}</span>
+  <span class="nb">puts</span> <span class="s2">&quot;derangements(</span><span class="si">#{</span><span class="n">index</span><span class="si">}</span><span class="s2">) </span><span class="si">#{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span>
+<span class="k">end</span></code></pre></div>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Chad Brewbaker<br />
+                Software Engineer in the Des Moines area <br />
+                Recreational Mathematician <br />
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
+                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

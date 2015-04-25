@@ -31,38 +31,35 @@
 <div class="post">
 <p>Transformations, also known as endofunctions, are superset of permutations where repeated elements in the codomain are allowed. Composing transformations can be done with the same algorithm as permutations.</p>
 
-<div class="highlight"><pre><code class="ruby"><span class="k">def</span> <span class="nf">trans_mult</span><span class="p">(</span><span class="n">transa</span><span class="p">,</span> <span class="n">transb</span><span class="p">)</span>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">trans_mult</span><span class="p">(</span><span class="n">transa</span><span class="p">,</span> <span class="n">transb</span><span class="p">)</span>
   <span class="n">trans_ret</span> <span class="o">=</span> <span class="nb">Array</span><span class="o">.</span><span class="n">new</span>
   <span class="mi">0</span><span class="o">.</span><span class="n">upto</span><span class="p">(</span><span class="n">transa</span><span class="o">.</span><span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="k">do</span> <span class="o">|</span><span class="n">index</span><span class="o">|</span>
     <span class="n">trans_ret</span><span class="o">.</span><span class="n">push</span><span class="p">(</span><span class="n">transa</span><span class="o">[</span><span class="n">transb</span><span class="o">[</span><span class="n">index</span><span class="o">]]</span><span class="p">)</span>
   <span class="k">end</span>
   <span class="k">return</span> <span class="n">trans_ret</span>
-<span class="k">end</span>
-</code></pre></div>
+<span class="k">end</span></code></pre></div>
 
 <p>My particiular interest in transformations is their application in sofware testing, but they are a ubiquitous concept in mathematics and sofware engineering.</p>
 
 <p>As we play with transformations it will be nice to have the following enumerator that generates natural numbers starting at zero.</p>
 
-<div class="highlight"><pre><code class="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
   <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span> 
     <span class="n">yielder</span><span class="o">.</span><span class="n">yield</span> <span class="n">number</span>
   <span class="k">end</span>
-<span class="k">end</span>
-</code></pre></div>
+<span class="k">end</span></code></pre></div>
 
 <p>Now if we want to print all transformations of size k we can use an enumerator.</p>
 
-<div class="highlight"><pre><code class="ruby"><span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">each</span><span class="p">{</span><span class="o">|</span><span class="n">t</span><span class="o">|</span>
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">repeated_permutation</span><span class="p">(</span><span class="n">k</span><span class="p">)</span><span class="o">.</span><span class="n">each</span><span class="p">{</span><span class="o">|</span><span class="n">t</span><span class="o">|</span>
     <span class="nb">puts</span> <span class="n">t</span><span class="o">.</span><span class="n">inspect</span>
-<span class="p">}</span>
-</code></pre></div>
+<span class="p">}</span></code></pre></div>
 
 <p>A first question we should ask ourselves, &quot;Since transformations are a superset of permutations, do they have any analogues?&quot;</p>
 
 <p>The answer is a resounding yes!</p>
 
-<p>As we explore transformations and related mathematical structures many will be crossreferenced with their <a href="%09https://oeis.org">OEIS</a> sequence. I have a few dozen queued up so this should take a few posts :)</p>
+<p>As we explore transformations and related mathematical structures many will be crossreferenced with their <a href="https://oeis.org">OEIS</a> sequence. I have a few dozen queued up so this should take a few posts :)</p>
 
 </div>
 
@@ -71,7 +68,7 @@
             <div class="contact">
               <p>
                 Chad Brewbaker<br />
-                Contract Software Engineer in the Des Moines area <br />
+                Software Engineer in the Des Moines area <br />
                 Recreational Mathematician <br />
               </p>
             </div>

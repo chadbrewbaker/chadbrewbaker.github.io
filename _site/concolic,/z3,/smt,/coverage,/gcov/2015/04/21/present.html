@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Teaching Ruby to Program Itself</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Blogofbrew</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Teaching Ruby to Program Itself</h2>
+<p class="meta">21 Apr 2015</p>
+
+<div class="post">
+<p>Thanks to everyone who attended my April 2015 <a href="http://www.iowaruby.org">Iowa Ruby Brigade</a> talk. These are my notes, source code is <a href="https://github.com/chadbrewbaker/TeachRubyToProgramItself">here</a>.</p>
+
+<h2>How to call C from Ruby</h2>
+
+<p>Easymode, call your C binary from the shell in Ruby</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">print</span> <span class="sb">`echo Just use backticks`</span></code></pre></div>
+
+<p>Call your Ruby code fom C</p>
+
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#include &quot;ruby.h&quot;</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="kt">char</span> <span class="o">**</span><span class="n">argv</span><span class="p">)</span> <span class="p">{</span> 
+  <span class="n">VALUE</span> <span class="n">result</span><span class="p">;</span>
+  <span class="n">ruby_sysinit</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argc</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">argv</span><span class="p">);</span>
+  <span class="n">RUBY_INIT_STACK</span><span class="p">;</span>
+  <span class="n">ruby_init</span><span class="p">();</span>
+  <span class="n">ruby_init_loadpath</span><span class="p">();</span>
+  <span class="n">rb_eval_string</span><span class="p">(</span><span class="s">&quot;x = 3*4&quot;</span><span class="p">)</span> <span class="p">;</span>
+  <span class="n">result</span> <span class="o">=</span> <span class="n">rb_gv_get</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">);</span>
+  <span class="n">printf</span><span class="p">(</span><span class="s">&quot;Result = %d</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">NUM2INT</span><span class="p">(</span><span class="n">result</span><span class="p">));</span>
+  <span class="k">return</span> <span class="n">ruby_cleanup</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span></code></pre></div>
+
+<p><a href="https://github.com/ruby/rubyruby/doc/extension.rdoc">How to write Ruby extensions in C</a></p>
+
+<h1>Example C extension, fib-example</h1>
+
+<p>MyFib.c</p>
+
+<div class="highlight"><pre><code class="language-c" data-lang="c"><span class="cp">#include &quot;ruby.h&quot;</span>
+
+<span class="n">VALUE</span> <span class="nf">method_fib</span><span class="p">(</span><span class="n">VALUE</span> <span class="n">self</span><span class="p">,</span> <span class="n">VALUE</span> <span class="n">arg1</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">x</span> <span class="o">=</span> <span class="mi">33</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">INT2NUM</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span> <span class="nf">Init_myfib</span><span class="p">()</span> <span class="p">{</span>
+    <span class="n">VALUE</span> <span class="n">MyFib</span> <span class="o">=</span> <span class="n">rb_define_module</span><span class="p">(</span><span class="s">&quot;MyFib&quot;</span><span class="p">);</span>
+    <span class="n">rb_define_method</span><span class="p">(</span><span class="n">MyFib</span><span class="p">,</span> <span class="s">&quot;fib&quot;</span><span class="p">,</span> <span class="n">method_fib</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span> 
+<span class="p">}</span></code></pre></div>
+
+<p>extconf.rb</p>
+
+<div class="highlight"><pre><code class="language-rb" data-lang="rb"><span class="nb">require</span> <span class="s1">&#39;mkmf&#39;</span>
+
+<span class="n">ext_name</span> <span class="o">=</span> <span class="s1">&#39;MyFib&#39;</span>
+
+<span class="n">dir_config</span><span class="p">(</span><span class="n">ext_name</span><span class="p">)</span>
+
+<span class="n">create_makefile</span><span class="p">(</span><span class="n">ext_name</span><span class="p">)</span></code></pre></div>
+
+<p>myfibDriver.rb</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1">#myfib.rb</span>
+<span class="nb">require</span> <span class="s1">&#39;MyFib/myfib&#39;</span>
+<span class="kp">include</span> <span class="no">MyFib</span>
+<span class="nb">puts</span> <span class="n">fib</span><span class="p">(</span><span class="mi">777777</span><span class="p">)</span></code></pre></div>
+
+<p>Compiling and running the C extension</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">ruby extconf.rb
+make
+ruby myfibDriver.rb
+<span class="c"># outputs 33</span></code></pre></div>
+
+<p>Compiling CRuby with code coverage </p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">git clone https://github.com/ruby/ruby.git
+<span class="nb">cd </span>ruby
+brew install openssl</code></pre></div>
+
+<p>(optional) uncomment #option nodynamic in ruby/ext/Setup </p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">mkdir ~/.rubies
+<span class="nv">CFLAGS</span><span class="o">=</span><span class="s1">&#39;--coverage -g -O0 -Wall&#39;</span> <span class="nv">LDFLAGS</span><span class="o">=</span><span class="s1">&#39;--coverage&#39;</span>   ./configure --prefix<span class="o">=</span>/Users/crb002/.rubies/ruby-trunk --with-openssl-dir<span class="o">=</span>/usr/local/opt/openssl
+make
+make <span class="nb">test</span>
+make <span class="nb">test</span>-all
+<span class="c">#make test-all TESTS=&quot;csv/&quot;</span></code></pre></div>
+
+<p>Pretty printing coverage for C</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">brew install lcov
+lcov --capture --directory ./  --output-file coverage.info
+genhtml coverage.info --output-directory coveragehtml</code></pre></div>
+
+<p>Raw code coverage in Ruby</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="c1">#Raw ruby coverage using Coverage</span>
+<span class="nb">require</span> <span class="s2">&quot;coverage.so&quot;</span>
+<span class="no">Coverage</span><span class="o">.</span><span class="n">start</span>
+<span class="c1">#run your code</span>
+<span class="nb">p</span> <span class="no">Coverage</span><span class="o">.</span><span class="n">result</span></code></pre></div>
+
+<p>Simplecov for pretty-print coverage in Ruby</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="nb">require</span> <span class="s1">&#39;simplecov&#39;</span>
+<span class="no">SimpleCov</span><span class="o">.</span><span class="n">start</span></code></pre></div>
+
+<p>How to call the z3 SMT solver with SMT-LIB2 syntax</p>
+
+<div class="highlight"><pre><code class="language-bash" data-lang="bash">z3 -smt2 problem.smt</code></pre></div>
+
+<p>An example SMT-LIB2 program</p>
+
+<div class="highlight"><pre><code class="language-lisp" data-lang="lisp"><span class="p">(</span><span class="nv">declare-const</span> <span class="nv">p</span> <span class="nv">Bool</span><span class="p">)</span> <span class="c1">;Declaring a constant function</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">q</span> <span class="nv">Bool</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">r</span> <span class="nv">Bool</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">define-fun</span> <span class="nv">conjecture</span> <span class="p">()</span> <span class="nv">Bool</span>  <span class="c1">;Declaring a function which returns a Bool </span>
+    <span class="p">(</span><span class="nv">=&gt;</span> <span class="p">(</span><span class="nb">and</span> <span class="p">(</span><span class="nv">=&gt;</span> <span class="nv">p</span> <span class="nv">q</span><span class="p">)</span> <span class="p">(</span><span class="nv">=&gt;</span> <span class="nv">q</span> <span class="nv">r</span><span class="p">))</span>
+        <span class="p">(</span><span class="nv">=&gt;</span> <span class="nv">p</span> <span class="nv">r</span><span class="p">)))</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">not</span> <span class="nv">conjecture</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">check-sat</span><span class="p">)</span></code></pre></div>
+
+<p>Key concept. Constants in SMT-LIB are functions which take no arguments.</p>
+
+<p>IF THEN ELSE in Ruby</p>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">if</span><span class="p">(</span><span class="n">a</span> <span class="ow">and</span> <span class="n">b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="mi">37</span>
+<span class="k">else</span>
+   <span class="k">return</span> <span class="mi">24</span>
+<span class="k">end</span></code></pre></div>
+
+<p>IF THEN ELSE in SMT-LIB</p>
+
+<div class="highlight"><pre><code class="language-lisp" data-lang="lisp"><span class="p">(</span><span class="nv">ite</span> <span class="p">(</span><span class="nb">and</span> <span class="nv">a</span> <span class="nv">b</span><span class="p">)</span> <span class="mi">37</span> <span class="mi">24</span><span class="p">)</span></code></pre></div>
+
+<p>Printing in SMT-LIB</p>
+
+<div class="highlight"><pre><code class="language-lisp" data-lang="lisp"><span class="p">(</span><span class="nv">display</span> <span class="p">(</span><span class="nb">+</span> <span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">))</span>  <span class="c1">;(+ 1 2 3)</span></code></pre></div>
+
+<p>Simplifying expressions in SMT-LIB</p>
+
+<div class="highlight"><pre><code class="language-lisp" data-lang="lisp"><span class="p">(</span><span class="nv">declare-const</span> <span class="nv">x</span> <span class="nv">Int</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">simplify</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">x</span> <span class="mi">2</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))</span> <span class="c1">; (+ 3 (* 2 x))</span></code></pre></div>
+
+<p>Project Euler problem 4, find the largest palindrome made from the product of two 3-digit numbers.</p>
+
+<div class="highlight"><pre><code class="language-lisp" data-lang="lisp"><span class="c1">;Code by Craig Stuntz 2014</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">product</span> <span class="nv">Int</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">factor1</span> <span class="nv">Int</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">factor2</span> <span class="nv">Int</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">and</span> <span class="nb">&gt;=</span> <span class="nv">factor</span> <span class="mi">100</span><span class="p">)</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">factor1</span> <span class="mi">1000</span><span class="p">))</span> <span class="c1">;Ensure 3 digits</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">and</span> <span class="nb">&gt;=</span> <span class="nv">factor</span> <span class="mi">100</span><span class="p">)</span> <span class="p">(</span><span class="nb">&lt;</span> <span class="nv">factor1</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">=</span> <span class="p">(</span><span class="nb">*</span> <span class="nv">factor1</span> <span class="nv">factor2</span><span class="p">)</span> <span class="nv">product</span><span class="p">))</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">a</span> <span class="nv">Int</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">b</span> <span class="nv">Int</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">declare-const</span> <span class="nv">c</span> <span class="nv">Int</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">and</span> <span class="p">(</span><span class="nb">&gt;=</span> <span class="nv">a</span> <span class="mi">8</span><span class="p">)</span>  <span class="p">(</span><span class="nb">&lt;=</span> <span class="nv">a</span> <span class="mi">9</span><span class="p">))</span> <span class="p">)</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">and</span> <span class="p">(</span><span class="nb">&gt;=</span> <span class="nv">b</span> <span class="mi">0</span><span class="p">)</span>  <span class="p">(</span><span class="nb">&lt;=</span> <span class="nv">b</span> <span class="mi">9</span><span class="p">))</span> <span class="p">)</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">and</span> <span class="p">(</span><span class="nb">&gt;=</span> <span class="nv">c</span> <span class="mi">0</span><span class="p">)</span>  <span class="p">(</span><span class="nb">&lt;=</span> <span class="nv">c</span> <span class="mi">9</span><span class="p">))</span> <span class="p">)</span>
+<span class="c1">; Asssert that the product is a palendrome</span>
+<span class="p">(</span><span class="nb">assert</span> <span class="p">(</span><span class="nb">=</span> <span class="nv">product</span> <span class="p">(</span><span class="nb">+</span> <span class="p">(</span><span class="nb">*</span> <span class="mi">100000</span>  <span class="nv">a</span><span class="p">)</span>  <span class="p">(</span><span class="nb">*</span> <span class="mi">10000</span>  <span class="nv">b</span><span class="p">)</span>  <span class="p">(</span><span class="nb">*</span> <span class="mi">1000</span>  <span class="nv">c</span><span class="p">)</span> <span class="p">(</span><span class="nb">*</span> <span class="mi">100</span>  <span class="nv">c</span><span class="p">)</span>  <span class="p">(</span><span class="nb">*</span> <span class="mi">10</span> <span class="nv">b</span><span class="p">)</span> <span class="nv">a</span> <span class="p">)))</span>
+<span class="p">(</span><span class="nv">maximize</span> <span class="p">(</span><span class="nb">+</span> <span class="nv">factor1</span> <span class="nv">factor2</span><span class="p">))</span> <span class="c1">; Hack since Z3 doesn&#39;t maximize products yet</span>
+<span class="p">(</span><span class="nv">check-sat</span><span class="p">)</span>
+<span class="p">(</span><span class="nv">get-model</span><span class="p">)</span>
+
+<span class="c1">;(+ factor1 factor2) |-&gt; 1906</span>
+<span class="c1">;sat</span>
+<span class="c1">; (model</span>
+<span class="c1">; ...</span>
+<span class="c1">; (define-fun factor1 () Int 913)</span>
+<span class="c1">; (define-fun factor2 () Int 993)</span>
+<span class="c1">; (define-fun product () Int 906609)</span>
+<span class="c1">; )</span></code></pre></div>
+
+<p><a href="http://rise4fun.com/Z3/tutorial/guide">SMT-LIB Tutorial with Z3</a></p>
+
+<h1>Putting it all together to test Fizz-Buzz-Jaberwocky</h1>
+
+<div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">fizbuzz</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+   <span class="k">case</span>
+   <span class="k">when</span> <span class="n">num</span> <span class="o">%</span> <span class="mi">15</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">then</span> <span class="s2">&quot;FizzBuzz&quot;</span>
+   <span class="k">when</span> <span class="n">num</span> <span class="o">%</span> <span class="mi">5</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">then</span> <span class="s2">&quot;Fizz&quot;</span>
+   <span class="k">when</span> <span class="n">num</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">then</span> <span class="s2">&quot;Buzz&quot;</span>
+   <span class="k">when</span> <span class="p">((</span><span class="n">num</span> <span class="o">%</span> <span class="mi">13</span> <span class="o">==</span> <span class="mi">7</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">num</span> <span class="o">&gt;</span> <span class="mi">300</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="mi">7</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>  <span class="k">then</span> <span class="s2">&quot;Jaberwocky&quot;</span>
+   <span class="k">else</span> <span class="n">num</span>
+   <span class="k">end</span>
+<span class="k">end</span></code></pre></div>
+
+<h1>Synopsys.</h1>
+
+<p>Test before you code.</p>
+
+<p>Run your tests with code coverage.</p>
+
+<p>Use Z3 as a bench calculator to help fill testing gaps.</p>
+
+<p>Build a CRuby binary with code coverage to see the low level hot spots in your app.</p>
+
+<p>Other links:</p>
+
+<p><a href="http://smt-lib.org">SMT-LIB language</a></p>
+
+<p><a href="https://github.com/Z3Prover/z3">Z3 SMT Solver</a></p>
+
+<p><a href="http://en.wikipedia.org/wiki/Concolic_testing">Concolic Testing</a></p>
+
+<p>My reading picks for this summer: </p>
+
+<p>Conceptual Mathematics: A First Introduction to Categories</p>
+
+<p>Real World OCaml</p>
+
+<p>Your Code as a Crime Scene</p>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+                Chad Brewbaker<br />
+                Software Engineer in the Des Moines area <br />
+                Recreational Mathematician <br />
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
+                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

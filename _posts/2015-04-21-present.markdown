@@ -1,0 +1,265 @@
+---
+layout: post
+title:  "Teaching Ruby to Program Itself"
+date:   2015-04-21 12:38:19
+categories: concolic, Z3, SMT, coverage, gcov
+---
+
+Thanks to everyone who attended my April 2015 [Iowa Ruby Brigade](http://www.iowaruby.org) talk. These are my notes, source code is [here](https://github.com/chadbrewbaker/TeachRubyToProgramItself).
+
+##How to call C from Ruby
+
+Easymode, call your C binary from the shell in Ruby
+
+{% highlight ruby %}
+print `echo Just use backticks`
+{% endhighlight %}
+
+Call your Ruby code fom C
+
+{% highlight c %}
+#include "ruby.h"
+int main(int argc, char **argv) { 
+  VALUE result;
+  ruby_sysinit(&argc, &argv);
+  RUBY_INIT_STACK;
+  ruby_init();
+  ruby_init_loadpath();
+  rb_eval_string("x = 3*4") ;
+  result = rb_gv_get("x");
+  printf("Result = %d\n", NUM2INT(result));
+  return ruby_cleanup(0);
+}
+{% endhighlight %}
+
+
+[How to write Ruby extensions in C](https://github.com/ruby/rubyruby/doc/extension.rdoc)
+
+#Example C extension, fib-example
+
+MyFib.c
+{% highlight c %}
+#include "ruby.h"
+
+VALUE method_fib(VALUE self, VALUE arg1) {
+        int x = 33;
+        return INT2NUM(x);
+}
+
+void Init_myfib() {
+	VALUE MyFib = rb_define_module("MyFib");
+	rb_define_method(MyFib, "fib", method_fib, 1);	
+}
+{% endhighlight %}
+
+extconf.rb
+{% highlight rb%}
+require 'mkmf'
+
+ext_name = 'MyFib'
+
+dir_config(ext_name)
+
+create_makefile(ext_name)
+{% endhighlight %}
+
+myfibDriver.rb
+{% highlight ruby  %}
+#myfib.rb
+require 'MyFib/myfib'
+include MyFib
+puts fib(777777)
+{% endhighlight %}
+
+Compiling and running the C extension
+{% highlight bash %}
+ruby extconf.rb
+make
+ruby myfibDriver.rb
+# outputs 33
+{% endhighlight %}
+
+
+
+Compiling CRuby with code coverage 
+
+{% highlight bash %}
+git clone https://github.com/ruby/ruby.git
+cd ruby
+brew install openssl 
+{% endhighlight %}
+
+(optional) uncomment #option nodynamic in ruby/ext/Setup 
+
+{% highlight bash %}
+mkdir ~/.rubies
+CFLAGS='--coverage -g -O0 -Wall' LDFLAGS='--coverage'   ./configure --prefix=/Users/crb002/.rubies/ruby-trunk --with-openssl-dir=/usr/local/opt/openssl
+make
+make test
+make test-all
+#make test-all TESTS="csv/"
+{% endhighlight %}
+Pretty printing coverage for C
+{% highlight bash %}
+brew install lcov
+lcov --capture --directory ./  --output-file coverage.info
+genhtml coverage.info --output-directory coveragehtml
+{% endhighlight %}
+
+Raw code coverage in Ruby
+
+{% highlight ruby %}
+#Raw ruby coverage using Coverage
+require "coverage.so"
+Coverage.start
+#run your code
+p Coverage.result
+{% endhighlight %}
+
+
+Simplecov for pretty-print coverage in Ruby
+{% highlight ruby %}
+require 'simplecov'
+SimpleCov.start
+{% endhighlight %}
+
+How to call the z3 SMT solver with SMT-LIB2 syntax
+{% highlight bash %}
+z3 -smt2 problem.smt
+{% endhighlight %}
+
+
+An example SMT-LIB2 program
+{% highlight lisp %}
+(declare-const p Bool) ;Declaring a constant function
+(declare-const q Bool)
+(declare-const r Bool)
+(define-fun conjecture () Bool  ;Declaring a function which returns a Bool 
+	(=> (and (=> p q) (=> q r))
+		(=> p r)))
+(assert (not conjecture))
+(check-sat)
+{% endhighlight %}
+
+Key concept. Constants in SMT-LIB are functions which take no arguments.
+
+
+IF THEN ELSE in Ruby
+{% highlight ruby %}
+if(a and b)
+	return 37
+else
+   return 24
+end
+{% endhighlight %}
+
+IF THEN ELSE in SMT-LIB
+{% highlight lisp %}
+(ite (and a b) 37 24)
+{% endhighlight %}
+
+Printing in SMT-LIB
+{% highlight lisp %}
+(display (+ 1 2 3))  ;(+ 1 2 3)
+{% endhighlight %}
+
+
+Simplifying expressions in SMT-LIB
+{% highlight lisp %}
+(declare-const x Int)
+(simplify (+ x 2 x 1)) ; (+ 3 (* 2 x)) 
+{% endhighlight %}
+
+
+Project Euler problem 4, find the largest palindrome made from the product of two 3-digit numbers.
+
+{% highlight lisp %}
+;Code by Craig Stuntz 2014
+(declare-const product Int)
+(declare-const factor1 Int)
+(declare-const factor2 Int)
+(assert (and >= factor 100) (< factor1 1000)) ;Ensure 3 digits
+(assert (and >= factor 100) (< factor1 1000))
+(assert (= (* factor1 factor2) product))
+(declare-const a Int)
+(declare-const b Int)
+(declare-const c Int)
+
+(assert (and (>= a 8)  (<= a 9)) )
+(assert (and (>= b 0)  (<= b 9)) )
+(assert (and (>= c 0)  (<= c 9)) )
+; Asssert that the product is a palendrome
+(assert (= product (+ (* 100000  a)  (* 10000  b)  (* 1000  c) (* 100  c)  (* 10 b) a )))
+(maximize (+ factor1 factor2)) ; Hack since Z3 doesn't maximize products yet
+(check-sat)
+(get-model)
+
+;(+ factor1 factor2) |-> 1906
+;sat
+; (model
+; ...
+; (define-fun factor1 () Int 913)
+; (define-fun factor2 () Int 993)
+; (define-fun product () Int 906609)
+; )
+{% endhighlight %}
+
+
+[SMT-LIB Tutorial with Z3](http://rise4fun.com/Z3/tutorial/guide)
+
+
+#Putting it all together to test Fizz-Buzz-Jaberwocky
+
+{% highlight ruby %}
+def fizbuzz(num)
+   case
+   when num % 15 == 0 then "FizzBuzz"
+   when num % 5 == 0 then "Fizz"
+   when num % 3 == 0 then "Buzz"
+   when ((num % 13 == 7) and (num > 300) and (num % 7 == 0))  then "Jaberwocky"
+   else num
+   end
+end
+{% endhighlight %}
+
+#Synopsys.
+
+
+Test before you code.
+
+
+Run your tests with code coverage.
+
+
+Use Z3 as a bench calculator to help fill testing gaps.
+
+
+Build a CRuby binary with code coverage to see the low level hot spots in your app.
+
+
+Other links:
+
+[SMT-LIB language](http://smt-lib.org)
+
+[Z3 SMT Solver](https://github.com/Z3Prover/z3)
+
+[Concolic Testing](http://en.wikipedia.org/wiki/Concolic_testing)
+
+
+My reading picks for this summer: 
+
+Conceptual Mathematics: A First Introduction to Categories
+
+
+Real World OCaml
+
+
+Your Code as a Crime Scene
+
+
+
+
+
+
+
+
