@@ -5,13 +5,13 @@ date:   2015-12-08 12:38:19
 categories: data d3js
 ---
 
-There was a discussion at [gravitate](http://www.gravitatedsm.com) about an investor wanting to calculate the [Institutional Rate of Return](http://www.investopedia.com/exam-guide/cfa-level-1/corporate-finance/npv-net-present-value-irr-internal-rate-of-return.asp?header_alt=c) of a startup.
+There was a discussion at [Gravitate](http://www.gravitatedsm.com) about an investor wanting to calculate the [Institutional Rate of Return](http://www.investopedia.com/exam-guide/cfa-level-1/corporate-finance/npv-net-present-value-irr-internal-rate-of-return.asp?header_alt=c) of a startup.
 
-Whether you are a startup wanting to know how long it will take an investor to break even, or a prospective home buyer wondering how long would take to pay off a mortgage the calculation is the same.
+Whether you are a startup wanting to know how long it will take an investor to break even, or a prospective home buyer wondering how long it would take to pay off a mortgage, the calculation is the same.
 
-We used some Haskell and d3js to visualize how long it takes to pay off a $200,000 investment at around 3.5% annual interest. Take particular notice of the left side of the curve. Hustling to get yourselves early profit, or making double payments on your mortgage early on really helps. 
+We used some Haskell and d3js to visualize how long it takes to pay off a $200,000 investment at around 3.5% annual interest. Take particular notice of the left side of the curve. Hustling to get an early cashflow, or making double payments on your mortgage early on really helps. 
 
-Scroll down to the bottom of the page to see the chart.
+Scroll down to the bottom of the page to see the interactive chart.
 
 Happy holidays from DataCulture!
 
