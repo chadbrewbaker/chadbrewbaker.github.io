@@ -9,9 +9,9 @@ There was a discussion at [Gravitate](http://www.gravitatedsm.com) about an inve
 
 Whether you are a startup wanting to know how long it will take an investor to break even, or a prospective home buyer wondering how long it would take to pay off a mortgage, the calculation is the same.
 
-We used some Haskell and d3js to visualize how long it takes to pay off a $200,000 investment at around 3.5% annual interest. Take particular notice of the left side of the curve. Hustling to get an early cashflow, or making double payments on your mortgage early on really helps. 
-
 Scroll down to the bottom of the page to see the interactive chart.
+
+We used some Haskell and d3js to visualize how long it takes to pay off a $200,000 investment at around 3.5% annual interest. Take particular notice of the left side of the curve. Hustling to get an early cashflow, or making double payments on your mortgage early on really helps. 
 
 Happy holidays from DataCulture!
 
