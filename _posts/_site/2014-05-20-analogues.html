@@ -1,54 +1,23 @@
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-        <title>Transformation Analogues of Permutations</title>
-        <meta name="viewport" content="width=device-width">
-
-        <!-- syntax highlighting CSS -->
-        <link rel="stylesheet" href="/css/syntax.css">
-
-        <!-- Custom CSS -->
-        <link rel="stylesheet" href="/css/main.css">
-
-    </head>
-    <script type="text/javascript"
-        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
-    </script>
-
-    <body>
-
-        <div class="site">
-          <div class="header">
-            <h1 class="title"><a href="/">Blogofbrew</a></h1>
-            <a class="extra" href="/">home</a>
-          </div>
-
-          <h2>Transformation Analogues of Permutations</h2>
-<p class="meta">28 Jul 2014</p>
-
-<div class="post">
 <p>We will go over some properties of transoformations that are similar to properties of permutations.</p>
 
 <p>Lets start with the most basic, the number of transformations on n elements, <a href="https://oeis.org/A000312">OEIS_A000312</a>.</p>
 
-<p>$$a(n) = n^n $$</p>
+<script type="math/tex; mode=display">a(n) = n^n</script>
 
 <p>One ubiquitous equation involving permutations are the binomial coefficients. 
-$${n\choose k} = {n!\over k! (n-k)!}$$</p>
+<script type="math/tex">{n\choose k} = {n!\over k! (n-k)!}</script></p>
 
 <p>If we subsitute the factorial function for a(n) we get :</p>
 
-<p>$${a(n)\over a(k) a(n-k)}$$</p>
+<script type="math/tex; mode=display">{a(n)\over a(k) a(n-k)}</script>
 
 <p>Combinatorially this equation takes all elements of order n then removes elements that match a pair consisting of one order k element and one order n-k element. By replacing a(n) with the number of transformations on n elements we obtain <a href="http://oeis.org/A069322">OEIS_A069322</a>.</p>
 
-<p>$${n^{n}\over k^{k} (n-k)^{n-k}}$$</p>
+<script type="math/tex; mode=display">{n^{n}\over k^{k} (n-k)^{n-k}}</script>
 
-<h2>Monotonic runs</h2>
+<h2 id="monotonic-runs">Monotonic runs</h2>
 
-<p>Another property of permutations is the <a href="http://en.wikipedia.org/wiki/Eulerian_number">Eulerian numbers</a>, which count the number of elements that are greater than their previous element. For transformations they form <a href="https://www.oeis.org/A225753">OEIS_A22573</a>.</p>
+<p>Another property of permutations is the [Eulerian numbers] (http://en.wikipedia.org/wiki/Eulerian_number), which count the number of elements that are greater than their previous element. For transformations they form <a href="https://www.oeis.org/A225753">OEIS_A22573</a>.</p>
 
 <div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="k">def</span> <span class="nf">mono_runs</span><span class="p">(</span><span class="n">trans</span><span class="p">)</span>
   <span class="n">count</span> <span class="o">=</span><span class="mi">1</span>
@@ -72,7 +41,7 @@ $${n\choose k} = {n!\over k! (n-k)!}$$</p>
   <span class="nb">puts</span> <span class="n">index</span><span class="o">.</span><span class="n">inspect</span> <span class="o">+</span> <span class="s2">&quot;|&quot;</span> <span class="o">+</span> <span class="n">counts</span><span class="o">.</span><span class="n">inspect</span> <span class="c1"># + &quot;|&quot; + counts.inject(:+).inspect</span>
 <span class="k">end</span></code></pre></div>
 
-<h2>Unlabeled transformations</h2>
+<h2 id="unlabeled-transformations">Unlabeled transformations</h2>
 
 <p>The number of unlabeled transoformations of $T_{n}$ is <a href="http://oeis.org/A001372">OEIS_A001372</a>.</p>
 
@@ -127,13 +96,13 @@ $${n\choose k} = {n!\over k! (n-k)!}$$</p>
 <span class="c1">#5| 47</span>
 <span class="c1">#6| 130</span></code></pre></div>
 
-<h2>Monogenic sizes</h2>
+<h2 id="monogenic-sizes">Monogenic sizes</h2>
 
 <p>The histogram of single transformation generated (monogenic) semigroup sizes. The first column is <a href="http://oeis.org/A000248">OEIS_A000248</a>, these are the idempotent transformations.</p>
 
 <p>One theme that will come up reguarly is the connection between transformation composition and trees. OEIS_A00248 also counts forests with n nodes and height at most one.</p>
 
-<p>Another way to view idempotent transformations is to partition the transformation elements into k nonempty parts, then designate a representitive of each to send all the other elements within that partition to. </p>
+<p>Another way to view idempotent transformations is to partition the transformation elements into k nonempty parts, then designate a representitive of each to send all the other elements within that partition to.</p>
 
 <p>The entire table is <a href="http://oeis.org/A225725">OEIS_A225725</a>.</p>
 
@@ -173,7 +142,7 @@ $${n\choose k} = {n!\over k! (n-k)!}$$</p>
 <span class="c1">#6|{1=&gt;1057, 2=&gt;10395, 3=&gt;17780, 4=&gt;12840, 5=&gt;3744, 6=&gt;840}</span>
 <span class="c1">#7|{1=&gt;6322, 2=&gt;105315, 3=&gt;258510, 4=&gt;264810, 5=&gt;135492, 6=&gt;47250, 7=&gt;4920, 10=&gt;504, 12=&gt;420}</span></code></pre></div>
 
-<h2>Lolipop graphs of monogenic transformations</h2>
+<h2 id="lolipop-graphs-of-monogenic-transformations">Lolipop graphs of monogenic transformations</h2>
 
 <p>So what do monogenic transformation semigroups look like? Sort of like a lolipop. They have a tail then enter a cycle. The length of the tail is refered to as the index, and the length of the cycle is referred to as the period.  Permutations are transformations with index zero. We can think of the tail as where elements get anhilated, and the cycle as when we reach a steady state number of elements.</p>
 
@@ -181,7 +150,7 @@ $${n\choose k} = {n!\over k! (n-k)!}$$</p>
 First column is <a href="https://oeis.org/A000272">OEIS_A000272</a> 
 Second column is <a href="https://oeis.org/A163951">OEIS_A163951</a> 
 Third column is <a href="https://oeis.org/A163952">OEIS_A163952</a> 
-Triangle is provisionally <a href="https://oeis.org/A222029">OEIS_A222029</a> </p>
+Triangle is provisionally <a href="https://oeis.org/A222029">OEIS_A222029</a></p>
 
 <div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
   <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
@@ -237,7 +206,7 @@ Triangle is provisionally <a href="https://oeis.org/A222029">OEIS_A222029</a> </
 
 <p>Looking at the histogram of lolipop tail lengths for transformations generated by a single element 
 The first column is <a href="http://oeis.org/A006153">OEIS_A006153</a> 
-The table is OEIS provisionally http://oeis.org/A225540 </p>
+The table is OEIS provisionally http://oeis.org/A225540</p>
 
 <div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
   <span class="p">(</span><span class="mi">0</span><span class="o">.</span><span class="n">.</span><span class="mi">1</span><span class="o">.</span><span class="mi">0</span><span class="o">/</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">each</span> <span class="k">do</span> <span class="o">|</span><span class="n">number</span><span class="o">|</span>
@@ -293,8 +262,7 @@ The table is OEIS provisionally http://oeis.org/A225540 </p>
 <span class="c1">#9|{0=&gt;38143377, 1=&gt;113680800, 2=&gt;111488328, 3=&gt;72080064, 4=&gt;35637840, 5=&gt;12942720, 6=&gt;3084480, 7=&gt;362880}</span>
 <span class="c1">#10|{0=&gt;672552730, 1=&gt;2553111990, 2=&gt;2872039680, 3=&gt;2053089360, 4=&gt;1147184640, 5=&gt;501832800, 6=&gt;162086400, 7=&gt;34473600, 8=&gt;3628800}</span></code></pre></div>
 
-<h2>Transformations with k outputs</h2>
-
+<h2 id="transformations-with-k-outputs">Transformations with k outputs</h2>
 <p><a href="http://oeis.org/A090657">OEIS_A090657</a></p>
 
 <div class="highlight"><pre><code class="language-ruby" data-lang="ruby"><span class="n">counting_numbers</span> <span class="o">=</span> <span class="no">Enumerator</span><span class="o">.</span><span class="n">new</span> <span class="k">do</span> <span class="o">|</span><span class="n">yielder</span><span class="o">|</span>
@@ -326,13 +294,12 @@ The table is OEIS provisionally http://oeis.org/A225540 </p>
 <span class="c1">#6|[0, 6, 930, 10800, 23400, 10800, 720]</span>
 <span class="c1">#7|[0, 7, 2646, 63210, 294000, 352800, 105840, 5040]</span></code></pre></div>
 
-<h2>Closed subsets</h2>
+<h2 id="closed-subsets">Closed subsets</h2>
+<p><a href="http://oeis.org/A001865">OEIS_A001865</a> second column</p>
 
-<p><a href="http://oeis.org/A001865">OEIS_A001865</a> second column </p>
+<p><a href="http://oeis.org/A065456">OEIS_A065456</a> third column</p>
 
-<p><a href="http://oeis.org/A065456">OEIS_A065456</a> third column </p>
-
-<p>1,18,305,5595 Forth column new to OEIS </p>
+<p>1,18,305,5595 Forth column new to OEIS</p>
 
 <p><a href="http://oeis.org/A060281">OEIS_A060281</a> The entire triangle (without zeros)</p>
 
@@ -392,8 +359,7 @@ The table is OEIS provisionally http://oeis.org/A225540 </p>
 <span class="c1">#5|[0, 1569, 1220, 305, 30, 1]</span>
 <span class="c1">#6|[0, 21576, 18694, 5595, 745, 45, 1]</span></code></pre></div>
 
-<h2>Derangements for $T_{n} =  {(n-1)}^n$</h2>
-
+<h2 id="derangements-for-tn---n-1n">Derangements for $T_{n} =  {(n-1)}^n$</h2>
 <p><a href="http://oeis.org/A065440">OEIS_A065440</a>
 <a href="http://oeis.org/A007778">OEIS_A007778</a> 
 <a href="http://en.wikipedia.org/wiki/Derangement">Derangements (for permutations)</a></p>
@@ -423,26 +389,3 @@ The table is OEIS provisionally http://oeis.org/A225540 </p>
   <span class="nb">puts</span> <span class="s2">&quot;derangements(</span><span class="si">#{</span><span class="n">index</span><span class="si">}</span><span class="s2">) </span><span class="si">#{</span><span class="n">count</span><span class="si">}</span><span class="s2">&quot;</span>
 <span class="k">end</span></code></pre></div>
 
-</div>
-
-
-          <div class="footer">
-            <div class="contact">
-              <p>
-	        Chad Brewbaker<br />
-	        CTO DataCulture LLC<br />
-                Software Engineer in the Des Moines area <br />
-                Recreational Mathematician <br />
-              </p>
-            </div>
-            <div class="contact">
-              <p>
-                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
-                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
-              </p>
-            </div>
-          </div>
-        </div>
-
-    </body>
-</html>

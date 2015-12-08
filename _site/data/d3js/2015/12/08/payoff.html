@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+        <title>Understanding interest with d3js</title>
+        <meta name="viewport" content="width=device-width">
+
+        <!-- syntax highlighting CSS -->
+        <link rel="stylesheet" href="/css/syntax.css">
+
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="/css/main.css">
+
+    </head>
+    <script type="text/javascript"
+        src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML">
+    </script>
+
+    <body>
+
+        <div class="site">
+          <div class="header">
+            <h1 class="title"><a href="/">Blogofbrew</a></h1>
+            <a class="extra" href="/">home</a>
+          </div>
+
+          <h2>Understanding interest with d3js</h2>
+<p class="meta">08 Dec 2015</p>
+
+<div class="post">
+<p>There was a discussion at <a href="http://www.gravitatedsm.com">gravitate</a> about an investor wanting to calculate the <a href="http://www.investopedia.com/exam-guide/cfa-level-1/corporate-finance/npv-net-present-value-irr-internal-rate-of-return.asp?header_alt=c">Institutional Rate of Return</a> of a startup.</p>
+
+<p>Whether you are a startup wanting to know how long it will take an investor to break even, or a prospective home buyer wondering how long would take to pay off a mortgage the calculation is the same.</p>
+
+<p>We used some Haskell and d3js to visualize how long it takes to pay off a $200,000 investment at around 3.5% annual interest. Take particular notice of the left side of the curve. Hustling to get yourselves early profit, or making double payments on your mortgage early on really helps. </p>
+
+<p>Scroll down to the bottom of the page to see the chart.</p>
+
+<p>Happy holidays from DataCulture!</p>
+
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="nf">monthsToZero</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>  <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">monthsToZero</span> <span class="n">principal</span> <span class="n">rateMonthly</span> <span class="n">payMonthly</span> <span class="o">|</span> <span class="n">principal</span> <span class="o">&lt;=</span> <span class="mi">0</span>  <span class="ow">=</span> <span class="mi">0</span>
+                                              <span class="o">|</span> <span class="n">principal</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">=</span>  <span class="mi">1</span> <span class="o">+</span> <span class="n">monthsToZero</span> <span class="p">((</span><span class="n">principal</span> <span class="o">-</span> <span class="n">payMonthly</span><span class="p">)</span><span class="o">+</span> <span class="p">(</span><span class="n">principal</span> <span class="o">-</span> <span class="n">payMonthly</span><span class="p">)</span><span class="o">*</span><span class="n">rateMonthly</span><span class="p">)</span> <span class="n">rateMonthly</span> <span class="n">payMonthly</span>
+
+
+<span class="nf">monthsOnSTDMortgage</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">monthsOnSTDMortgage</span> <span class="n">payMonthly</span> <span class="ow">=</span> <span class="p">(</span><span class="n">monthsToZero</span> <span class="mi">200000</span> <span class="mf">0.002871</span> <span class="n">payMonthly</span><span class="p">)</span>
+
+<span class="nf">payments</span> <span class="ow">=</span> <span class="n">take</span> <span class="mi">9101</span> <span class="o">$</span> <span class="n">iterate</span> <span class="p">(</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="mi">900</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">)</span>
+
+<span class="nf">paybacks</span> <span class="ow">=</span> <span class="n">map</span> <span class="n">monthsOnSTDMortgage</span> <span class="n">payments</span>
+
+<span class="nf">pairs</span> <span class="ow">=</span> <span class="n">zip</span> <span class="n">payments</span> <span class="n">paybacks</span>
+
+<span class="nf">pairToCSV</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="ow">=</span> <span class="n">show</span> <span class="n">a</span> <span class="o">++</span> <span class="s">&quot;,&quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="n">b</span> <span class="o">++</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> 
+
+<span class="nf">csv</span> <span class="ow">=</span> <span class="n">unlines</span> <span class="o">$</span> <span class="n">map</span> <span class="n">pairToCSV</span> <span class="n">pairs</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+        <span class="n">putStrLn</span> <span class="s">&quot;Payment,PaybackPeriod&quot;</span>
+        <span class="n">putStrLn</span> <span class="n">csv</span></code></pre></div>
+
+<style>
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.dot {
+  stroke: #000;
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+</style>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+
+<script>
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = 960 - margin.left - margin.right,
+    height = 500 - margin.top - margin.bottom;
+
+/* 
+ * value accessor - returns the value to encode for a given data object.
+ * scale - maps value to a visual display encoding, such as a pixel position.
+ * map function - maps from data value to display value
+ * axis - sets up axis
+ */ 
+
+// setup x 
+var xValue = function(d) { return d.Payment;}, // data -> value
+    xScale = d3.scale.linear().range([0, width]), // value -> display
+    xMap = function(d) { return xScale(xValue(d));}, // data -> display
+    xAxis = d3.svg.axis().scale(xScale).orient("bottom");
+
+// setup y
+var yValue = function(d) { return d["PaybackPeriod"];}, // data -> value
+    yScale = d3.scale.linear().range([height, 0]), // value -> display
+    yMap = function(d) { return yScale(yValue(d));}, // data -> display
+    yAxis = d3.svg.axis().scale(yScale).orient("left");
+
+// setup fill color
+var cValue = function(d) { return d.Avoided;},
+    color = d3.scale.category10();
+
+// add the graph canvas to the body of the webpage
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// add the tooltip area to the webpage
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+// load data
+var url = window.location.origin
+var fileLocation = url.concat("/assets/payback.csv")
+d3.csv(fileLocation, function(error, data) {
+
+  // change string (from CSV) into number format
+  data.forEach(function(d) {
+    d.Payment = +d.Payment;
+    d["PaybackPeriod"] = +d["PaybackPeriod"];
+
+  });
+
+  // don't want dots overlapping axis, so add in buffer to data domain
+  xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+  yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
+
+  // x-axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("x", width)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("Payment Per Month");
+
+  // y-axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+    .append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("Payback Period (Months)");
+
+  // draw dots
+  svg.selectAll(".dot")
+      .data(data)
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", xMap)
+      .attr("cy", yMap)
+      .style("fill", function(d) { return color(cValue(d));}) 
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)
+               .style("opacity", .9);
+          tooltip.html("(Dollars Per Month, Months)"+ "<br/> (" + xValue(d) 
+            + ", " + yValue(d) + ")")
+               .style("left", (d3.event.pageX + 5) + "px")
+               .style("top", (d3.event.pageY - 28) + "px");
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0);
+      });
+
+  // draw legend
+  var legend = svg.selectAll(".legend")
+      .data(color.domain())
+    .enter().append("g")
+      .attr("class", "legend")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  
+});
+
+</script>
+
+</div>
+
+
+          <div class="footer">
+            <div class="contact">
+              <p>
+	        Chad Brewbaker<br />
+	        CTO DataCulture LLC<br />
+                Software Engineer in the Des Moines area <br />
+                Recreational Mathematician <br />
+              </p>
+            </div>
+            <div class="contact">
+              <p>
+                <a href="https://github.com/chadbrewbaker">github.com/chadbrewbaker</a><br />
+                <a href="https://twitter.com/cbrewbs">twitter.com/cbrewbs</a><br />
+              </p>
+            </div>
+          </div>
+        </div>
+
+    </body>
+</html>

@@ -1,0 +1,24 @@
+
+<div class="highlight"><pre><code class="language-haskell" data-lang="haskell"><span class="nf">monthsToZero</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Float</span>  <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">monthsToZero</span> <span class="n">principal</span> <span class="n">rateMonthly</span> <span class="n">payMonthly</span> <span class="o">|</span> <span class="n">principal</span> <span class="o">&lt;=</span> <span class="mi">0</span>  <span class="ow">=</span> <span class="mi">0</span>
+                                              <span class="o">|</span> <span class="n">principal</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">=</span>  <span class="mi">1</span> <span class="o">+</span> <span class="n">monthsToZero</span> <span class="p">((</span><span class="n">principal</span> <span class="o">-</span> <span class="n">payMonthly</span><span class="p">)</span><span class="o">+</span> <span class="p">(</span><span class="n">principal</span> <span class="o">-</span> <span class="n">payMonthly</span><span class="p">)</span><span class="o">*</span><span class="n">rateMonthly</span><span class="p">)</span> <span class="n">rateMonthly</span> <span class="n">payMonthly</span>
+
+<span class="nf">monthsOnSTDMortgage</span> <span class="ow">::</span> <span class="kt">Float</span> <span class="ow">-&gt;</span> <span class="kt">Int</span>
+<span class="nf">monthsOnSTDMortgage</span> <span class="n">payMonthly</span> <span class="ow">=</span> <span class="p">(</span><span class="n">monthsToZero</span> <span class="mi">200000</span> <span class="mf">0.002871</span> <span class="n">payMonthly</span><span class="p">)</span>
+
+<span class="nf">payments</span> <span class="ow">=</span> <span class="n">take</span> <span class="mi">9101</span> <span class="o">$</span> <span class="n">iterate</span> <span class="p">(</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">(</span><span class="mi">900</span> <span class="ow">::</span> <span class="kt">Float</span><span class="p">)</span>
+
+<span class="nf">paybacks</span> <span class="ow">=</span> <span class="n">map</span> <span class="n">monthsOnSTDMortgage</span> <span class="n">payments</span>
+
+<span class="nf">pairs</span> <span class="ow">=</span> <span class="n">zip</span> <span class="n">payments</span> <span class="n">paybacks</span>
+
+<span class="nf">pairToCSV</span> <span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">)</span> <span class="ow">=</span> <span class="n">show</span> <span class="n">a</span> <span class="o">++</span> <span class="s">&quot;,&quot;</span> <span class="o">++</span> <span class="n">show</span> <span class="n">b</span> <span class="o">++</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span> 
+
+<span class="nf">csv</span> <span class="ow">=</span> <span class="n">unlines</span> <span class="o">$</span> <span class="n">map</span> <span class="n">pairToCSV</span> <span class="n">pairs</span>
+
+<span class="nf">main</span> <span class="ow">=</span> <span class="kr">do</span>
+	    <span class="n">putStrLn</span> <span class="s">&quot;Payment,PaybackPeriod&quot;</span>
+	    <span class="n">putStrLn</span> <span class="n">csv</span></code></pre></div>
+
+<p>Blah blah d3js</p>
+
