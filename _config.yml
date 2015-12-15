@@ -1,4 +1,4 @@
 name: Blogofbrew
 markdown: redcarpet
-pygments: true
+highlighter: pygments
 excerpt_separator: "" # Workaround for highlight bug
