@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "co-Server Architecture"
-date:   2016-01-27 12:38:19
+date:   2016-4-03 12:38:19
 categories: algebra haskell functional programming lambda function
 ---
 
