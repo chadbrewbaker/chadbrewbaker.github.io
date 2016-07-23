@@ -1,0 +1,27 @@
+---
+layout: post
+title:  "Roadmap"
+date:   2016-4-03 12:38:19
+categories: Future
+---
+
+In the spirt of Musk's latest 10 year roadmap I thought I would start my own.
+
+
+* In 2020 your furnace will be a compute device. Moore's law is running up against physical constrants going below 10nm transistors. Once transitors stop shrinking, they have to go massively parallel. Parallel means massively commodity. Right now we simply waste electricity by heating our houses. Once computer chips stop depreciating at an exponential rate, it now makes sense to use them as heating devices for low heat applications.
+
+* Radon contractors will be the solar installers of choice. These guys already deal with garages and roofs. They have the construction chops to get it done far ahead of other specialty contractors.
+
+* ASICs everywhere. There are only a handful of workhorse computing subroutines that take up the lions share of problem solving. Counting, sorting, matrix multiply, and SAT. Also physics ASICS like ANTON for Molecular Dynamics. Google fired a shot accross the bow with their DNN ASIC. In 2020 your on demand task will run on a custom ASIC with 100x performance of a general purpose CPU.
+
+* Programming will become automated theorem proving. Microsoft is at the forefront with Z3 and Lean. The developer will ask for a progrgram from type A to type B. The compiler will return a list of suggested functions. The developer will interactively use expert knowledge to add unit test constraints until the solution is pruned down to the function they are looking for.
+
+* Algebra will evolve into Functional Programming. Most endofunctions are not permutations. Functional Programing will be taught universially alongside the traditional 7th grade Alegebra class. 
+
+* Farming will be automated with bots. Big Tractor is dead in 2020. Big combine will probably live on for longer, but the first John Deere combines were 3 row, which is a small bot form factor. Bots will cost in the $1000 - $20000 range making industrial modern farming globally accessible.
+
+* Attorneys will need to learn SMT solvers. Provably airtight contracts.
+
+* Pokemon Go goes Wall Street. Massively distributed real world gamification of market intellegence gathering.
+
+* Programmers become true professionals. You will start seeing programmers turn into firms like accountants and attorneys.
