@@ -1,0 +1,37 @@
+---
+layout: post
+title:  "The impending asymptotic growth of developer productivity"
+date:   2016-4-03 12:38:19
+categories: Developer Automation
+---
+
+Uncle Bob [lamented](http://blog.cleancoder.com/uncle-bob/2016/07/27/TheChurn.html) this summer that developer productivty is having a logarithmic growth rate. The newest laguages and frameworks have only given diminishing returns.
+
+I don't agree. LLVM and Roslyn are game changers. Many developers are going to be automated out of a job. High level language programming is no longer a manual task.
+
+Compilers to this point have been transformations from high level languages to lower level targets. C++ -> (LLVM/MSIL) -> Assemlber
+
+LLVM and Roslyn are changing that. Compilers now transform high level languages into high level language targets.
+
+[clang-format](http://clang.llvm.org/docs/ClangFormat.html) is an eye opener for the OCD. Run it upon checkin and you can write code in your prefered format. Don't like the project's formatting? Use clang-format on checkout so those curly braces are on the line you want.
+
+Need to flatten a multiple inheritence tangled C++ class into a static file so you can remove cruft? LLVM script.
+
+Want to annotate all calls to the operating system for logging/refactoring? LLVM script.
+
+Translating an old VB6 code to .Net core? Roslyn script.  
+
+Generating unit tests for a method? [LLVM + SMT solver script](https://feliam.wordpress.com/2010/10/07/the-symbolic-maze/).
+
+Want to compress programs like zip files? [LLVM script](https://reviews.llvm.org/D26872).
+ 
+Want to write Javascript in C++? [LLVM script](http://kripken.github.io/emscripten-site/).
+
+For the most part there are two universal programming domains. POSIX and HTTP.
+
+HTTP needs some love, but with automated formatting you could write a program in Visual Basic Core and have it compile to elegant Swift. 
+
+If you want elegant compiler output you are going to have to restrain yourself to clean code. More pure functions, less nested loops with side effects. Automatic variable naming will become a bustling machine learning exercise. Expressive use of the type system so appropriate nouns are given to variables and appropriate verbs are given to functions.
+
+
+Here is to linear if not superlinear growth of developer productivity in 2017! 
