@@ -5,11 +5,11 @@ date:   2016-12-14 12:38:19
 categories: Developer Automation, C, C++, Clang, LLVM, GCC
 ---
 
-I have a client with a very interesting C++ project porting an amazing tool to Android. It has went from debugging memory leaks induced by Swig in JNI bindings cleaning up the codebase so it is a solid Android native library.
+I have a client with a very interesting C++ project porting an amazing tool to Android. It has went from debugging memory leaks induced by Swig in JNI bindings, to cleaning up the codebase so it is a solid Android native library.
 
 
 ```bash
-cmake; autoconf
+makefile; cmake; autoconf; scons; gyp; bespoke
 clang; scan-build
 clang; gcov
 bear; oclint
