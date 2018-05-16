@@ -17,8 +17,8 @@ The most vexing hangup was gathering additional static libraries from /usr/lib64
 
 One helpful trick was piping stdio/stderr out to a file as the Python AWS Lambda handler wrapper was really not happy about nonzero return values.
 
-``bash
+```bash
 gcc -v hello.c 2> any_errors
-``
+```
  
 
