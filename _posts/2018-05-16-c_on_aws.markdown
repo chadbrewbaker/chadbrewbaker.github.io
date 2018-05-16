@@ -1,0 +1,24 @@
+---
+layout: post
+title:  "C on AWS Lambda"
+date:   2018-05-16 12:38:19
+categories: C, GCC, AWS Lambda
+---
+
+I now have GCC working on AWS Lambda.
+
+Thanks to [Abhishek Patnia](https://becominghuman.ai/running-deep-learning-models-on-aws-lambda-cfd2f76ca048) I was able to get most of the way there.
+
+A few tweaks were required. 
+
+Refer to the [current lambda docs](https://docs.aws.amazon.com/lambda/latest/dg/current-supported-versions.html) for the latest recommended AMI which is currently amzn-ami-hvm-2017.03.1.20170812-x86\_64-gp2.
+
+The most vexing hangup was gathering additional static libraries from /usr/lib64/.
+
+One helpful trick was piping stdio/stderr out to a file as the Python AWS Lambda handler wrapper was really not happy about nonzero return values.
+
+``bash
+gcc -v hello.c 2> any_errors
+``
+ 
+
