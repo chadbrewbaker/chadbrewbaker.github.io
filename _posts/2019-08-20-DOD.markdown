@@ -1,0 +1,45 @@
+---
+layout: post
+title:  "Data Oriented Design"
+date:   2019-08-20 12:38:19
+categories: 
+---
+
+I've been a fan of [Data Oriented Design](https://en.wikipedia.org/wiki/Data-oriented_design) for a while especially in scripting.
+Decided to make a cheatsheet for DOD scripting in various languages.
+
+Mostly DOD in scripting comes down to the use of dictionary/hash structures.
+
+Python:
+
+```python
+dict = {}
+dict.['a'] = 1
+dict.['b'] = 2
+dict.get('a') # 1
+for values in dict:
+  print(values)
+for x in dict:
+  print(thisdict[x])
+for x, y in dict.items():
+  print(x, y)
+dict.pop('a')  #removes 'a'
+otherdict = dict.copy() #makes a copy
+dict.setdefault('b', 2) # if 'b' doesn't exist set it to 2
+```
+
+Javascript
+
+```javascript
+var myMap = new Map();
+myMap.set("a", 1);
+myMap.set("b", 2);
+myMap.get("a"); // 1
+for (var [key, value] of myMap) console.log(key + " - " + value);
+// "a - 1"
+// "b - 2"
+map.delete("a")
+```
+
+
+
