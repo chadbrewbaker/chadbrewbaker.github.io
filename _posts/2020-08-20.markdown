@@ -1,0 +1,85 @@
+---
+layout: post
+title:  "Modern Unix Tools"
+date:   2020-02-20 12:38:19
+categories: 
+---
+It's been a rough year. My ex wife had her assistant drop my name to a drug dealer on 10 March 2020 and I was attacked hours later crushing my sinus. I've held an axiom not to get into corrupt Iowa politics here, but at some point I will publish a book:
+
+[Iowa Gov Herschel Loveless](https://www.muckrock.com/foi/united-states-of-america-10/fbi-files-on-herschel-loveless-26056/#files)
+
+[DSM mob boss "Cock Eyed" Lew Farell](https://www.muckrock.com/foi/united-states-of-america-10/fbi-lew-farell-26054/#files)
+
+My RapidAPI offering of Microsoft Z3 is in beta, I'm hoping to launch soon in a series of blog posts. The first will be using Z3 to fight COVID-19. Posts to follow will include writing plugins for VSCode and Excel - and more problems from [Garey and Johnson](https://www.amazon.com/Computers-Intractability-NP-Completeness-Mathematical-Sciences/dp/0716710455) expressed as SMT scripts.
+
+For relaxation, marketing myself, and fun I have been helping port GNU Coreutils to [Rust uutils](https://github.com/uutils/coreutils).
+
+My first question was, "What have Unix utilities looked like over the years?" They range from poeticly succinct to thousands of lines.
+
+[openbsd](https://github.com/openbsd/src/tree/master/usr.bin)
+
+[busybox](https://git.busybox.net/busybox/tree/coreutils)
+
+[freebsd](https://github.com/freebsd/freebsd/tree/master/bin)
+
+[gnu](https://github.com/coreutils/coreutils)
+
+[plan9](https://9p.io/sources/plan9/sys/src/cmd/cat.c)
+
+[suckless](https://git.suckless.org/sbase/file/cat.c.html)
+
+[netbsd](https://github.com/NetBSD/src/tree/trunk/bin)
+
+[Unix v7](https://minnie.tuhs.org/cgi-bin/utree.pl?file=V7/usr/src/cmd)
+
+[minix](https://github.com/Stichting-MINIX-Research-Foundation/minix/tree/master/bin)
+
+[illumos](https://github.com/illumos/illumos-gate/tree/master/usr/src/cmd)
+
+[xnu](https://opensource.apple.com/tarballs/shell_cmds/)
+
+Results from [The Relevance of Classic Fuzz Testing: Have We Solved This One?](ftp://ftp.cs.wisc.edu/paradyn/technical_papers/fuzz2020.pdf) were harsh. The Rust port is an extreme work in progress.
+
+I am synthesizing expectation tests from the above projects. This has yielded a surprising number of issues to fix.
+
+I am working on formal input grammars to avoid entire classes of parsing bugs. 
+
+Several tools ask only a BNF style grammar as input. [yagg](https://github.com/coppit/yagg) is having Perl bitrot, [GramTest](https://github.com/codelion/gramtest) has a clean BNF syntax, [Google Domato](https://github.com/googleprojectzero/domato) and [Mozilla Dharma](https://github.com/MozillaSecurity/dharma) are actively developed. 
+
+[clap](https://github.com/clap-rs/clap) is widely used for other command line utilities, [args](https://docs.rs/args/2.2.0/args/) - [command-line-interface](https://lib.rs/command-line-interface) are simple, and [arg](https://github.com/google/argh) supposedly has a small memory footprint.
+
+[lalrpop](https://github.com/lalrpop/lalrpop) does LALR(1), [pest](https://pest.rs) PEG, and [nom](https://github.com/Geal/nom) does parser combinators. [asp](https://github.com/yallop/ocaml-asp) is the new kid on the block that adds algebraic constraints to parser combinators.
+
+I plan on taking one tool, probably 'head', and specifying the input grammar with those tools for comparision. 
+
+One surprise I had was number of environment variables that GNU Coreutils uses - many poorly documented.
+
+For resource smash testing I plan on using Linux ulimit - much easier than trying to have Rust or LLVM smash resources at compile time. [Clasic post](http://neilmitchell.blogspot.com/2015/09/detecting-space-leaks.html) by Neil Mitchell on resource smash testing garbage collected languages.
+
+To study the effect of Rust's borrow checker on memory I planed to replicate the results of [What causes Ruby Memory Bloat?](https://www.joyfulbikeshedding.com/blog/2019-03-14-what-causes-ruby-memory-bloat.html) vs other implementations, record cache miss rates, and quantify differences in LLVM IR output around malloc/free.
+
+Along the way I expect to use several cache oblivious and succinct data structues that Unix developers of the 1970s didn't have available to them. Apparently cargo build --release automatically does [dead code elimination](https://lifthrasiir.github.io/rustlog/why-is-a-rust-executable-large.html)  but I still plan on running [bloaty](https://github.com/google/bloaty) to see if more can be stripped.
+
+Profile guided optimization has had huge performance improvements, there is even a [machine function splitter](http://lists.llvm.org/pipermail/llvm-dev/2020-August/144012.html) in the works. [llvm-propeller](https://github.com/google/llvm-propeller) by Google and [BOLT](https://github.com/facebookincubator/BOLT) by Facebook are the two major initiatives.
+
+The [SOUPER](https://github.com/google/souper) superoptimizer for LLVM IR instructions is also promising.
+
+For modeling Unix tool state I plan on writing TLA+ and Alloy specifications.
+
+[gg](https://github.com/StanfordSNR/gg) is the future of distributing builds and thunking them for repoducability. I'm writing an SMT backed scheduler for cost optimizing them in a time budget.
+
+
+[Rust verification tools](https://alastairreid.github.io/rust-verification-tools/) is a good rundown of the latest concolic testing tools for Rust. I also plan on using lots of strace and writing expectation tests on top of that. Tools like [cargo-profiler](https://github.com/svenstaro/cargo-profiler) leverage Cachegrind.
+
+One last thing, [How to delete all your files](https://www.reddit.com/r/linux/comments/if1krd/how_to_delete_all_your_files/).
+
+```bash
+cd /mnt/nfs/Documents
+rsync -r * ~/Documents
+#injection attach when one of the files is "--delete"
+```
+Definely need to look into the filename injection attack surface.
+
+
+
+
