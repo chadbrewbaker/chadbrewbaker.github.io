@@ -1,0 +1,419 @@
+---
+layout: post
+title:  "Yes"
+date:   2020-02-20 18:38:19
+categories: 
+---
+A survey of yes. I learned of the command in my C and Unix class at Drake where students would prank each other with:
+
+```bash
+yes "Don't you hate dialup connections?" | write USERNAME&
+```
+
+All fun and games util someone left a terminal unattended and had everything piped to a file - a file which overwrote the swap space of the campus DEC server and crashed it. The sysadmin was nonplussed.
+
+Berkeley Unix yes is poetically succinct.
+```c
+#include <stdio.h>
+
+int main __P((int, char **));
+
+int
+main(argc, argv)
+        int argc;
+        char **argv;
+{
+        if (argc > 1)
+                for(;;)
+                        (void)puts(argv[1]);
+        else for (;;)
+                (void)puts("y");
+}
+```
+
+Unix v7 almost reads like APL.
+```c
+main(argc, argv)
+char **argv;
+{
+	for (;;)
+		printf("%s\n", argc>1? argv[1]: "y");
+}
+```
+
+
+[GNU yes](https://github.com/coreutils/coreutils/blob/master/src/yes.c) weighs in at 130 lines, not counting the headers it pulls in.
+
+```c
+#include <config.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include "system.h"
+#include "error.h"
+#include "full-write.h"
+#include "long-options.h"
+```
+
+It makes sure we know that the author is [David Mackenzie](https://www.linkedin.com/in/david-mackenzie-14450448/) who went from GNU hippie to munging data for the military industrial complex. There are a few features of note. It attempts to reuse the operand strings to save a memory allocation when possible.  The "smart" parsing has [had problems with portability](https://www.mail-archive.com/bug-coreutils@gnu.org/msg30766.html). Even the --help parsing [has been problematic](http://gnu-coreutils.7620.n7.nabble.com/bug-33468-A-bug-with-yes-and-help-td27093.html).
+
+
+[full-write.c](https://github.com/coreutils/gnulib/blob/master/lib/full-write.c) and [safe-read.c](https://github.com/coreutils/gnulib/blob/master/lib/safe-read.c) remind me of Dan Luu's [talk on files](https://www.deconstructconf.com/2019/dan-luu-files).
+
+[Suckless yes](https://git.suckless.org/sbase/file/yes.c.html) prints the help message upon trying to pass in any command line flags.
+
+
+Illuminos (formerly Solaris) yes also does not print help messages. It also allows multiple output strings which it separates with spaces.
+```c
+#include <stdio.h>
+
+int
+main(int argc, char **argv)
+{
+	if (argc <= 1) {
+		while (puts("y") != EOF)
+			continue;
+	} else {
+		for (;;) {
+			int i;
+
+			for (i = 1; i < argc; i++) {
+				if (i > 1)
+					if (putchar(' ') == EOF)
+						goto err;
+				if (fputs(argv[i], stdout) == EOF)
+					goto err;
+			}
+			if (putchar('\n') == EOF)
+				goto err;
+		}
+	}
+
+err:
+	return (1);
+}
+```
+
+This presents a few questions. Should yes take multiple strings? Should yes emit a help message? Should yes retry interupted or partial writes?
+If yes takes multiple input strings should they be pre-serialzed into a single contiguious buffer? What return codes should yes have or do they even matter?
+
+See [yes.rs](https://github.com/uutils/coreutils/blob/master/src/uu/yes/src/yes.rs) which comes in at 86 lines and uses the clap argument parser.
+
+
+```bash
+execve("./target/release/yes", ["./target/release/yes"], 0x7fff861db910 /* 22 vars */) = 0
+brk(NULL)                               = 0x55c5173af000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=26056, ...}) = 0
+mmap(NULL, 26056, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f6f2a4b9000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libdl.so.2", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\340\16\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=19208, ...}) = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6f2a4b7000
+mmap(NULL, 2109744, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6f2a099000
+mprotect(0x7f6f2a09c000, 2093056, PROT_NONE) = 0
+mmap(0x7f6f2a29b000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x2000) = 0x7f6f2a29b000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/librt.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\300!\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=43680, ...}) = 0
+mmap(NULL, 2128832, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6f29e91000
+mprotect(0x7f6f29e98000, 2093056, PROT_NONE) = 0
+mmap(0x7f6f2a097000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x6000) = 0x7f6f2a097000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libpthread.so.0", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0pa\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=149272, ...}) = 0
+mmap(NULL, 2217064, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6f29c73000
+mprotect(0x7f6f29c8b000, 2097152, PROT_NONE) = 0
+mmap(0x7f6f29e8b000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x18000) = 0x7f6f29e8b000
+mmap(0x7f6f29e8d000, 13416, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f6f29e8d000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libgcc_s.so.1", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\0\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0\320*\0\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=88640, ...}) = 0
+mmap(NULL, 2184240, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6f29a5d000
+mprotect(0x7f6f29a72000, 2093056, PROT_NONE) = 0
+mmap(0x7f6f29c71000, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x14000) = 0x7f6f29c71000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0@\21\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2021312, ...}) = 0
+mmap(NULL, 3844768, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f6f296b2000
+mprotect(0x7f6f29853000, 2097152, PROT_NONE) = 0
+mmap(0x7f6f29a53000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1a1000) = 0x7f6f29a53000
+mmap(0x7f6f29a59000, 15008, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f6f29a59000
+close(3)                                = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6f2a4b5000
+arch_prctl(ARCH_SET_FS, 0x7f6f2a4b6180) = 0
+mprotect(0x7f6f29a53000, 16384, PROT_READ) = 0
+mprotect(0x7f6f29c71000, 4096, PROT_READ) = 0
+mprotect(0x7f6f29e8b000, 4096, PROT_READ) = 0
+mprotect(0x7f6f2a097000, 4096, PROT_READ) = 0
+mprotect(0x7f6f2a29b000, 4096, PROT_READ) = 0
+mprotect(0x55c51589b000, 24576, PROT_READ) = 0
+mprotect(0x7f6f2a4c0000, 4096, PROT_READ) = 0
+munmap(0x7f6f2a4b9000, 26056)           = 0
+set_tid_address(0x7f6f2a4b6450)         = 10317
+set_robust_list(0x7f6f2a4b6460, 24)     = 0
+rt_sigaction(SIGRTMIN, {sa_handler=0x7f6f29c78c30, sa_mask=[], sa_flags=SA_RESTORER|SA_SIGINFO, sa_restorer=0x7f6f29c847e0}, NULL, 8) = 0
+rt_sigaction(SIGRT_1, {sa_handler=0x7f6f29c78cb0, sa_mask=[], sa_flags=SA_RESTORER|SA_RESTART|SA_SIGINFO, sa_restorer=0x7f6f29c847e0}, NULL, 8) = 0
+rt_sigprocmask(SIG_UNBLOCK, [RTMIN RT_1], NULL, 8) = 0
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+rt_sigaction(SIGPIPE, {sa_handler=SIG_IGN, sa_mask=[PIPE], sa_flags=SA_RESTORER|SA_RESTART, sa_restorer=0x7f6f296e5b50}, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+brk(NULL)                               = 0x55c5173af000
+brk(0x55c5173d0000)                     = 0x55c5173d0000
+brk(NULL)                               = 0x55c5173d0000
+open("/proc/self/maps", O_RDONLY|O_CLOEXEC) = 3
+prlimit64(0, RLIMIT_STACK, NULL, {rlim_cur=8192*1024, rlim_max=RLIM64_INFINITY}) = 0
+fstat(3, {st_mode=S_IFREG|0444, st_size=0, ...}) = 0
+read(3, "55c5155d7000-55c51569b000 r-xp 0"..., 1024) = 1024
+read(3, "                    /usr/lib64/l"..., 1024) = 1024
+read(3, "6.so\n7f6f2a098000-7f6f2a099000 r"..., 1024) = 1024
+close(3)                                = 0
+sched_getaffinity(10317, 32, [0, 1, 2, 3, 4, 5, 6, 7]) = 32
+rt_sigaction(SIGSEGV, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGSEGV, {sa_handler=0x55c515650450, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7f6f29c847e0}, NULL, 8) = 0
+rt_sigaction(SIGBUS, NULL, {sa_handler=SIG_DFL, sa_mask=[], sa_flags=0}, 8) = 0
+rt_sigaction(SIGBUS, {sa_handler=0x55c515650450, sa_mask=[], sa_flags=SA_RESTORER|SA_ONSTACK|SA_SIGINFO, sa_restorer=0x7f6f29c847e0}, NULL, 8) = 0
+sigaltstack(NULL, {ss_sp=NULL, ss_flags=SS_DISABLE, ss_size=0}) = 0
+mmap(NULL, 12288, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f6f2a4bd000
+mprotect(0x7f6f2a4bd000, 4096, PROT_NONE) = 0
+sigaltstack({ss_sp=0x7f6f2a4be000, ss_flags=0, ss_size=8192}, NULL) = 0
+getrandom("\x7d\x0c\xf4\x5e\x1d\xb4\x35\x4c\x91\x1f\x38\x85\x4d\x00\x8e\x3a", 16, GRND_NONBLOCK) = 16
+uname({sysname="Linux", nodename="LAPTOP-PNLGM1UH", ...}) = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(0x88, 0), ...}) = 0
+fcntl(1, F_GETFL)                       = 0x8402 (flags O_RDWR|O_APPEND|O_LARGEFILE)
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 16382
+write(1, "y\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\ny\n"..., 16382) = 8439
+--- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
++++ killed by SIGINT +++
+```
+
+Block writes are made. Is this good? It opens six shared files - including pthreads. Seems spammy. 
+
+
+
+Compare with GNU yes.
+```bash
+execve("/usr/bin/yes", ["yes"], 0x7fff995eae50 /* 22 vars */) = 0
+brk(NULL)                               = 0x255f000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=26056, ...}) = 0
+mmap(NULL, 26056, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710b8000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0@\21\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2021312, ...}) = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7fcb710b6000
+mmap(NULL, 3844768, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7fcb70af1000
+mprotect(0x7fcb70c92000, 2097152, PROT_NONE) = 0
+mmap(0x7fcb70e92000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1a1000) = 0x7fcb70e92000
+mmap(0x7fcb70e98000, 15008, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7fcb70e98000
+close(3)                                = 0
+arch_prctl(ARCH_SET_FS, 0x7fcb710b7500) = 0
+mprotect(0x7fcb70e92000, 16384, PROT_READ) = 0
+mprotect(0x605000, 4096, PROT_READ)     = 0
+mprotect(0x7fcb710bf000, 4096, PROT_READ) = 0
+munmap(0x7fcb710b8000, 26056)           = 0
+brk(NULL)                               = 0x255f000
+brk(0x2580000)                          = 0x2580000
+brk(NULL)                               = 0x2580000
+open("/usr/lib/locale/locale-archive", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/share/locale/locale.alias", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=2997, ...}) = 0
+read(3, "# Locale name alias data base.\n#"..., 4096) = 2997
+read(3, "", 4096)                       = 0
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_IDENTIFICATION", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_IDENTIFICATION", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=368, ...}) = 0
+mmap(NULL, 368, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710be000
+close(3)                                = 0
+open("/usr/lib64/gconv/gconv-modules.cache", O_RDONLY) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=26370, ...}) = 0
+mmap(NULL, 26370, PROT_READ, MAP_SHARED, 3, 0) = 0x7fcb710af000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_MEASUREMENT", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_MEASUREMENT", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=23, ...}) = 0
+mmap(NULL, 23, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710bd000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_TELEPHONE", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_TELEPHONE", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=59, ...}) = 0
+mmap(NULL, 59, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710bc000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_ADDRESS", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_ADDRESS", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=167, ...}) = 0
+mmap(NULL, 167, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710bb000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_NAME", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_NAME", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=77, ...}) = 0
+mmap(NULL, 77, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710ba000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_PAPER", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_PAPER", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=34, ...}) = 0
+mmap(NULL, 34, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710b9000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_MESSAGES", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_MESSAGES", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFDIR|0755, st_size=4096, ...}) = 0
+close(3)                                = 0
+open("/usr/lib/locale/en_US.utf8/LC_MESSAGES/SYS_LC_MESSAGES", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=57, ...}) = 0
+mmap(NULL, 57, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710b8000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_MONETARY", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_MONETARY", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=286, ...}) = 0
+mmap(NULL, 286, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb710ae000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_COLLATE", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_COLLATE", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=1244054, ...}) = 0
+mmap(NULL, 1244054, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb70f7e000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_TIME", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_TIME", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=2454, ...}) = 0
+mmap(NULL, 2454, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb70f7d000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_NUMERIC", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_NUMERIC", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=54, ...}) = 0
+mmap(NULL, 54, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb70f7c000
+close(3)                                = 0
+open("/usr/lib/locale/en_US.UTF-8/LC_CTYPE", O_RDONLY|O_CLOEXEC) = -1 ENOENT (No such file or directory)
+open("/usr/lib/locale/en_US.utf8/LC_CTYPE", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=330604, ...}) = 0
+mmap(NULL, 330604, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7fcb70f2b000
+close(3)                                = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(0x88, 0), ...}) = 0
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+--- SIGINT {si_signo=SIGINT, si_code=SI_KERNEL} ---
++++ killed by SIGINT +++
+```
+
+That is a ton of locale file read overhead. Anectodally it went a lot faster than the Rust version. I'll have to benchmark.
+
+
+Now compare with Unix 7 yes which I rewrote in modern C and compiled with -02.
+```c
+#include<stdio.h>
+int main(int argc, char **argv)
+{
+        for (;;)
+                printf("%s\n", argc>1? argv[1]: "y");
+        return 0;
+}
+```
+
+```bash
+execve("./unix7yes", ["./unix7yes"], 0x7ffe5f2895c0 /* 22 vars */) = 0
+brk(NULL)                               = 0x152e000
+access("/etc/ld.so.preload", R_OK)      = -1 ENOENT (No such file or directory)
+openat(AT_FDCWD, "/etc/ld.so.cache", O_RDONLY|O_CLOEXEC) = 3
+fstat(3, {st_mode=S_IFREG|0644, st_size=26056, ...}) = 0
+mmap(NULL, 26056, PROT_READ, MAP_PRIVATE, 3, 0) = 0x7f05b0dcb000
+close(3)                                = 0
+openat(AT_FDCWD, "/lib64/libc.so.6", O_RDONLY|O_CLOEXEC) = 3
+read(3, "\177ELF\2\1\1\3\0\0\0\0\0\0\0\0\3\0>\0\1\0\0\0@\21\2\0\0\0\0\0"..., 832) = 832
+fstat(3, {st_mode=S_IFREG|0755, st_size=2021312, ...}) = 0
+mmap(NULL, 8192, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0x7f05b0dc9000
+mmap(NULL, 3844768, PROT_READ|PROT_EXEC, MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7f05b0804000
+mprotect(0x7f05b09a5000, 2097152, PROT_NONE) = 0
+mmap(0x7f05b0ba5000, 24576, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x1a1000) = 0x7f05b0ba5000
+mmap(0x7f05b0bab000, 15008, PROT_READ|PROT_WRITE, MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x7f05b0bab000
+close(3)                                = 0
+arch_prctl(ARCH_SET_FS, 0x7f05b0dca4c0) = 0
+mprotect(0x7f05b0ba5000, 16384, PROT_READ) = 0
+mprotect(0x600000, 4096, PROT_READ)     = 0
+mprotect(0x7f05b0dd2000, 4096, PROT_READ) = 0
+munmap(0x7f05b0dcb000, 26056)           = 0
+fstat(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(0x88, 0), ...}) = 0
+brk(NULL)                               = 0x152e000
+brk(0x154f000)                          = 0x154f000
+brk(NULL)                               = 0x154f000
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+write(1, "y\n", 2)                      = 2
+```
+
+What is Rust uutils actually giving us? 
+
+```bash
+du ./target/release/yes
+#3516    ./target/release/yes
+du /usr/bin/yes
+#32      /usr/bin/yes
+du ./unix7yes
+#12      ./unix7yes
+```
+
+A hundredfold increase in release binary size over GNU yes. Threehundredfold over Unix 7 yes. Slower startup. Far longer compile time.
+
+John Thagen has [a repo](https://github.com/johnthagen/min-sized-rust) with tips on reducing Rust binary sizes such as removing core::fmt, removing panic code to print stack traces, and using usafe{ libc::printf()}.
+
+I'll have to noodle.
+
+```rust
+extern crate libc;
+
+fn main() {
+    const HELLO: &'static str = "y\n\0";
+    unsafe {
+        while true{
+            libc::printf(HELLO.as_ptr() as *const _);
+        }
+    }
+}
+```
+
+It still comes in at 100 times larger than Unix 7 yes.
+
+```bash
+du  ./target/release/mini_yes
+#1280    ./target/release/mini_yes
+```
+
+That is with the cargo file set to:
+```bash
+[profile.release]
+panic = "abort"
+lto = true
+codegen-units = 1
+incremental = false
+```
+
