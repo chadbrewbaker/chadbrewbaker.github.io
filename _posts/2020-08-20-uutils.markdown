@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Modern Unix Tools"
-date:   2020-02-20 12:38:19
+date:   2020-08-20 12:38:19
 categories: 
 ---
 It's been a rough year. My ex wife had her assistant drop my name to a drug dealer on 10 March 2020 and I was attacked hours later crushing my sinus. I've held an axiom not to get into corrupt Iowa politics here, but at some point I will publish a book:

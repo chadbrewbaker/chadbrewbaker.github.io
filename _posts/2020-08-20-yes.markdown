@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Yes"
-date:   2020-02-20 18:38:19
+date:   2020-08-20 18:38:19
 categories: 
 ---
 A survey of yes. I learned of the command in my C and Unix class at Drake where students would prank each other with:
@@ -13,6 +13,7 @@ yes "Don't you hate dialup connections?" | write USERNAME&
 All fun and games util someone left a terminal unattended and had everything piped to a file - a file which overwrote the swap space of the campus DEC server and crashed it. The sysadmin was nonplussed.
 
 Berkeley Unix yes is poetically succinct.
+
 ```c
 #include <stdio.h>
 
@@ -32,6 +33,7 @@ main(argc, argv)
 ```
 
 Unix v7 almost reads like APL.
+
 ```c
 main(argc, argv)
 char **argv;
@@ -63,6 +65,7 @@ It makes sure we know that the author is [David Mackenzie](https://www.linkedin.
 
 
 Illuminos (formerly Solaris) yes also does not print help messages. It also allows multiple output strings which it separates with spaces.
+
 ```c
 #include <stdio.h>
 
@@ -204,6 +207,7 @@ Block writes are made. Is this good? It opens six shared files - including pthre
 
 
 Compare with GNU yes.
+
 ```bash
 execve("/usr/bin/yes", ["yes"], 0x7fff995eae50 /* 22 vars */) = 0
 brk(NULL)                               = 0x255f000
@@ -329,6 +333,7 @@ That is a ton of locale file read overhead. Anectodally it went a lot faster tha
 
 
 Now compare with Unix 7 yes which I rewrote in modern C and compiled with -02.
+
 ```c
 #include<stdio.h>
 int main(int argc, char **argv)
@@ -409,6 +414,7 @@ du  ./target/release/mini_yes
 ```
 
 That is with the cargo file set to:
+
 ```bash
 [profile.release]
 panic = "abort"
