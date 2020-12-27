@@ -1,0 +1,42 @@
+---
+layout: post
+title:  "Retro"
+date:   2020-12-26 12:50:19
+categories: 
+---
+
+Project retro for a client I just wrapped up.
+
+* [Amazon Workspaces](https://aws.amazon.com/workspaces) suck. Use Cloud9 or better yet EC2 Batch custom instances. Okta is ok. Atlassian JIRA is a new level of Dante's inferno.
+
+* ARM is going to eat x86 fast. Start removing x86 dependencies like old javascript engines now.
+
+* Desktop Angular + Android + iOS is a *lot* of waste. Go mobile web first, perhaps even CLI/Alexa first.
+
+* Cypress is limited. It needs to be paired with something like Puppeteer for multi-session incognito tabs.
+
+* Use component libraries and a modicum of TLA+/Alloy in any GUI client. Keep the core data path simple.
+
+* Use some TLA+/Alloy server side - especially for rules on destructive updates and organization roles.
+
+* Many clients use ActiveDirectory - you should probably support it. 
+
+* Don't host your own RabbitMQ - use SQS for worker scheduling.
+
+* Use cgroups for unprivlidged Rails workers that handle media files - and better yet do media processing off box in unprivlidged AWS Lambda workers.
+
+* Don't bolt on logging/metrics as an afterthought. Do compress/encrypt logs and batch to EFS/S3. Do use distributed tracing headers. Do keep metrics on end to end tests to catch regresssions earlier.
+
+* Rebuild your Rails server at least once a month. Do use performance guided optimization. Do use SQLite3 as a local data tier where it makes sense.
+
+* Have at least one Rust/C++/Go backed endpoint that Rails shells out to, or is statically/dynamically linked. Even if this is addition of two numbers.
+
+* Use Postgresql RDS over MySQL RDS. Have a small localhost Postgresql instance where it makes sense to shard. Especially if you need DB side computation or custom column types.
+
+* Build your Rails server with a robust QA api for CRUD access to user accounts in development. Keep eBPF etc endpoints available for ad-hoc production queries. Do more integration testing on localhost.
+
+* Dogfood your own product. Team comms should have been off a feature toggled instance of the core product instead of Slack/JIRA.
+
+* Onboard with a full stack tour of the product under a feature toggle. Back end that adds you to the list of developers. Front end that styles your card in your favorite CSS. Image stored to your media tier.
+
+* Do randomized remote pair programming one day every two weeks.  
