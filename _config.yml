@@ -1,4 +1,4 @@
 name: Blogofbrew
-markdown: redcarpet
-highlighter: pygments
+markdown: kramdown
+highlighter: rogue
 excerpt_separator: "" # Workaround for highlight bug
