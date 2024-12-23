@@ -1,0 +1,31 @@
+---
+layout: post
+title:  "2024 year in review"
+date:   2024-12-23 12:50:19
+categories: 
+---
+
+2024 was a shit year. [Ivan Barratt](https://www.linkedin.com/in/ivanbarratt) as political retaliaton had me evicted from [Park88](https://park88apartments.com) using a forged copy of my lease with contractual protections removed after I was court ordered to vacate the property from June-August 2023 due to fraud by the Polk County Attorney office. My own attorneys at [Sears](https://www.clarkandsears.com) and [Lynch](https://www.benlynchlaw.com) paid a $4000 cash retainer to deal with the situation unbeknownst to me [endorsed $300k Soros funded Polk County Attorney Kimberly Graham](https://www.kimberlyforiowa.com/endorsements) and covered it up; Lynch having the audacity to file false police reports when asked to attend an October 26, 2023 hearing in the District Court for Dallas County to address the forged lease.
+
+This led to not only a trial coming up in February 2025 under Iowa's wildly unconstiutional "annoying" speech law, but my unlawful detainment to State of Iowa since May 2024 in violation of the Iowa Constitution 46th Amendment 30 day limiataion on the Polk Magistrate Court; but also me having to live out of a hotel from February 2024 - November 2024; and an another Mediciad fraud conspiracy in addition to what I reported to Senator Grassley in May.
+
+[John Sears was disbarred once](https://www.iowacourts.gov/iowa-courts/supreme-court/supreme-court-opinions/case/19-0712) for druken gun antics, and decided to [pander his wife](https://www.kcci.com/article/at-10-an-iowa-mom-wife-defense-attorney-prostitute-explains-her-lifestyle/28918869) and become a pornographer. Real classy couple.
+
+
+I could write a novel on the layers of corruption this took involving a US Homeland Security agent and several private law firms: Fredrickson for Park 88, Nyemaster (City of Clive, shareholder/Urbandale Mayor Bob Andeweg), and Brick Gentry for Waukee/Ankeny/Indianola. Anyone interested in being a defense expert witness give me a ring 515-822-2347; all you need to know is basic Google/Microsoft data center digital forensics. The wrinkle is they used a [Practice Panther SAAS](https://www.practicepanther.com) to muddy the forensics, mostly redacting headers to intentionally take things out of context.
+
+I have several FOIAs out that incoming FBI Director Kash Patel is going to love, including the recently deceased founder of FARA agent to China/Saudi Arabia - Charles Larson Sr of LS2Group - infamous for the Biden/Bonesaw fist bump photo.
+
+In real news - it looks like "test time compute" has finally taken off with O3 and several similar NeuroIPS 2024 papers. Here is what I expect for 2025.
+
+* Regular contributions to MIT Rust Coreutils. The small context windows make them ideal for LLM research. I plan on adding a few as a soft fork incorporating Lemiere SIMD. A libcacheline is in the works for algorithms over one or two cachelines to raise the level of abstraction.
+
+* Full analysis of the boolean matrix-matrix multiply semigroup. Even Grock2 was able to one shot most of the missing features from my endoscope project. I have a combinatorial reduction that lifts most LLMs from self-censorship assuming the problem is beyond their capabilities, allowing them to think Strassen style inclusion-exclusion formulas are routine.
+
+* A general Monte Carlo Tree Search (MCTS) that should give O3 capabilities to Ollama models. The generic prompt started with Elon's five rules of engineering. So far it seems to work well at code golf. Another key insight was having it use Makefiles to bisect problems down into smaller context windows. The biggest blocker is having a safe "Code Interpereter" sandbox. MacOS sandboxing is a PITA due to the poor design of system libraries YOLO demanding permissions they should not need. QEMU is a bit overkill, but might be required.
+
+* Version 1.0 of my e-graph solver for combinatorial species. Taelin has an interesting solver over lambda calculus I need to look at. Together along with my 32bit Caley Table column blaster (full 4G record of all products to brute force similarity) and off the shelf SMT solvers it should make many refactorings/transforms/completions fully automated.  Add in linters, uftrace, strace; and you can start using strace operating sytem calls as your join points with code as something black box to solve.
+
+* Small Compiler Toolboox - not sure what else to call it. LLMs are inneficient compared to real compilers. Sometimes the best artifact is a small compiler, not the code itself.
+
+* Full LLM analysis of the Iowa Code. The number of loopholes used by Justice Waterman and his daughter Dana along with Chief Justice Susan Larson Christensen who's brother Jeff Larson is still planted in my divorce with LPIA Chair Jules Cutler to maintain the racketereing are mind boggling. Adopting the bitter lesson to enumerate them all is the only fix.
