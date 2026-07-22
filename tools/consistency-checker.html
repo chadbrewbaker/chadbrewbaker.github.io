@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Chat consistency checker (on-device LLM + Horn logic)</title>
+<title>Consistency checker: policies, specs, and promises (on-device LLM + Horn logic)</title>
 <style>
 * { box-sizing: border-box; }
 body { font-family: Helvetica, Arial, sans-serif; max-width: 980px; margin: 0 auto;
@@ -46,18 +46,20 @@ footer a, .about a { color: #0969da; }
 </style>
 </head>
 <body>
-<h1>Chat consistency checker</h1>
-<p class="blurb">A neurosymbolic split, running entirely in your browser: the on-device language
-model (Chrome&rsquo;s built-in Prompt API / Gemini Nano) translates a chat transcript into
-propositional Horn clauses &mdash; the part language models are good at &mdash; and an exact
-forward-chaining engine in 9&thinsp;KB of WebAssembly decides whether the statements are jointly
-consistent &mdash; the part they are not. Verdicts come with a machine-checked derivation tracing
-each contradiction back to the speaker&rsquo;s own quoted words. No text leaves your machine.</p>
+<h1>Consistency checker</h1>
+<p class="blurb">Paste the employee handbook, a requirements doc, meeting notes, a contract
+clause &mdash; or a chat log. The on-device language model (Chrome&rsquo;s built-in Prompt API /
+Gemini Nano) translates the prose into propositional Horn clauses &mdash; the part language
+models are good at &mdash; and an exact forward-chaining engine in 9&thinsp;KB of WebAssembly
+decides whether the statements can all be true at once &mdash; the part they are not. Verdicts
+come with a machine-checked derivation tracing each contradiction back to the document&rsquo;s
+own quoted words. Nothing leaves your machine, which your legal team will consider the best
+feature on this page.</p>
 
 <div id="model-status">booting&hellip;</div>
 <div class="examples" id="examples"></div>
 
-<h2 class="step">1&ensp;Transcript <span>&mdash; paste any conversation</span></h2>
+<h2 class="step">1&ensp;Source text <span>&mdash; policies, specs, meeting notes, chats: any prose that makes commitments</span></h2>
 <textarea id="transcript" spellcheck="false"></textarea>
 <div class="controls">
   <button id="analyze-btn">Analyze with on-device model</button>
@@ -78,7 +80,7 @@ each contradiction back to the speaker&rsquo;s own quoted words. No text leaves 
 <p>Translate ordinary statements into logic, then let a mechanical procedure draw the
 consequences: that is McCarthy&rsquo;s 1959 <i>advice taker</i> proposal&nbsp;[1], and it is exactly
 this page, with the translation finally done by a language model small enough to live in the
-browser. The division of labor follows the neurosymbolic taxonomy Kautz sketched in his AAAI
+browser and the statements finally supplied by the modern corporation, an inexhaustible source. The division of labor follows the neurosymbolic taxonomy Kautz sketched in his AAAI
 address&nbsp;[2]: the network handles perception of messy language; the symbolic engine handles
 entailment, where its answer is checkable and the network&rsquo;s is not. The seam between them
 &mdash; the extracted clause set &mdash; is deliberately exposed as an editable text box with
@@ -92,7 +94,7 @@ clauses with the distinguished head <code>inconsistent</code>. Negated statement
 dual-rail convention &mdash; <code>p</code> and <code>not_p</code> as separate atoms with an
 automatic constraint <code>inconsistent&nbsp;:-&nbsp;p,&nbsp;not_p.</code> &mdash; the same
 encoding the CVP&rarr;Horn P-completeness reduction uses. The engine then runs
-Dowling&ndash;Gallier-style forward chaining&nbsp;[6] to the fixpoint; the transcript is
+Dowling&ndash;Gallier-style forward chaining&nbsp;[6] to the fixpoint; the document is
 inconsistent exactly when <code>inconsistent</code> is derived. Every derived atom records the
 rule and premises that produced it, so the verdict ships with its proof, walked back to
 asserted facts and their quotes.</p>
@@ -112,7 +114,7 @@ check, session with a system prompt, and structured output via a JSON-schema
 <code>responseConstraint</code> where supported, with a plain-JSON fallback. Chrome 148+
 ships it by default on capable desktop hardware; Edge&rsquo;s Phi-based implementation is
 currently behind a flag in Canary. The model runs locally and the page makes no network
-requests after load, so transcripts stay on the device. When no model is present, steps 2
+requests after load, so documents stay on the device. When no model is present, steps 2
 and 3 work unaided &mdash; the checker is honest about which of its two halves is doing the
 thinking.</p>
 
@@ -319,12 +321,12 @@ function derivation(ctx) {
 
 // ---------------- on-device model ----------------
 let session = null;
-const SYSTEM = 'You turn chat transcripts into propositional Horn logic. ' +
+const SYSTEM = 'You turn prose (policies, specs, meeting notes, chat logs) into propositional Horn logic. ' +
   'Extract only what is stated or clearly implied. Atom names: short snake_case, lowercase. ' +
   'For a negated statement use the not_ prefix on the same atom (example: works_friday and not_works_friday). ' +
   'Quote the exact source words for every atom. Facts are atoms asserted true. ' +
   'Rules capture stated if-then relationships (head follows when all body atoms hold). ' +
-  'Do not invent facts, rules, or world knowledge that is not in the transcript.';
+  'Do not invent facts, rules, or world knowledge that is not in the text.';
 const SCHEMA = { type: 'object', properties: {
   atoms: { type: 'array', items: { type: 'object', properties: {
     id: { type: 'string' }, quote: { type: 'string' } }, required: ['id', 'quote'] } },
@@ -354,18 +356,55 @@ function sanitizeId(s) {
   if (!/^[a-z]/.test(s)) s = 'p_' + s;
   return s.slice(0, 40) || 'p';
 }
-function jsonToClauses(j) {
-  const lines = ['% --- atoms (verbatim quotes from the transcript) ---'];
+function asArray(x) {
+  if (Array.isArray(x)) return x;
+  if (x == null) return [];
+  if (typeof x === 'string')
+    return x.split(/\s*(?:,|;|\band\b|&)\s*/).filter(Boolean);
+  if (typeof x === 'object') return Object.values(x).length && !x.head && !x.id ? Object.values(x) : [x];
+  return [x];
+}
+function idOf(x) {
+  if (typeof x === 'string') return x;
+  if (x && typeof x === 'object') return x.id ?? x.name ?? x.atom ?? x.fact ?? '';
+  return String(x ?? '');
+}
+function normalize(j) {
+  // small on-device models improvise JSON shapes; accept them all
+  if (Array.isArray(j)) j = { atoms: [], facts: [], rules: j };
+  if (!j || typeof j !== 'object') j = {};
+  const atoms = asArray(j.atoms).map(a =>
+    typeof a === 'string' ? { id: a, quote: '' }
+      : { id: idOf(a), quote: String(a && (a.quote ?? a.text ?? a.source ?? '') || '') });
+  const facts = asArray(j.facts).map(idOf).filter(Boolean);
+  const rules = [];
+  for (const r of asArray(j.rules)) {
+    if (typeof r === 'string') {                       // "head :- a, b"  or bare fact
+      const m = r.split(':-');
+      if (m.length === 2) rules.push({ head: m[0].trim(), body: asArray(m[1]).map(x => String(x).trim()) });
+      else facts.push(r.trim());
+      continue;
+    }
+    if (!r || typeof r !== 'object') continue;
+    const head = idOf(r.head ?? r.then ?? r.conclusion);
+    if (!head) continue;
+    rules.push({ head, body: asArray(r.body ?? r.if ?? r.when ?? r.premises).map(idOf).filter(Boolean) });
+  }
+  return { atoms, facts, rules };
+}
+function jsonToClauses(raw) {
+  const j = normalize(raw);
+  const lines = ['% --- atoms (verbatim quotes from the source text) ---'];
   const known = new Set();
-  for (const a of (j.atoms || []).slice(0, 64)) {
+  for (const a of j.atoms.slice(0, 64)) {
     const id = sanitizeId(a.id);
     known.add(id);
     lines.push('% ' + id + ': "' + String(a.quote || '').replace(/"/g, "'").slice(0, 160) + '"');
   }
   lines.push('', '% --- facts ---');
-  for (const f of (j.facts || []).slice(0, 128)) lines.push(sanitizeId(f) + '.');
+  for (const f of j.facts.slice(0, 128)) lines.push(sanitizeId(f) + '.');
   lines.push('', '% --- rules ---');
-  for (const r of (j.rules || []).slice(0, 128)) {
+  for (const r of j.rules.slice(0, 128)) {
     const body = (r.body || []).map(sanitizeId);
     if (!body.length) { lines.push(sanitizeId(r.head) + '.'); continue; }
     lines.push(sanitizeId(r.head) + ' :- ' + body.join(', ') + '.');
@@ -384,16 +423,16 @@ async function extract(transcript, onProgress) {
     });
     try {
       try {
-        raw = await session.prompt('Transcript:\n' + transcript, { responseConstraint: SCHEMA });
+        raw = await session.prompt('Text:\n' + transcript, { responseConstraint: SCHEMA });
       } catch (e) {   // responseConstraint unsupported -> plain JSON ask
-        raw = await session.prompt('Transcript:\n' + transcript +
+        raw = await session.prompt('Text:\n' + transcript +
           '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}');
       }
     } finally { session.destroy && session.destroy(); session = null; }
   } else {
     const s = await window.ai.languageModel.create({ systemPrompt: SYSTEM });
     try {
-      raw = await s.prompt('Transcript:\n' + transcript +
+      raw = await s.prompt('Text:\n' + transcript +
         '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}');
     } finally { s.destroy && s.destroy(); }
   }
@@ -436,9 +475,11 @@ function check() {
       html += '<li><code>' + st.atom + '</code> \u2014 stated' +
         (q ? ': <span class="quote">\u201c' + q + '\u201d</span>' : ' in the transcript') + '</li>';
     } else {
+      const q = ctx.quotes[st.atom];
       html += '<li><code>' + st.atom + '</code> \u2014 follows from ' +
         st.prems.map(p => '<code>' + p + '</code>').join(' and ') +
         ' via <code>' + d.ruleStr(st.rule) + '</code>' +
+        (q ? ', per <span class="quote">\u201c' + q + '\u201d</span>' : '') +
         (st.rule.auto ? ' <span class="auto">(automatic p/not_p constraint)</span>' : '') + '</li>';
     }
   }
@@ -449,7 +490,7 @@ async function analyze() {
   setStatus('');
   els('verdict').innerHTML = '';
   const t = els('transcript').value.trim();
-  if (!t) { setStatus('paste a transcript first', true); return; }
+  if (!t) { setStatus('paste some source text first', true); return; }
   setStatus('asking the on-device model\u2026');
   try {
     const j = await extract(t, loaded => setStatus('downloading model\u2026 ' + Math.round(loaded * 100) + '%'));
@@ -458,65 +499,71 @@ async function analyze() {
   } catch (e) { setStatus('extraction failed: ' + e.message + ' \u2014 use a sample extraction or write clauses by hand', true); }
 }
 const EXAMPLES = [
-  { label: 'Scheduling contradiction',
+  { label: 'Mandatory Fun Day',
     transcript:
-`User: Just so you know, I don't work Fridays anymore \u2014 I dropped to a four-day week.
-Assistant: Noted! I'll keep Fridays clear.
-User: Also, our team policy is that whoever runs the retro has to be working that day.
-User: Oh and can you put me down to run the retro this Friday?`,
+`From the Employee Handbook, v7:
+Employees on approved PTO are excused from all meetings and team events, no matter how fun.
+Attendance at Mandatory Fun Day is required for every employee. No exceptions.
+HR records: Karen's PTO for Friday was approved in March.
+Facilities memo: Mandatory Fun Day is this Friday.`,
     clauses:
-`% --- atoms (verbatim quotes from the transcript) ---
-% not_works_friday: "I don't work Fridays anymore"
-% runs_retro_friday: "put me down to run the retro this Friday"
-% works_friday: "whoever runs the retro has to be working that day"
+`% --- atoms (verbatim quotes from the source text) ---
+% karen_pto_friday: "Karen's PTO for Friday was approved in March"
+% karen_excused_friday: "excused from all meetings and team events"
+% not_karen_excused_friday: "required for every employee. No exceptions"
+% fun_day_friday: "Mandatory Fun Day is this Friday"
 
 % --- facts ---
-not_works_friday.
-runs_retro_friday.
+karen_pto_friday.
+fun_day_friday.
 
 % --- rules ---
-works_friday :- runs_retro_friday.
+karen_excused_friday :- karen_pto_friday.
+not_karen_excused_friday :- fun_day_friday.
 
 % contradiction constraints for p / not_p pairs are added automatically` },
-  { label: 'Classic syllogism clash',
+  { label: 'The badge audit',
     transcript:
-`User: In this story, every wizard is immortal.
-User: Eldrin is a wizard.
-User: Later in chapter three, Eldrin dies of old age \u2014 he was mortal after all.`,
+`Security policy 4.2: anyone holding badge access has completed security training.
+Access log: Dave's badge worked in the lobby on Monday.
+Training portal export: Dave has not completed security training.
+(The auditors have questions.)`,
     clauses:
-`% --- atoms (verbatim quotes from the transcript) ---
-% wizard_eldrin: "Eldrin is a wizard"
-% immortal_eldrin: "every wizard is immortal"
-% not_immortal_eldrin: "he was mortal after all"
+`% --- atoms (verbatim quotes from the source text) ---
+% dave_badge: "Dave's badge worked in the lobby on Monday"
+% dave_trained: "anyone holding badge access has completed security training"
+% not_dave_trained: "Dave has not completed security training"
 
 % --- facts ---
-wizard_eldrin.
-not_immortal_eldrin.
+dave_badge.
+not_dave_trained.
 
 % --- rules ---
-immortal_eldrin :- wizard_eldrin.
+dave_trained :- dave_badge.
 
 % contradiction constraints for p / not_p pairs are added automatically` },
-  { label: 'Consistent conversation',
+  { label: 'One (1) modest beer',
     transcript:
-`User: I'm vegetarian, so no meat in any recipes please.
-Assistant: Got it \u2014 vegetarian only.
-User: Tonight let's do the mushroom risotto; mushrooms are fine, they're not meat.`,
+`Expense policy: alcohol is reimbursable only at client dinners.
+Calendar: Tuesday's team dinner was a client dinner; Megacorp attended.
+Expense report: Steve expensed one (1) modest beer from Tuesday.
+Finance approved it, noting the modesty.`,
     clauses:
-`% --- atoms (verbatim quotes from the transcript) ---
-% vegetarian: "I'm vegetarian"
-% not_wants_meat: "no meat in any recipes"
-% wants_risotto: "let's do the mushroom risotto"
+`% --- atoms (verbatim quotes from the source text) ---
+% client_dinner_tuesday: "Tuesday's team dinner was a client dinner"
+% beer_reimbursable: "alcohol is reimbursable only at client dinners"
+% steve_expensed_beer: "Steve expensed one (1) modest beer"
 
 % --- facts ---
-vegetarian.
-wants_risotto.
+client_dinner_tuesday.
+steve_expensed_beer.
 
 % --- rules ---
-not_wants_meat :- vegetarian.
+beer_reimbursable :- client_dinner_tuesday.
 
 % contradiction constraints for p / not_p pairs are added automatically` },
 ];
+if (typeof window !== 'undefined') window.__cc = { jsonToClauses, parseClauses, normalize };
 window.addEventListener('load', async () => {
   await bootEngine();
   const st = await modelStatus();
@@ -539,7 +586,7 @@ window.addEventListener('load', async () => {
       els('verdict').innerHTML = '';
       [...exWrap.children].forEach(x => x.classList.remove('active'));
       b.classList.add('active');
-      setStatus('transcript loaded \u2014 Analyze with the model, or load the sample extraction');
+      setStatus('example loaded \u2014 Analyze with the model, or load the sample extraction');
     };
     exWrap.appendChild(b);
   }
@@ -547,7 +594,7 @@ window.addEventListener('load', async () => {
   els('sample-btn').onclick = () => {
     const t = els('transcript').value;
     const ex = EXAMPLES.find(e => e.transcript === t);
-    if (!ex) { setStatus('sample extractions exist only for the example transcripts', true); return; }
+    if (!ex) { setStatus('sample extractions exist only for the example texts', true); return; }
     els('clauses').value = ex.clauses;
     setStatus('sample extraction loaded (pre-baked, not from the model) \u2014 now check consistency');
   };
