@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Broadlawns, UIHC & Adair: two public hospitals, one Medicaid program</title>
+<style>
+*{box-sizing:border-box}body{font-family:Helvetica,Arial,sans-serif;max-width:980px;margin:0 auto;padding:20px;line-height:1.5;color:#222}
+h1{margin:0 0 8px;font-size:26px}h2{font-size:19px;margin:24px 0 8px}h3{font-size:16px;margin:16px 0 4px}
+.blurb{color:#444;margin-top:0}.banner{border-radius:8px;padding:9px 13px;font-size:13.5px;margin:12px 0}
+.banner.warn{background:#fff8f0;border:1px solid #d4a72c}.banner.ok{background:#f0fff4;border:1px solid #1a7f37}
+.chartbox{border:1px solid #d8dee4;border-radius:8px;background:#fff;padding:8px;margin:6px 0}
+.chartbox svg{width:100%;height:auto}
+table.t{border-collapse:collapse;font-size:12.5px;width:100%;margin-top:6px}
+.t td,.t th{border:1px solid #d8dee4;padding:4px 6px;text-align:right;white-space:nowrap}
+.t td:first-child,.t th:first-child,.t td:nth-child(2){text-align:left}
+.t th{background:#f6f8fa}.note{color:#57606a;font-size:12.5px;margin:4px 0}
+ul{font-size:13.5px}.src{color:#8b949e;font-size:11.5px}
+.about{margin-top:26px;border-top:1px solid #ddd;padding-top:14px}.about p{font-size:14px;color:#333}
+footer{margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:13px;color:#555}a{color:#0969da}
+</style></head><body>
+<h1>Broadlawns, UIHC &amp; Adair County Health System: three public hospitals, one Medicaid program</h1>
+<p class="blurb">Polk County&rsquo;s tax-supported safety-net hospital against the state&rsquo;s
+university medical center &mdash; the two most publicly documented hospitals in Iowa, compared
+through the money trails that are actually public: the state&rsquo;s certified DSH examinations,
+Broadlawns&rsquo; own audited agreements, and (after one script run) their annual Medicare cost
+reports with whatever Medicaid measures the current HCRIS release carries.</p>
+<div id="banner" class="banner"></div>
+
+<h2>The DSH examination trail (Iowa Auditor of State)</h2>
+<div id="dshtable"></div>
+<p class="note" id="dshnote"></p>
+
+<h2>Three views over time (examination years; cost-report years extend these after the fetcher run)</h2>
+<div class="chartbox" id="c1"></div><p class="note">Total hospital cost, all payers — UIHC runs ~12× Broadlawns’ scale.</p>
+<div class="chartbox" id="c2"></div><p class="note">Medicaid cost of care as a share of total hospital cost — the comparable line: Broadlawns ≈ half-to-two-thirds Medicaid by cost; UIHC ≈ quarter.</p>
+<div class="chartbox" id="c3"></div><p class="note">Total DSH payments received (schedule p.7, col R) — the corrected series: UIHC rose $29.0M → $64.8M; Broadlawns held ≈ $6.5–7.2M.</p>
+
+<h2>Broadlawns: hand-verified agreement figures</h2>
+<ul id="agreements"></ul>
+
+<div id="growthnote" class="note" style="font-size:13.5px"></div>
+<h2>Annual cost reports (HCRIS CMS-2552-10)</h2>
+<p class="note" id="achsnote"></p>
+<p class="note" id="crcols"></p>
+<div id="crtables"></div>
+<p class="note">Cost-report figures are as filed, on each hospital&rsquo;s own fiscal year, before
+Medicare settlement; they are self-reported to a federal reimbursement system and best used for
+trends, not audits of a single year.</p>
+
+<section class="about">
+<h2>Reading this honestly</h2>
+<p>UIHC appears in the DSH schedules as &ldquo;Clinics&rdquo; (a name truncation in the extraction)
+and files no 990 and no separate federal single audit &mdash; it is state-owned, audited by the
+Iowa Auditor of State and inside the statewide single audit. Broadlawns files no 990 either
+(county-owned); its levy and IGT mechanics come from its audited statements. The two DSH measures
+disagree (examination &ldquo;DSH payments&rdquo; vs the hospital&rsquo;s reported agreement amounts)
+and are never summed here. An earlier version of this page mislabeled the schedule columns and claimed a UIHC DSH
+collapse ($33.3M &rarr; $1.5M); that was a column-shift artifact, now corrected against the full
+schedules: UIHC&rsquo;s DSH received <i>rose</i> from $29.0M to $64.8M, and the ~$3.2M
+Broadlawns figure was FFS rate payments, not DSH. MCO-to-hospital payments remain non-public; the visible
+flows are the state-visible ones.</p>
+</section>
+<footer>Reads polk_data.json + hospitals_data.json (created by fetch_polk_orgs.py). Part of the
+<a href="iowa-medicaid.html">Iowa Medicaid browser</a> suite. Skeleton after
+<a href="https://github.com/simonw/tools">simonw/tools</a>.</footer>
+<script>
+const els=i=>document.getElementById(i);
+const fmt$=v=>v==null||isNaN(v)?'—':(Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(2)+'B':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+(+v).toFixed(0));
+function achsNote(HD){
+  const has=HD&&HD.rows&&HD.rows.some(r=>/ADAIR/i.test(String(r['Hospital Name']||'')));
+  els('achsnote').textContent=has?''
+    :'Adair County Health System: no cost-report rows yet \u2014 re-run fetch_polk_orgs.py (it now matches ADAIR COUNTY hospital names) and upload hospitals_data.json; its audited financials from auditor.iowa.gov complete the picture.';
+}
+async function grab(f){try{const r=await fetch(f);return r.ok?await r.json():null;}catch(e){return null;}}
+window.addEventListener('load', async()=>{
+  const [PK,HD]=await Promise.all([grab('polk_data.json'),grab('hospitals_data.json')]);
+  if(location.protocol==='file:'){els('banner').innerHTML='<b>Opened from disk (file://)</b> — run <code>python3 -m http.server</code> here and use <code>http://localhost:8000/</code>.';els('banner').className='banner warn';return;}
+  els('banner').innerHTML=(PK?'DSH examinations loaded. ':'<b>polk_data.json missing.</b> ')+
+    (HD?'Cost reports loaded ('+HD.rows.length+' hospital-years).':'Cost reports: run the updated <code>fetch_polk_orgs.py</code> to create <code>hospitals_data.json</code>.');
+  els('banner').className='banner '+(PK&&HD?'ok':'warn');
+  if(PK) dsh(PK);
+  achsNote(HD);
+  if(HD) costReports(HD);
+});
+function ptChart(labels,seriesList,w,ht,fmt){
+  const P={l:60,r:10,t:22,b:26},iw=w-P.l-P.r,ih=ht-P.t-P.b;
+  let max=0;seriesList.forEach(s=>s.data.forEach(v=>{if(v!=null&&v>max)max=v;}));if(!max)max=1;
+  const X=i=>P.l+iw*(labels.length>1?i/(labels.length-1):0.5),Y=v=>P.t+ih*(1-v/max);
+  const o=[];
+  for(let g=0;g<=4;g++){const v=max*g/4,y=Y(v);
+    o.push(`<line x1="${P.l}" y1="${y}" x2="${w-P.r}" y2="${y}" stroke="#eee"/>`);
+    o.push(`<text x="${P.l-5}" y="${y}" text-anchor="end" dominant-baseline="middle" class="ax">${fmt(v)}</text>`);}
+  labels.forEach((L,i)=>o.push(`<text x="${X(i)}" y="${ht-8}" text-anchor="middle" class="ax">${L}</text>`));
+  const PAL=['#0969da','#cf222e'];
+  seriesList.forEach((s,k)=>{
+    const pts=s.data.map((v,i)=>v==null?null:[X(i),Y(v)]).filter(Boolean);
+    if(pts.length>1)o.push('<path d="'+pts.map((q,i)=>(i?'L':'M')+q[0].toFixed(1)+' '+q[1].toFixed(1)).join(' ')+`" fill="none" stroke="${PAL[k]}" stroke-width="2"/>`);
+    pts.forEach(q=>o.push(`<circle cx="${q[0].toFixed(1)}" cy="${q[1].toFixed(1)}" r="4" fill="${PAL[k]}"/>`));
+  });
+  o.push('<text x="'+P.l+'" y="13" class="leg">'+seriesList.map((s,k)=>`<tspan fill="${PAL[k]}">\u25ac</tspan> ${s.name}`).join('  ')+'</text>');
+  return `<svg viewBox="0 0 ${w} ${ht}" xmlns="http://www.w3.org/2000/svg"><style>.ax{font:10px Helvetica;fill:#666}.leg{font:11px Helvetica;fill:#333}</style>${o.join('')}</svg>`;
+}
+function dsh(PK){
+  const C=PK.dsh_examinations_corrected;
+  if(!C){els('dshtable').innerHTML='<p class="note">polk_data.json predates the column correction — re-download it.</p>';return;}
+  const yrs=Object.keys(C).sort();
+  const HN={'Broadlawns Medical Center':'Broadlawns','University of Iowa Hospitals and Clinics':'UIHC'};
+  let t='<table class="t"><tr><th>SPRY</th><th>Hospital</th><th>DSH limit</th><th>FFS</th><th>MCO</th><th>Suppl/Enh</th><th>Total Medicaid IP/OP</th><th>DSH received</th><th>Medicaid cost of care</th><th>Total hospital cost</th></tr>';
+  for(const y of yrs)for(const [full,short] of Object.entries(HN)){
+    const r=C[y][full];if(!r)continue;
+    t+=`<tr><td>${y}</td><td>${short}</td><td>${fmt$(r.dsh_limit)}</td><td>${fmt$(r.ffs_payments)}</td><td>${fmt$(r.mco_payments)}</td><td>${fmt$(r.supplemental_enhanced_payments)}</td><td><b>${fmt$(r.total_medicaid_ip_op_payments)}</b></td><td><b>${fmt$(r.total_dsh_payments_received)}</b></td><td>${fmt$(r.total_cost_of_care_medicaid)}</td><td>${fmt$(r.total_hospital_cost)}</td></tr>`;
+  }
+  els('dshtable').innerHTML=t+'</table>';
+  els('dshnote').textContent=PK.broadlawns.reconciliation_note;
+  const fin=PK.broadlawns.financial_statement_figures||[];
+  els('agreements').innerHTML=fin.map(x=>'<li>'+Object.entries(x).filter(([k])=>k!=='source').map(([k,v])=>k.replace(/_/g,' ')+': <b>'+(typeof v==='number'&&v>1000?fmt$(v):v)+'</b>').join(' \u00b7 ')+' <span class="src">['+x.source+']</span></li>').join('');
+  // three time plots from the exam years
+  const g=(full,f)=>yrs.map(y=>C[y][full]?C[y][full][f]:null);
+  const B='Broadlawns Medical Center',U='University of Iowa Hospitals and Clinics';
+  els('c1').innerHTML=ptChart(yrs,[{name:'UIHC total hospital cost',data:g(U,'total_hospital_cost')},{name:'Broadlawns',data:g(B,'total_hospital_cost')}],940,230,fmt$);
+  const share=(full)=>yrs.map(y=>C[y][full]?100*C[y][full].total_cost_of_care_medicaid/C[y][full].total_hospital_cost:null);
+  els('c2').innerHTML=ptChart(yrs,[{name:'UIHC Medicaid share of cost',data:share(U)},{name:'Broadlawns',data:share(B)}],940,230,v=>v.toFixed(0)+'%');
+  const gp=(full)=>{const a=g(full,'total_hospital_cost');return (a[a.length-1]/a[0]-1)*100;};
+  els('growthnote').innerHTML='<b>The cost story between exam years (SPRY '+yrs[0]+' \u2192 '+yrs[yrs.length-1]+'):</b> '+
+    'Broadlawns total cost +'+gp(B).toFixed(0)+'%, UIHC +'+gp(U).toFixed(0)+'% \u2014 both far above general inflation for the period; '+
+    'the cost-report series below (once fetched) extends this to annual resolution and adds Adair County Health System, which the '+
+    'DSH examinations do not cover (it is not a DSH hospital).';
+  els('c3').innerHTML=ptChart(yrs,[{name:'UIHC DSH received',data:g(U,'total_dsh_payments_received')},{name:'Broadlawns',data:g(B,'total_dsh_payments_received')}],940,230,fmt$);
+}
+function costReports(HD){
+  const rows=HD.rows;
+  const cols=Object.keys(rows[0]||{});
+  const medCols=cols.filter(c=>/medicaid|xix|title.?19/i.test(c));
+  const keyCols=cols.filter(c=>/net patient revenue|total (costs|income|discharges|days|beds)|fiscal year/i.test(c));
+  els('crcols').textContent='Medicaid-related columns detected in this release: '+(medCols.join(', ')||'none — showing general financials only');
+  const byHosp={};
+  for(const r of rows){
+    const hn=String(r['Hospital Name']||'');
+    const nm=/BROADLAWNS/i.test(hn)?'Broadlawns':/UNIVERSITY OF IOWA/i.test(hn)?'UIHC':/ADAIR/i.test(hn)?'Adair County Health System':hn.slice(0,30);
+    const fy=String(r['Fiscal Year End Date']||'').slice(0,4);
+    (byHosp[nm]??=[]).push({fy,r});
+  }
+  let h='';
+  for(const [nm,list] of Object.entries(byHosp)){
+    list.sort((a,b)=>a.fy.localeCompare(b.fy));
+    const show=[...medCols,...keyCols].slice(0,7);
+    h+='<h3>'+nm+'</h3><table class="t"><tr><th>FY</th>'+show.map(c=>'<th>'+c+'</th>').join('')+'</tr>';
+    for(const {fy,r} of list)
+      h+='<tr><td>'+fy+'</td>'+show.map(c=>{const v=parseFloat(String(r[c]).replace(/[$,]/g,''));return '<td>'+(isNaN(v)?(r[c]??'—'):fmt$(v))+'</td>';}).join('')+'</tr>';
+    h+='</table>';
+  }
+  els('crtables').innerHTML=h;
+}
+</script></body></html>

@@ -1,0 +1,118 @@
+dataset 974: 12842 rows, 77 category values, 2011-01 .. 2026-06
+  columns used: {'date': 'report_date', 'dim': 'service_category_name', 'payments': 'total_payments', 'recipients': 'total_recipients', 'claims': 'total_claims', 'units': 'total_units'}
+dataset 973: 18500 rows, 100 county values, 2011-01 .. 2026-06
+  columns used: {'date': 'report_date', 'dim': 'county_name', 'payments': 'total_txix_pmt', 'recipients': 'total_txix_recip', 'eligibles': 'total_txix_elig'}
+
+wrote iowa_medicaid_data.json (755.6 KB) — snapshot safe; report follows
+
+all 77 service categories, by latest-12-month payments:
+  $ 6,931,008,909  MCO
+  $   133,257,307  PREPAID AMBULATORY HEALTH PLAN
+  $   110,279,020  INPATIENT
+  $    63,663,707  LOCAL EDUCATION AGENCY
+  $    62,136,813  CLINIC SERVICES
+  $    55,938,895  OTHER PRACTITIONER
+  $    43,365,069  PACE SERVICES
+  $    38,195,609  ID WAIVER SERVICE
+  $    29,294,032  INTERMEDIATE CARE FACILITY
+  $    22,507,636  HOME HEALTH
+  $    20,621,389  OUTPATIENT
+  $    15,756,636  PHYSICIAN
+  $    15,257,608  PRESCRIBED DRUGS
+  $     7,515,842  BRAIN INJ WAIVER SERVICES
+  $     5,004,949  HEALTH INS PREMIUM PAYMENT
+  $     4,648,069  SKILLED NURSING FACILITY
+  $     3,631,887  INTER CARE INT DISABLED
+  $     3,338,334  MEP SERVICES
+  $     2,775,731  HABILITATION SERVICES
+  $     1,930,858  MEDICAL SUPPLIES
+  $     1,306,997  AMBULANCE SERVICES
+  $     1,200,903  EPSDT SCREENING
+  $     1,180,848  LAB AND RADIOLOGICAL
+  $       849,288  RESIDENTIAL CARE FACILITY
+  $       838,299  UNASSIGNED
+  $       542,179  PSYCHIATRIC
+  $       469,774  ELDERLY WAIVER SERVICES
+  $       312,577  BEHAVIORAL HLTH INTERVENTN SVC
+  $       280,616  DENTAL
+  $       223,183  NEMT SERVICES
+  $       144,481  INFANT TODDLER
+  $       141,185  CHILDRENS MENTAL HEALTH SVC
+  $       130,425  OPTOMETRIST
+  $       114,052  FAMILY PLANNING SERVICES
+  $       102,428  CHIROPRACTIC
+  $        99,140  PODIATRIC
+  $        43,929  HEALTH HOME PROVIDER
+  $        36,139  AIDS WAIVER SERVICES
+  $         9,121  PHYSICAL DISABILITIES SVCS
+  $             0  ACCOUNTABLE CARE ORGANIZATIONS
+  $             0  ACO VIS PAYMENTS
+  $             0  ADULT DAY TREATMENT
+  $             0  ADULT PART HOSP
+  $             0  CHILD DAY TREATMENT
+  $             0  CHILD PART HOSP
+  $             0  COUNTY OFFICE REIMBURSEMENT
+  $             0  DELTA DENTAL
+  $             0  DRUG CAPITATION
+  $             0  EARLY ACCESS SERVICES
+  $             0  EHR INCENTIVE PAYMENTS
+  $             0  FAMILY CENTERED PROGRAM
+  $             0  FAMILY PRESERVATION
+  $             0  GROUP TREATMENT THERAPY
+  $             0  HMO SERVICES
+  $             0  IHAWP HMO
+  $             0  IHAWP IOWA PLAN LITE
+  $             0  IHAWP PCP
+  $             0  IHAWP QHP
+  $             0  IHAWP WELLNESS EXAM BONUS
+  $             0  INDIAN HEALTH SERVICES
+  $             0  INTER CARE MENTAL RETARDA
+  $             0  IOWA CARE MED HOME CAPITATION
+  $             0  IOWA PLAN PROGRAM
+  $             0  IOWA-PLAN-HAB
+  $             0  IOWA-PLAN-PMIC
+  $             0  LEAD INSPECTION AGENCY
+  $             0  MANAGED SUBSTANCE ABUSE
+  $             0  MENTAL HEALTH ACCESS PLAN
+  $             0  MEP CASE MANAGEMENT
+  $             0  NURSING FAC FOR MENTAL ILL
+  $             0  PATIENT MANAGEMENT
+  $             0  REMEDIAL SERVICES
+  $             0  TCM PAYMENTS TO IOWAPLAN
+  $             0  TREATMENT FOSTER FAMILY CARE
+  $           -28  IHAWP IOWA PLAN FULL
+  $      -149,419  REHAB SUPPORT SERVICES
+  $    -2,178,867  ILL & HANDICAPPED WAIVER SVCS
+
+calendar-year totals from dataset 974 (compare to CMS-64 / LSA):
+  2018: $  5,587,441,207
+  2019: $  5,729,966,518
+  2020: $  5,966,181,459
+  2021: $  6,461,802,104
+  2022: $  6,635,734,212
+  2023: $  7,508,651,827
+  2024: $  7,733,382,248
+  2025: $  8,630,723,437
+  2026: $  3,696,472,732
+
+MCO/capitation category lines found:
+  - DRUG CAPITATION
+  - IOWA CARE MED HOME CAPITATION
+  - MANAGED SUBSTANCE ABUSE
+  - MCO
+
+county-dataset year totals (should track 974 if same universe):
+  2018: $  5,587,440,622  (100.0% of 974)
+  2019: $  5,730,184,852  (100.0% of 974)
+  2020: $  5,394,887,983  (90.4% of 974)
+  2021: $  6,461,801,525  (100.0% of 974)
+  2022: $  7,200,733,112  (108.5% of 974)
+  2023: $  7,508,651,222  (100.0% of 974)
+  2024: $  9,733,381,659  (125.9% of 974)
+  2025: $  8,630,675,486  (100.0% of 974)
+  2026: $  5,696,472,429  (154.1% of 974)
+  county-budget columns: {'fy': 'fiscal_year', 'county': 'county_name', 'areas': ['public_safety_legal_services', 'physical_health_social_services', 'mental_health_mr_dd', 'co_environment_education', 'roads_transportation', 'government_services_to_residents', 'administration', 'nonprogram_current', 'debt_service', 'capital_projects', 'total_expenditures'], 'format': 'wide'}
+
+county budget: 99 counties, 11 service areas, FY2005..FY2026; Polk MH/hospital-ish areas: ['mental_health_mr_dd']
+
+place iowa_medicaid_data.json next to iowa-medicaid.html

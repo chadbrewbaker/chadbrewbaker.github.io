@@ -1,0 +1,2795 @@
+{
+ "generated": "2026-07-22",
+ "broadlawns": {
+  "org": "Broadlawns Medical Center (Polk County public hospital; no 990 \u2014 governmental)",
+  "financial_statement_figures": [
+   {
+    "item": "DSH agreement FY2019",
+    "period": "2018-07..2019-06",
+    "dsh_payment": 10282070,
+    "source": "BMC FY2020 audited financial statements"
+   },
+   {
+    "item": "DSH agreement FY2020-FY2022",
+    "period": "2019-07..2022-06",
+    "dsh_payment_per_year": 8560647,
+    "igt_paid_per_year": 3239510,
+    "source": "BMC FY2020 audited financial statements"
+   },
+   {
+    "item": "payer mix FY2021",
+    "medicaid_share": 0.62,
+    "source": "BMC Community Benefit Report Jan 2021"
+   }
+  ],
+  "dsh_examinations": {
+   "2021": {
+    "hospital": "Broadlawns Medical Center",
+    "hospital_specific_dsh_limit": 11330170,
+    "dsh_payments": 3164691,
+    "regular_medicaid_ffs_payments": 46924264,
+    "mco_payments": 954966,
+    "medicaid_ip_op_payments": 51043921,
+    "medicaid_ip_utilization_pct": 59.95,
+    "low_income_utilization_pct": 58.16,
+    "enhanced_dsh": true
+   },
+   "2017": {
+    "hospital": "Broadlawns Medical Center",
+    "hospital_specific_dsh_limit": 13324365,
+    "dsh_payments": 3239154,
+    "regular_medicaid_ffs_payments": 43170191,
+    "mco_payments": 1626530,
+    "medicaid_ip_op_payments": 48035875,
+    "medicaid_ip_utilization_pct": 62.54,
+    "low_income_utilization_pct": 71.98,
+    "enhanced_dsh": true
+   }
+  },
+  "reconciliation_note": "RESOLVED (mostly): audit 'Total DSH Payments Received' (p.7 col R) is $7.17M SPRY2017 / $6.50M SPRY2021, versus $8.56M/yr in the FY20-22 agreement per Broadlawns' financial statements \u2014 same order, plausibly gross-vs-net/timing. The earlier ~$3.2M figure was the FFS-rate-payments column, mislabeled. See column_correction_note."
+ },
+ "dsh_schedules_all_hospitals": {
+  "2021": [
+   {
+    "hospital": "Regional Medical Center",
+    "hospital_specific_dsh_limit": 343820,
+    "dsh_payments": 4458197,
+    "regular_medicaid_ffs_payments": 35476053,
+    "mco_payments": 443297,
+    "medicaid_ip_op_payments": 40377547,
+    "medicaid_ip_utilization_pct": 41.81,
+    "low_income_utilization_pct": 26.51,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Muscatine",
+    "hospital_specific_dsh_limit": 4166487,
+    "dsh_payments": 83989,
+    "regular_medicaid_ffs_payments": 6564073,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 6948062,
+    "medicaid_ip_utilization_pct": 23.04,
+    "low_income_utilization_pct": 16.84,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "CHI Health-Mercy Council Bluffs",
+    "hospital_specific_dsh_limit": 8365518,
+    "dsh_payments": 1113640,
+    "regular_medicaid_ffs_payments": 24839942,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 25953582,
+    "medicaid_ip_utilization_pct": 45.19,
+    "low_income_utilization_pct": 30.67,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Hospital",
+    "hospital_specific_dsh_limit": 6719083,
+    "dsh_payments": 3016814,
+    "regular_medicaid_ffs_payments": 57180746,
+    "mco_payments": 303167,
+    "medicaid_ip_op_payments": 60500727,
+    "medicaid_ip_utilization_pct": 43.58,
+    "low_income_utilization_pct": 19.03,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Methodist Jennie Edmundson",
+    "hospital_specific_dsh_limit": 2312773,
+    "dsh_payments": 1345941,
+    "regular_medicaid_ffs_payments": 21659078,
+    "mco_payments": 12480,
+    "medicaid_ip_op_payments": 23017499,
+    "medicaid_ip_utilization_pct": 35.71,
+    "low_income_utilization_pct": 23.27,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Great River Health System",
+    "hospital_specific_dsh_limit": 7640272,
+    "dsh_payments": 1775115,
+    "regular_medicaid_ffs_payments": 19061399,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 20836514,
+    "medicaid_ip_utilization_pct": 35.91,
+    "low_income_utilization_pct": 12.5,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Clinics",
+    "hospital_specific_dsh_limit": 69655495,
+    "dsh_payments": 1459805,
+    "regular_medicaid_ffs_payments": 255041066,
+    "mco_payments": 67650572,
+    "medicaid_ip_op_payments": 344151443,
+    "medicaid_ip_utilization_pct": 41.45,
+    "low_income_utilization_pct": 14.62,
+    "enhanced_dsh": true
+   },
+   {
+    "hospital": "Center",
+    "hospital_specific_dsh_limit": 4984235,
+    "dsh_payments": 3565982,
+    "regular_medicaid_ffs_payments": 51575585,
+    "mco_payments": 341204,
+    "medicaid_ip_op_payments": 55482771,
+    "medicaid_ip_utilization_pct": 50.63,
+    "low_income_utilization_pct": 20.82,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Children's Hospital",
+    "hospital_specific_dsh_limit": 30445544,
+    "dsh_payments": 8008676,
+    "regular_medicaid_ffs_payments": 120826823,
+    "mco_payments": 2568541,
+    "medicaid_ip_op_payments": 131404040,
+    "medicaid_ip_utilization_pct": 36.44,
+    "low_income_utilization_pct": 17.3,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Mercy Medical Center",
+    "hospital_specific_dsh_limit": 22861106,
+    "dsh_payments": 175761,
+    "regular_medicaid_ffs_payments": 108063365,
+    "mco_payments": 1592361,
+    "medicaid_ip_op_payments": 119831487,
+    "medicaid_ip_utilization_pct": 30.22,
+    "low_income_utilization_pct": 19.6,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Broadlawns Medical Center",
+    "hospital_specific_dsh_limit": 11330170,
+    "dsh_payments": 3164691,
+    "regular_medicaid_ffs_payments": 46924264,
+    "mco_payments": 954966,
+    "medicaid_ip_op_payments": 51043921,
+    "medicaid_ip_utilization_pct": 59.95,
+    "low_income_utilization_pct": 58.16,
+    "enhanced_dsh": true
+   },
+   {
+    "hospital": "UnityPoint Health - Allen Hospital",
+    "hospital_specific_dsh_limit": 10303255,
+    "dsh_payments": 2888051,
+    "regular_medicaid_ffs_payments": 30143784,
+    "mco_payments": 274334,
+    "medicaid_ip_op_payments": 33306169,
+    "medicaid_ip_utilization_pct": 38.87,
+    "low_income_utilization_pct": 14.17,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Spencer Hospital",
+    "hospital_specific_dsh_limit": 3098820,
+    "dsh_payments": 75413,
+    "regular_medicaid_ffs_payments": 9222023,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 9697436,
+    "medicaid_ip_utilization_pct": 45.91,
+    "low_income_utilization_pct": 10.09,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Hospital",
+    "hospital_specific_dsh_limit": 4219703,
+    "dsh_payments": 1117081,
+    "regular_medicaid_ffs_payments": 15735978,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 16853059,
+    "medicaid_ip_utilization_pct": 35.27,
+    "low_income_utilization_pct": 16.28,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Bettendorf",
+    "hospital_specific_dsh_limit": 3890430,
+    "dsh_payments": 1256649,
+    "regular_medicaid_ffs_payments": 12763379,
+    "mco_payments": 56454,
+    "medicaid_ip_op_payments": 14076482,
+    "medicaid_ip_utilization_pct": 29.61,
+    "low_income_utilization_pct": 19.33,
+    "enhanced_dsh": false
+   }
+  ],
+  "2017": [
+   {
+    "hospital": "Center",
+    "hospital_specific_dsh_limit": 4973768,
+    "dsh_payments": 7346932,
+    "regular_medicaid_ffs_payments": 27419474,
+    "mco_payments": 411551,
+    "medicaid_ip_op_payments": 35177957,
+    "medicaid_ip_utilization_pct": 39.09,
+    "low_income_utilization_pct": 25.62,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Unity HealthCare",
+    "hospital_specific_dsh_limit": 530120,
+    "dsh_payments": 1012187,
+    "regular_medicaid_ffs_payments": 6616922,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 7629109,
+    "medicaid_ip_utilization_pct": 27.57,
+    "low_income_utilization_pct": 19.52,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Alegent Health - Mercy Hospital",
+    "hospital_specific_dsh_limit": 9749544,
+    "dsh_payments": 3468371,
+    "regular_medicaid_ffs_payments": 23421723,
+    "mco_payments": 0,
+    "medicaid_ip_op_payments": 26890094,
+    "medicaid_ip_utilization_pct": 13.57,
+    "low_income_utilization_pct": 33.87,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Clinics",
+    "hospital_specific_dsh_limit": 61974783,
+    "dsh_payments": 33292610,
+    "regular_medicaid_ffs_payments": 142214078,
+    "mco_payments": 26410487,
+    "medicaid_ip_op_payments": 201917175,
+    "medicaid_ip_utilization_pct": 44.39,
+    "low_income_utilization_pct": 13.74,
+    "enhanced_dsh": true
+   },
+   {
+    "hospital": "Iowa Methodist Medical Center",
+    "hospital_specific_dsh_limit": 8256776,
+    "dsh_payments": 11905130,
+    "regular_medicaid_ffs_payments": 51743478,
+    "mco_payments": 1825980,
+    "medicaid_ip_op_payments": 65474588,
+    "medicaid_ip_utilization_pct": 15.43,
+    "low_income_utilization_pct": 12.12,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Broadlawns Medical Center",
+    "hospital_specific_dsh_limit": 13324365,
+    "dsh_payments": 3239154,
+    "regular_medicaid_ffs_payments": 43170191,
+    "mco_payments": 1626530,
+    "medicaid_ip_op_payments": 48035875,
+    "medicaid_ip_utilization_pct": 62.54,
+    "low_income_utilization_pct": 71.98,
+    "enhanced_dsh": true
+   },
+   {
+    "hospital": "Mercy Medical Center",
+    "hospital_specific_dsh_limit": 9489864,
+    "dsh_payments": 19893071,
+    "regular_medicaid_ffs_payments": 85679256,
+    "mco_payments": 1090672,
+    "medicaid_ip_op_payments": 106662999,
+    "medicaid_ip_utilization_pct": 24.65,
+    "low_income_utilization_pct": 18.24,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "St. Luke's Hospital",
+    "hospital_specific_dsh_limit": 1692474,
+    "dsh_payments": 7791500,
+    "regular_medicaid_ffs_payments": 36540890,
+    "mco_payments": 243130,
+    "medicaid_ip_op_payments": 44575520,
+    "medicaid_ip_utilization_pct": 30.6,
+    "low_income_utilization_pct": 14.49,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Trinity Regional Medical Center",
+    "hospital_specific_dsh_limit": 4311102,
+    "dsh_payments": 1735110,
+    "regular_medicaid_ffs_payments": 12902321,
+    "mco_payments": 25495,
+    "medicaid_ip_op_payments": 14662926,
+    "medicaid_ip_utilization_pct": 29.02,
+    "low_income_utilization_pct": 17.11,
+    "enhanced_dsh": false
+   },
+   {
+    "hospital": "Iowa Lutheran Hospital",
+    "hospital_specific_dsh_limit": 5453220,
+    "dsh_payments": 4356534,
+    "regular_medicaid_ffs_payments": 24455514,
+    "mco_payments": 195000,
+    "medicaid_ip_op_payments": 29007048,
+    "medicaid_ip_utilization_pct": 47.31,
+    "low_income_utilization_pct": 24.62,
+    "enhanced_dsh": false
+   }
+  ]
+ },
+ "dsh_schedule_caveat": "Hospital names are as-extracted; multi-line names truncate (e.g. \"Clinics\" = University of Iowa Hospitals and Clinics). Sources: Iowa Auditor of State DSH examinations, SPRY 2017 (doc 1208822) and SPRY 2021 (doc 1518523), legis.iowa.gov.",
+ "orgs": [
+  {
+   "query": "ChildServe",
+   "kind": "hcbs",
+   "note": "pediatric HCBS/complex care, Johnston",
+   "matched": {
+    "ein": "421271420",
+    "name": "Childserve Inc",
+    "city": "Johnston",
+    "ntee": null,
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2001,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_04_EO%2F42-1271420_990_200106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_03_EO%2F42-1271420_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_03_EO%2F42-1271420_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_03_EO%2F42-1271420_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_03_EO%2F42-1271420_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_03_EO%2F42-1271420_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_03_EO%2F42-1271420_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_01_EO%2F42-1271420_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_03_EO%2F42-1271420_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_12_EO%2F42-1271420_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_12_EO%2F42-1271420_990_201106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2012,
+     "revenue": 3646213,
+     "expenses": 3646213,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_12_EO%2F42-1271420_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 3871504,
+     "expenses": 3871504,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_12_EO%2F42-1271420_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 4296150,
+     "expenses": 4296150,
+     "assets": 1,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_01_EO%2F42-1271420_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 4559747,
+     "expenses": 4559747,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_02_EO%2F42-1271420_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 4862767,
+     "expenses": 4862767,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2017_04_EO%2F42-1271420_990_201606.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 5553820,
+     "expenses": 5553820,
+     "assets": 1,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=01_2018_prefixes_41-45%2F421271420_201706_990_2018010215068515.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 5428351,
+     "expenses": 5428351,
+     "assets": 1,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=12_2018_prefixes_41-45%2F421271420_201806_990_2018122016031399.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 6443438,
+     "expenses": 6443438,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2020_prefixes_41-45%2F421271420_201906_990_2020020617118881.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 6092847,
+     "expenses": 6053773,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2021_prefixes_41-45%2F421271420_202006_990_2021022417754483.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 6857273,
+     "expenses": 7025683,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": null
+    },
+    {
+     "year": 2022,
+     "revenue": 7495473,
+     "expenses": 7244234,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_05_2023_prefixes_39-43%2F421271420_202206_990_2023053121329601.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 7869314,
+     "expenses": 8076234,
+     "assets": 0,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_03_2024_prefixes_41-54%2F421271420_202306_990_2024031222312046.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421271420_202406_990_2025042223370984.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2025,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421271420_202506_990_2026031924013290.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Link Associates",
+   "kind": "hcbs",
+   "note": "ID/DD waiver services, West Des Moines",
+   "matched": {
+    "ein": "420815363",
+    "name": "Link Associates",
+    "city": "Wdm",
+    "ntee": null,
+    "match_score": 4.5
+   },
+   "filings": [
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_12_EO%2F42-0815363_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_11_EO%2F42-0815363_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_11_EO%2F42-0815363_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_11_EO%2F42-0815363_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_12_EO%2F42-0815363_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_12_EO%2F42-0815363_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_12_EO%2F42-0815363_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_12_EO%2F42-0815363_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_12_EO%2F42-0815363_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 9834445,
+     "expenses": 9933262,
+     "assets": 2120497,
+     "liabilities": 1623068,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_04_EO%2F42-0815363_990_201106.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 10198132,
+     "expenses": 10654642,
+     "assets": 1190087,
+     "liabilities": 1149168,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_12_EO%2F42-0815363_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 11129156,
+     "expenses": 11082899,
+     "assets": 1184256,
+     "liabilities": 1097080,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_01_EO%2F42-0815363_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 12058535,
+     "expenses": 12340135,
+     "assets": 1118506,
+     "liabilities": 1312930,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_12_EO%2F42-0815363_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 12859076,
+     "expenses": 12954687,
+     "assets": 1351236,
+     "liabilities": 1641271,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_12_EO%2F42-0815363_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 13097020,
+     "expenses": 13241378,
+     "assets": 2142620,
+     "liabilities": 2577013,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_12_EO%2F42-0815363_990_201606.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 13669273,
+     "expenses": 13397038,
+     "assets": 1493021,
+     "liabilities": 1655179,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=01_2018_prefixes_41-45%2F420815363_201706_990_2018011015108678.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 12366838,
+     "expenses": 12889941,
+     "assets": 1191888,
+     "liabilities": 1877149,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=05_2019_prefixes_39-42%2F420815363_201806_990_2019051116291181.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 12156911,
+     "expenses": 12078438,
+     "assets": 1277626,
+     "liabilities": 1884414,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=10_2019_prefixes_41-45%2F420815363_201906_990_2019103116803306.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 12971664,
+     "expenses": 13414859,
+     "assets": 2621207,
+     "liabilities": 3671190,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2021_prefixes_41-45%2F420815363_202006_990_2021021917725013.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 16284234,
+     "expenses": 13707846,
+     "assets": 2021057,
+     "liabilities": 494652,
+     "pdf": null
+    },
+    {
+     "year": 2022,
+     "revenue": 15095571,
+     "expenses": 14916729,
+     "assets": 2870425,
+     "liabilities": 1165178,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420815363_202206_990_2023051721255221.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 15236221,
+     "expenses": 15424026,
+     "assets": 4103670,
+     "liabilities": 2586228,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_02_2024_prefixes_38-45%2F420815363_202306_990_2024020822279566.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420815363_202406_990_2025042223368446.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Candeo",
+   "kind": "hcbs",
+   "note": "supported community living, Johnston",
+   "matched": {
+    "ein": "853121558",
+    "name": "Candeo Counseling Center Inc",
+    "city": "Cedar Falls",
+    "ntee": "X20",
+    "match_score": 4.5
+   },
+   "filings": [
+    {
+     "year": 2021,
+     "revenue": 226759,
+     "expenses": 283079,
+     "assets": 82290,
+     "liabilities": 877,
+     "pdf": null
+    },
+    {
+     "year": 2022,
+     "revenue": 551519,
+     "expenses": 685460,
+     "assets": 109666,
+     "liabilities": 162194,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F853121558_202212_990_2023082921574166.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 993798,
+     "expenses": 903335,
+     "assets": 148081,
+     "liabilities": 108644,
+     "pdf": null
+    },
+    {
+     "year": 2024,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F853121558_202412_990_2025073023615106.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "WRONG ENTITY \u2014 matched Candeo Counseling Center ($1M); the HCBS Candeo is a different org; needs EIN override"
+  },
+  {
+   "query": "Mainstream Living",
+   "kind": "hcbs",
+   "note": "HCBS + behavioral health, Des Moines/Ames",
+   "matched": {
+    "ein": "421042459",
+    "name": "Mainstream Living Inc Stuart Ambrose",
+    "city": "Ames",
+    "ntee": "P800",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_11_EO%2F42-1042459_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_10_EO%2F42-1042459_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_11_EO%2F42-1042459_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_11_EO%2F42-1042459_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_02_EO%2F42-1042459_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_01_EO%2F42-1042459_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_12_EO%2F42-1042459_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_03_EO%2F42-1042459_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_02_EO%2F42-1042459_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 16229376,
+     "expenses": 15811259,
+     "assets": 5502387,
+     "liabilities": 3181138,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_04_EO%2F42-1042459_990_201106.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 17713578,
+     "expenses": 17502545,
+     "assets": 5905289,
+     "liabilities": 3373007,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_12_EO%2F42-1042459_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 18286017,
+     "expenses": 18356738,
+     "assets": 6266752,
+     "liabilities": 3805191,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_12_EO%2F42-1042459_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 16988939,
+     "expenses": 17232044,
+     "assets": 6102249,
+     "liabilities": 3883793,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_12_EO%2F42-1042459_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 19454491,
+     "expenses": 19426483,
+     "assets": 6067129,
+     "liabilities": 3820665,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_01_EO%2F13-137344_50010_421042459.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 20202388,
+     "expenses": 20019879,
+     "assets": 6126077,
+     "liabilities": 3697104,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2017_04_EO%2F42-1042459_990_201606.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 19888253,
+     "expenses": 19493119,
+     "assets": 5991734,
+     "liabilities": 3167627,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=12_2017_prefixes_39-43%2F421042459_201706_990_2017122815063101.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 18901085,
+     "expenses": 17549301,
+     "assets": 7952838,
+     "liabilities": 3776947,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2019_prefixes_41-45%2F421042459_201806_990_2019020416060485.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 19051204,
+     "expenses": 18322330,
+     "assets": 8794252,
+     "liabilities": 3889487,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=08_2020_prefixes_41-45%2F421042459_201906_990_2020081117228184.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 20468456,
+     "expenses": 20763630,
+     "assets": 11774866,
+     "liabilities": 7165275,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2021_prefixes_41-43%2F421042459_202006_990_2021040217865778.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 22277080,
+     "expenses": 21307342,
+     "assets": 13018346,
+     "liabilities": 7439017,
+     "pdf": null
+    },
+    {
+     "year": 2022,
+     "revenue": 26461263,
+     "expenses": 22298579,
+     "assets": 14812634,
+     "liabilities": 5070621,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_05_2023_prefixes_39-43%2F421042459_202206_990_2023051121205317.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 23546976,
+     "expenses": 22874506,
+     "assets": 15273873,
+     "liabilities": 4859390,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_01_2024_prefixes_41-43%2F421042459_202306_990_2024011722245630.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": 24140017,
+     "expenses": 23165267,
+     "assets": 15341196,
+     "liabilities": 3951963,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421042459_202406_990_2025041023346399.pdf"
+    }
+   ],
+   "review": "ok (city shows Stuart \u2014 verify same org)"
+  },
+  {
+   "query": "Easterseals Iowa",
+   "kind": "hcbs",
+   "note": "disability services, Des Moines",
+   "matched": {
+    "ein": "208392083",
+    "name": "Easter Seals Society Of Iowa",
+    "city": "Des Moines",
+    "ntee": "T30",
+    "match_score": 3.0
+   },
+   "filings": [
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_04_EO%2F20-8392083_990_200808.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_04_EO%2F20-8392083_990_200908.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_04_EO%2F20-8392083_990_201008.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 222450,
+     "expenses": 10282,
+     "assets": 2293872,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_03_EO%2F20-8392083_990_201108.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 250123,
+     "expenses": 120644,
+     "assets": 2423351,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_03_EO%2F20-8392083_990_201208.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 140480,
+     "expenses": 118069,
+     "assets": 2473502,
+     "liabilities": 27740,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_04_EO%2F20-8392083_990_201308.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 308937,
+     "expenses": 120185,
+     "assets": 2663378,
+     "liabilities": 28864,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_05_EO%2F20-8392083_990_201408.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 55772,
+     "expenses": 122828,
+     "assets": 2518753,
+     "liabilities": 32631,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_08_EO%2F20-8392083_990_201508.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 358422,
+     "expenses": 95263,
+     "assets": 2849369,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F208392083_201608_990_2017090714710947.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 80981,
+     "expenses": 64886,
+     "assets": 3107162,
+     "liabilities": 51588,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=10_2018_prefixes_20-22%2F208392083_201708_990_2018101515794868.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 172961,
+     "expenses": 65066,
+     "assets": 3331175,
+     "liabilities": 50937,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=09_2019_prefixes_20-22%2F208392083_201808_990_2019092316677384.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 856112,
+     "expenses": 67529,
+     "assets": 4256259,
+     "liabilities": 51333,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2021_prefixes_20-22%2F208392083_201908_990_2021021917723934.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 458104,
+     "expenses": 20104,
+     "assets": 4943548,
+     "liabilities": 0,
+     "pdf": null
+    },
+    {
+     "year": 2021,
+     "revenue": 4784642,
+     "expenses": 24625,
+     "assets": 10401118,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F208392083_202108_990_2023051221221846.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": 690276,
+     "expenses": 32753,
+     "assets": 9518714,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F208392083_202208_990_2023060621386422.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 892091,
+     "expenses": 26347,
+     "assets": 11067809,
+     "liabilities": 0,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_05_2024_prefixes_20-23%2F208392083_202308_990_2024050722387389.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F208392083_202408_990_2025042323375045.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "LIKELY WRONG ENTITY \u2014 $892K suggests foundation/camp arm, operating org is larger; verify EIN"
+  },
+  {
+   "query": "On With Life",
+   "kind": "hcbs",
+   "note": "brain injury rehab/HCBS, Ankeny",
+   "matched": {
+    "ein": "421308032",
+    "name": "On With Life Inc",
+    "city": "Ankeny",
+    "ntee": null,
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_01_EO%2F42-1308032_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_12_EO%2F42-1308032_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_01_EO%2F42-1308032_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_12_EO%2F42-1308032_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_12_EO%2F42-1308032_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_11_EO%2F42-1308032_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_02_EO%2F42-1308032_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_01_EO%2F42-1308032_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_04_EO%2F42-1308032_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 7767580,
+     "expenses": 7154643,
+     "assets": 8000348,
+     "liabilities": 3470510,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_03_EO%2F42-1308032_990_201106.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 7747772,
+     "expenses": 7340790,
+     "assets": 8284348,
+     "liabilities": 3324489,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_05_EO%2F42-1308032_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 8079337,
+     "expenses": 7578056,
+     "assets": 8543742,
+     "liabilities": 3190677,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_06_EO%2F42-1308032_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 8560873,
+     "expenses": 8193473,
+     "assets": 9099149,
+     "liabilities": 2953173,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_03_EO%2F42-1308032_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 9394008,
+     "expenses": 8384919,
+     "assets": 10968463,
+     "liabilities": 3400183,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_07_EO%2F42-1308032_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 9740095,
+     "expenses": 9175435,
+     "assets": 11257388,
+     "liabilities": 4480937,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421308032_201606_990_2017071414566982.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 12200166,
+     "expenses": 10928293,
+     "assets": 12559820,
+     "liabilities": 4539428,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421308032_201706_990_2018031315215289.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 13905902,
+     "expenses": 12231840,
+     "assets": 14488691,
+     "liabilities": 4794237,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=05_2019_prefixes_42-45%2F421308032_201806_990_2019053116364979.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 15679450,
+     "expenses": 14915218,
+     "assets": 16535264,
+     "liabilities": 6101581,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=01_2021_prefixes_41-45%2F421308032_201906_990_2021012117614435.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 14852352,
+     "expenses": 15952531,
+     "assets": 17299517,
+     "liabilities": 7966012,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=05_2021_prefixes_41-42%2F421308032_202006_990_2021051818124863.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 18186855,
+     "expenses": 16294127,
+     "assets": 19447887,
+     "liabilities": 8221654,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_07_2022_prefixes_39-51%2F421308032_202106_990_2022071120202321.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": 20015155,
+     "expenses": 16135635,
+     "assets": 22723164,
+     "liabilities": 7617411,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421308032_202206_990_2023061221437725.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 21191446,
+     "expenses": 17786847,
+     "assets": 40906106,
+     "liabilities": 22395754,
+     "pdf": null
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Community Support Advocates",
+   "kind": "hcbs_mh",
+   "note": "integrated health home, Des Moines",
+   "matched": {
+    "ein": "274422199",
+    "name": "Community Support Advocates",
+    "city": "Wichita",
+    "ntee": "S30",
+    "match_score": 3.0
+   },
+   "filings": [],
+   "review": "matched name but zero extracted filings \u2014 possibly a related entity; verify EIN"
+  },
+  {
+   "query": "Lutheran Services in Iowa",
+   "kind": "hcbs_mh",
+   "note": "BHIS/HCBS statewide, Des Moines HQ",
+   "matched": {
+    "ein": "420698267",
+    "name": "Lutheran Services In Iowa Inc",
+    "city": "Des Moines",
+    "ntee": "P32",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_11_EO%2F42-0698267_990_200312.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_11_EO%2F42-0698267_990_200412.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_09_EO%2F42-0698267_990_200512.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_03_EO%2F42-0698267_990_200612.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_01_EO%2F42-0698267_990_200712.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_09_EO%2F42-0698267_990_200812.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_09_EO%2F42-0698267_990_200912.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_09_EO%2F42-0698267_990_201012.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 33788879,
+     "expenses": 34373301,
+     "assets": 30245052,
+     "liabilities": 3927065,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_11_EO%2F42-0698267_990_201112.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 34719923,
+     "expenses": 36230370,
+     "assets": 28549117,
+     "liabilities": 3730484,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_11_EO%2F42-0698267_990_201212.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 33513548,
+     "expenses": 32287569,
+     "assets": 29572895,
+     "liabilities": 3537810,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_10_EO%2F42-0698267_990_201312.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 33737543,
+     "expenses": 33185898,
+     "assets": 29484341,
+     "liabilities": 2896660,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_09_EO%2F42-0698267_990_201412.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 32050619,
+     "expenses": 33280862,
+     "assets": 26847958,
+     "liabilities": 2865573,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_12_EO%2F42-0698267_990_201512.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 32583256,
+     "expenses": 34243926,
+     "assets": 26156545,
+     "liabilities": 2878053,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420698267_201612_990_2017101814852735.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 34353048,
+     "expenses": 35867477,
+     "assets": 27371486,
+     "liabilities": 3842297,
+     "pdf": null
+    },
+    {
+     "year": 2018,
+     "revenue": 34304625,
+     "expenses": 36317121,
+     "assets": 24762672,
+     "liabilities": 3626106,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=10_2019_prefixes_41-45%2F420698267_201812_990_2019102516782992.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 34750438,
+     "expenses": 35110705,
+     "assets": 24037522,
+     "liabilities": 2446379,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2021_prefixes_41-45%2F420698267_201912_990_2021021917725959.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 31084126,
+     "expenses": 30990705,
+     "assets": 25023543,
+     "liabilities": 3335958,
+     "pdf": null
+    },
+    {
+     "year": 2021,
+     "revenue": 34502625,
+     "expenses": 29385379,
+     "assets": 29699936,
+     "liabilities": 2899211,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420698267_202112_990_2023051221221019.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": 31144221,
+     "expenses": 32969694,
+     "assets": 28295606,
+     "liabilities": 3343386,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_01_2024_prefixes_41-43%2F420698267_202212_990_2024010322156526.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 32547993,
+     "expenses": 33665728,
+     "assets": 27133617,
+     "liabilities": 3265442,
+     "pdf": null
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Progress Industries",
+   "kind": "hcbs",
+   "note": "ID/DD services, Newton/Polk metro",
+   "matched": {
+    "ein": "421122161",
+    "name": "Progress Industries",
+    "city": "Newton",
+    "ntee": "J30Z",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_11_EO%2F42-1122161_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_12_EO%2F42-1122161_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_10_EO%2F42-1122161_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_11_EO%2F42-1122161_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_11_EO%2F42-1122161_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_11_EO%2F42-1122161_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_12_EO%2F42-1122161_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_06_EO%2F42-1122161_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_03_EO%2F42-1122161_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_01_EO%2F42-1122161_990_201106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2012,
+     "revenue": 12806962,
+     "expenses": 12797859,
+     "assets": 1713418,
+     "liabilities": 1237731,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_12_EO%2F42-1122161_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 13239853,
+     "expenses": 12819173,
+     "assets": 2043539,
+     "liabilities": 1147172,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_12_EO%2F42-1122161_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 11956134,
+     "expenses": 11939550,
+     "assets": 1943903,
+     "liabilities": 1030952,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_12_EO%2F42-1122161_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 12444311,
+     "expenses": 12434524,
+     "assets": 2030245,
+     "liabilities": 1107507,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_07_EO%2F42-1122161_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 12785789,
+     "expenses": 12785457,
+     "assets": 1995448,
+     "liabilities": 1072378,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421122161_201606_990_2017071414567231.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 12731547,
+     "expenses": 13153004,
+     "assets": 1784909,
+     "liabilities": 1283296,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=01_2018_prefixes_41-45%2F421122161_201706_990_2018011015109246.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 12841234,
+     "expenses": 12826833,
+     "assets": 1901041,
+     "liabilities": 1385027,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=12_2018_prefixes_41-45%2F421122161_201806_990_2018121916027150.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 11444282,
+     "expenses": 10571729,
+     "assets": 2619640,
+     "liabilities": 1231073,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=09_2020_prefixes_39-43%2F421122161_201906_990_2020091517297328.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 11055529,
+     "expenses": 11005452,
+     "assets": 4315615,
+     "liabilities": 2876971,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2021_prefixes_41-43%2F421122161_202006_990_2021040617906221.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 14123825,
+     "expenses": 12031800,
+     "assets": 4567230,
+     "liabilities": 1036561,
+     "pdf": null
+    },
+    {
+     "year": 2022,
+     "revenue": 12560187,
+     "expenses": 12093078,
+     "assets": 5056933,
+     "liabilities": 1059155,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_05_2023_prefixes_39-43%2F421122161_202206_990_2023053021316873.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 12941724,
+     "expenses": 12757698,
+     "assets": 5477676,
+     "liabilities": 1295872,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421122161_202306_990_2024041022358712.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421122161_202406_990_2025041123360388.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Genesis Development",
+   "kind": "hcbs",
+   "note": "ID/DD services, central Iowa",
+   "matched": {
+    "ein": "237363533",
+    "name": "Genesis Development",
+    "city": "Des Moines",
+    "ntee": "J300",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2001,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_01_EO%2F23-7363533_990_200106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_10_EO%2F23-7363533_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_10_EO%2F23-7363533_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_10_EO%2F23-7363533_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_11_EO%2F23-7363533_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_12_EO%2F23-7363533_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_03_EO%2F23-7363533_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_01_EO%2F23-7363533_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_12_EO%2F23-7363533_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_10_EO%2F23-7363533_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_11_EO%2F23-7363533_990_201106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2012,
+     "revenue": 13528085,
+     "expenses": 13550045,
+     "assets": 6934793,
+     "liabilities": 4369634,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_11_EO%2F23-7363533_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 14314522,
+     "expenses": 14369138,
+     "assets": 6432183,
+     "liabilities": 3921640,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_12_EO%2F23-7363533_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 15689565,
+     "expenses": 16000637,
+     "assets": 6358477,
+     "liabilities": 4159006,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_11_EO%2F23-7363533_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 17406716,
+     "expenses": 16986938,
+     "assets": 6477711,
+     "liabilities": 3858462,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_01_EO%2F13-095623_50036_237363533.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 18659749,
+     "expenses": 17215817,
+     "assets": 7731421,
+     "liabilities": 3668240,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2017_01_EO%2F23-7363533_990_201606.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 19152446,
+     "expenses": 18170346,
+     "assets": 8358499,
+     "liabilities": 3313218,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F237363533_201706_990_2017112214975135.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 17911528,
+     "expenses": 19291978,
+     "assets": 8990014,
+     "liabilities": 5325183,
+     "pdf": null
+    },
+    {
+     "year": 2019,
+     "revenue": 17614986,
+     "expenses": 19929637,
+     "assets": 6754022,
+     "liabilities": 5403842,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=09_2020_prefixes_23-25%2F237363533_201906_990_2020092917335985.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 7353377,
+     "expenses": 9224505,
+     "assets": 4127151,
+     "liabilities": 3738279,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=05_2021_prefixes_23-25%2F237363533_202006_990_2021052618204775.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": -49428,
+     "expenses": 1724856,
+     "assets": 1989905,
+     "liabilities": 3375317,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F237363533_202106_990_2022010519395868.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F237363533_202206_990_2023051021191983.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2023,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F237363533_202303_990_2023082921573446.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "data ends 2021 with negative revenue \u2014 org likely merged/reorganized; treat series as ended"
+  },
+  {
+   "query": "Eyerly Ball Community Mental Health",
+   "kind": "mh",
+   "note": "CMHC/CCBHC, Des Moines (EIN 420942273)",
+   "matched": {
+    "ein": "420942273",
+    "name": "Eyerly Ball Community Mental Health Services",
+    "city": "Des Moines",
+    "ntee": "F32Z",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_12_EO%2F42-0942273_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_12_EO%2F42-0942273_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_11_EO%2F42-0942273_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_12_EO%2F42-0942273_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_02_EO%2F42-0942273_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_09_EO%2F42-0942273_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_03_EO%2F42-0942273_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_03_EO%2F42-0942273_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_03_EO%2F42-0942273_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_11_EO%2F42-0942273_990_201106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2012,
+     "revenue": 6019232,
+     "expenses": 5945249,
+     "assets": 2990962,
+     "liabilities": 2196182,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_03_EO%2F42-0942273_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 7021604,
+     "expenses": 7094832,
+     "assets": 3567509,
+     "liabilities": 2845957,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_04_EO%2F42-0942273_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 8557852,
+     "expenses": 8263312,
+     "assets": 3579309,
+     "liabilities": 2563217,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_07_EO%2F42-0942273_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 10740020,
+     "expenses": 9867836,
+     "assets": 3678491,
+     "liabilities": 2194774,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_08_EO%2F42-0942273_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 12442344,
+     "expenses": 11391635,
+     "assets": 4183856,
+     "liabilities": 1649430,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420942273_201606_990_2017091514742255.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 6110583,
+     "expenses": 6524610,
+     "assets": 2924590,
+     "liabilities": 1386240,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=12_2018_prefixes_41-45%2F420942273_201712_990_2018121215998250.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 12219474,
+     "expenses": 12870895,
+     "assets": 3243114,
+     "liabilities": 1327687,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420942273_201706_990_2018080215557765.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 12977374,
+     "expenses": 12565462,
+     "assets": 3291326,
+     "liabilities": 1341064,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2020_prefixes_41-45%2F420942273_201812_990_2020020717126343.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 14468012,
+     "expenses": 13510997,
+     "assets": 4692148,
+     "liabilities": 1784871,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2021_prefixes_41-43%2F420942273_201912_990_2021040517878918.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 15892427,
+     "expenses": 14226234,
+     "assets": 6073393,
+     "liabilities": 1548824,
+     "pdf": null
+    },
+    {
+     "year": 2021,
+     "revenue": 17395872,
+     "expenses": 15206597,
+     "assets": 8261585,
+     "liabilities": 1554036,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_05_2023_prefixes_39-43%2F420942273_202112_990_2023051021196164.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": 17427676,
+     "expenses": 15354346,
+     "assets": 10387111,
+     "liabilities": 1940410,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_01_2024_prefixes_41-43%2F420942273_202212_990_2024011022208672.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 17016696,
+     "expenses": 15072349,
+     "assets": 12803506,
+     "liabilities": 2241342,
+     "pdf": null
+    }
+   ],
+   "review": "ok (EIN confirmed independently)"
+  },
+  {
+   "query": "Orchard Place",
+   "kind": "mh",
+   "note": "children's mental health, Des Moines",
+   "matched": {
+    "ein": "421463736",
+    "name": "Orchard Place",
+    "city": "Des Moines",
+    "ntee": "F80",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_12_EO%2F42-1463736_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_11_EO%2F42-1463736_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_12_EO%2F42-1463736_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_02_EO%2F42-1463736_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_01_EO%2F42-1463736_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_11_EO%2F42-1463736_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_10_EO%2F42-1463736_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_11_EO%2F42-1463736_990_201106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2012,
+     "revenue": 18026476,
+     "expenses": 17823911,
+     "assets": 11948508,
+     "liabilities": 1243040,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_10_EO%2F42-1463736_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 19154183,
+     "expenses": 18741833,
+     "assets": 12521645,
+     "liabilities": 1403827,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_11_EO%2F42-1463736_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 24040880,
+     "expenses": 21327528,
+     "assets": 15365536,
+     "liabilities": 1534366,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_10_EO%2F42-1463736_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 23443030,
+     "expenses": 22029810,
+     "assets": 16922000,
+     "liabilities": 1677610,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_10_EO%2F42-1463736_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 21202739,
+     "expenses": 21566750,
+     "assets": 15955812,
+     "liabilities": 1075433,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2017_01_EO%2F42-1463736_990_201606.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 20574254,
+     "expenses": 20724782,
+     "assets": 15795041,
+     "liabilities": 1065190,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421463736_201706_990_2017110814938504.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 20326017,
+     "expenses": 20862790,
+     "assets": 15332103,
+     "liabilities": 1139025,
+     "pdf": null
+    },
+    {
+     "year": 2019,
+     "revenue": 21024901,
+     "expenses": 21336267,
+     "assets": 15056251,
+     "liabilities": 1174539,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=10_2019_prefixes_41-45%2F421463736_201906_990_2019103116802593.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 20168938,
+     "expenses": 21000637,
+     "assets": 17519927,
+     "liabilities": 4469914,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2021_prefixes_41-45%2F421463736_202006_990_2021021717713961.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 22703038,
+     "expenses": 20833330,
+     "assets": 16304088,
+     "liabilities": 1384367,
+     "pdf": null
+    },
+    {
+     "year": 2022,
+     "revenue": 22024052,
+     "expenses": 22099480,
+     "assets": 16458232,
+     "liabilities": 1613939,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421463736_202206_990_2023020720934029.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 20449107,
+     "expenses": 22288863,
+     "assets": 15276577,
+     "liabilities": 2272040,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_11_2023_prefixes_41-45%2F421463736_202306_990_2023111621948379.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": 21396370,
+     "expenses": 22681762,
+     "assets": 14202896,
+     "liabilities": 2483751,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F421463736_202406_990_2025020323068857.pdf"
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Children and Families of Iowa",
+   "kind": "mh",
+   "note": "behavioral health, Des Moines",
+   "matched": {
+    "ein": "420680416",
+    "name": "Children And Families Of Iowa",
+    "city": "Des Moines",
+    "ntee": "P33Z",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_10_EO%2F42-0680416_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2003_11_EO%2F42-0680416_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_11_EO%2F42-0680416_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_12_EO%2F42-0680416_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_12_EO%2F42-0680416_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_12_EO%2F42-0680416_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_12_EO%2F42-0680416_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_03_EO%2F42-0680416_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_02_EO%2F42-0680416_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_11_EO%2F42-0680416_990_201106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2012,
+     "revenue": 12440256,
+     "expenses": 12304116,
+     "assets": 8480772,
+     "liabilities": 1765051,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_01_EO%2F42-0680416_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 13384899,
+     "expenses": 12280493,
+     "assets": 9860964,
+     "liabilities": 1565737,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_01_EO%2F42-0680416_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 15042682,
+     "expenses": 14503374,
+     "assets": 11083642,
+     "liabilities": 1267316,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_12_EO%2F42-0680416_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 16628008,
+     "expenses": 16265141,
+     "assets": 11564660,
+     "liabilities": 1191239,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_07_EO%2F42-0680416_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 16841740,
+     "expenses": 16488699,
+     "assets": 11985110,
+     "liabilities": 1133268,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2017_04_EO%2F42-0680416_990_201606.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 15290215,
+     "expenses": 16261658,
+     "assets": 12564768,
+     "liabilities": 1227710,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420680416_201706_990_2018032015225420.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 15839372,
+     "expenses": 16585236,
+     "assets": 12333021,
+     "liabilities": 1267454,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=03_2019_prefixes_39-44%2F420680416_201806_990_2019030516146341.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 15787022,
+     "expenses": 15857639,
+     "assets": 12528662,
+     "liabilities": 1530589,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=09_2020_prefixes_39-43%2F420680416_201906_990_2020092217318992.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 14409200,
+     "expenses": 13964637,
+     "assets": 15299483,
+     "liabilities": 3571915,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2021_prefixes_41-43%2F420680416_202006_990_2021041217921094.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 16514094,
+     "expenses": 14073175,
+     "assets": 18712609,
+     "liabilities": 1748599,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_03_2022_prefixes_36-43%2F420680416_202106_990_2022030919708582.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": 16958146,
+     "expenses": 15167169,
+     "assets": 18644238,
+     "liabilities": 1187288,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420680416_202206_990_2023060921425144.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 18037147,
+     "expenses": 17268632,
+     "assets": 21328462,
+     "liabilities": 1619291,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_02_2024_prefixes_38-45%2F420680416_202306_990_2024020822282392.pdf"
+    },
+    {
+     "year": 2024,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F420680416_202406_990_2025052223445470.pdf",
+     "note": "document only; no extracted financials"
+    }
+   ],
+   "review": "ok"
+  },
+  {
+   "query": "Youth Emergency Services and Shelter",
+   "kind": "mh",
+   "note": "YESS, Des Moines",
+   "matched": {
+    "ein": "237442304",
+    "name": "Youth Emergency Services & Shelter Of Iowa",
+    "city": "Des Moines",
+    "ntee": "P300",
+    "match_score": 4.6
+   },
+   "filings": [
+    {
+     "year": 2001,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_02_EO%2F23-7442304_990_200106.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2002,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2002_12_EO%2F23-7442304_990_200206.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2003,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2004_03_EO%2F23-7442304_990_200306.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2004,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2005_01_EO%2F23-7442304_990_200406.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2005,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2006_03_EO%2F23-7442304_990_200506.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2006,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2007_01_EO%2F23-7442304_990_200606.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2007,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2008_03_EO%2F23-7442304_990_200706.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2008,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2009_01_EO%2F23-7442304_990_200806.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2009,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2010_05_EO%2F23-7442304_990_200906.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_03_EO%2F23-7442304_990_201006.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 2962518,
+     "expenses": 2925126,
+     "assets": 4099271,
+     "liabilities": 217209,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_03_EO%2F23-7442304_990_201106.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 4059461,
+     "expenses": 3772912,
+     "assets": 4294940,
+     "liabilities": 164687,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_04_EO%2F23-7442304_990_201206.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 4031266,
+     "expenses": 3967292,
+     "assets": 4467743,
+     "liabilities": 176209,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_03_EO%2F23-7442304_990_201306.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 6983288,
+     "expenses": 4815896,
+     "assets": 7364691,
+     "liabilities": 774049,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2015_02_EO%2F23-7442304_990_201406.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 7066078,
+     "expenses": 5836446,
+     "assets": 9821009,
+     "liabilities": 2018832,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_03_EO%2F23-7442304_990_201506.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 6751281,
+     "expenses": 6013669,
+     "assets": 10198243,
+     "liabilities": 1725239,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F237442304_201606_990_2017072014578920.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 6374642,
+     "expenses": 6617589,
+     "assets": 9268626,
+     "liabilities": 868929,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2018_prefixes_23-27%2F237442304_201706_990_2018041215257596.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 7022657,
+     "expenses": 7332167,
+     "assets": 8530920,
+     "liabilities": 331347,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=03_2019_prefixes_23-25%2F237442304_201806_990_2019030416140918.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 6638946,
+     "expenses": 7417639,
+     "assets": 8342369,
+     "liabilities": 856691,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=10_2020_prefixes_23-26%2F237442304_201906_990_2020101917387735.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 6779884,
+     "expenses": 7111339,
+     "assets": 8485097,
+     "liabilities": 1297644,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2021_prefixes_23-25%2F237442304_202006_990_2021041417943335.pdf"
+    }
+   ],
+   "review": "ok through 2020; post-2020 filings missing at ProPublica \u2014 check for EIN change"
+  },
+  {
+   "query": "EveryStep",
+   "kind": "hospice_hcbs",
+   "note": "hospice + home care (fka VNS of Iowa), Des Moines",
+   "matched": null,
+   "top_rejected": "Visiting Nurse Services Of Iowa",
+   "review": "FETCHER BUG (fixed): correct org is Visiting Nurse Services of Iowa (former name) \u2014 rerun fixed script"
+  },
+  {
+   "query": "WesleyLife",
+   "kind": "hospice_hcbs",
+   "note": "senior services + hospice, Johnston",
+   "matched": {
+    "ein": "300577845",
+    "name": "Wesleylife",
+    "city": "Johnston",
+    "ntee": "E60",
+    "match_score": 5.0
+   },
+   "filings": [
+    {
+     "year": 2010,
+     "revenue": null,
+     "expenses": null,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2011_12_EO%2F30-0577845_990EZ_201012.pdf",
+     "note": "document only; no extracted financials"
+    },
+    {
+     "year": 2011,
+     "revenue": 4904314,
+     "expenses": 4711140,
+     "assets": 753156,
+     "liabilities": 559982,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2012_12_EO%2F30-0577845_990_201112.pdf"
+    },
+    {
+     "year": 2012,
+     "revenue": 4486765,
+     "expenses": 5207471,
+     "assets": 1586128,
+     "liabilities": 2113660,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2013_12_EO%2F30-0577845_990_201212.pdf"
+    },
+    {
+     "year": 2013,
+     "revenue": 6207466,
+     "expenses": 4908079,
+     "assets": 2877765,
+     "liabilities": 1887298,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2014_12_EO%2F30-0577845_990_201312.pdf"
+    },
+    {
+     "year": 2014,
+     "revenue": 4816833,
+     "expenses": 5037336,
+     "assets": 3674689,
+     "liabilities": 2722780,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2016_02_EO%2F30-0577845_990_201412.pdf"
+    },
+    {
+     "year": 2015,
+     "revenue": 9570645,
+     "expenses": 5666750,
+     "assets": 8247154,
+     "liabilities": 3452813,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=2017_03_EO%2F30-0577845_990_201512.pdf"
+    },
+    {
+     "year": 2016,
+     "revenue": 6464169,
+     "expenses": 7819683,
+     "assets": 8132142,
+     "liabilities": 4596092,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=01_2018_prefixes_27-31%2F300577845_201612_990_2018010415079622.pdf"
+    },
+    {
+     "year": 2017,
+     "revenue": 7942351,
+     "expenses": 9646067,
+     "assets": 8397392,
+     "liabilities": 6389277,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=12_2018_prefixes_30-33%2F300577845_201712_990_2018122016032476.pdf"
+    },
+    {
+     "year": 2018,
+     "revenue": 7377655,
+     "expenses": 7445846,
+     "assets": 8422797,
+     "liabilities": 6678682,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=02_2020_prefixes_30-33%2F300577845_201812_990_2020020317098810.pdf"
+    },
+    {
+     "year": 2019,
+     "revenue": 8352215,
+     "expenses": 8719225,
+     "assets": 16992900,
+     "liabilities": 15667527,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=04_2021_prefixes_27-31%2F300577845_201912_990_2021040517888565.pdf"
+    },
+    {
+     "year": 2020,
+     "revenue": 10375894,
+     "expenses": 9916400,
+     "assets": 18842097,
+     "liabilities": 17405391,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=IRS%2F300577845_202012_990_2022102520559100.pdf"
+    },
+    {
+     "year": 2021,
+     "revenue": 10517468,
+     "expenses": 10598381,
+     "assets": 18059987,
+     "liabilities": 17604642,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_05_2023_prefixes_27-31%2F300577845_202112_990_2023050921186612.pdf"
+    },
+    {
+     "year": 2022,
+     "revenue": 10055815,
+     "expenses": 12365027,
+     "assets": 19888372,
+     "liabilities": 26352818,
+     "pdf": "https://projects.propublica.org/nonprofits/download-filing?path=download990pdf_01_2024_prefixes_27-30%2F300577845_202212_990_2024010922202030.pdf"
+    },
+    {
+     "year": 2023,
+     "revenue": 8970171,
+     "expenses": 12348136,
+     "assets": 14354988,
+     "liabilities": 25379593,
+     "pdf": null
+    }
+   ],
+   "review": "ok"
+  }
+ ],
+ "dsh_examinations_corrected": {
+  "2017": {
+   "Broadlawns Medical Center": {
+    "dsh_limit": 13324365,
+    "medicaid_ip_util_pct": 62.54,
+    "low_income_util_pct": 71.98,
+    "elig": "EDSH",
+    "ffs_payments": 3239154,
+    "mco_payments": 43170191,
+    "supplemental_enhanced_payments": 1626530,
+    "total_medicaid_ip_op_payments": 48035875,
+    "total_cost_of_care_medicaid": 57255932,
+    "medicaid_uncompensated_care_cost": 9220057,
+    "uninsured_cost_of_care": 4835507,
+    "uninsured_uncompensated_care_cost": 4104308,
+    "total_eligible_uncompensated": 13324365,
+    "total_dsh_payments_received": 7172342,
+    "total_hospital_cost": 87827669
+   },
+   "University of Iowa Hospitals and Clinics": {
+    "dsh_limit": 61974783,
+    "medicaid_ip_util_pct": 44.39,
+    "low_income_util_pct": 13.74,
+    "elig": "EDSH",
+    "ffs_payments": 33292610,
+    "mco_payments": 142214078,
+    "supplemental_enhanced_payments": 26410487,
+    "total_medicaid_ip_op_payments": 201917175,
+    "total_cost_of_care_medicaid": 258835896,
+    "medicaid_uncompensated_care_cost": 56918721,
+    "uninsured_cost_of_care": 7849663,
+    "uninsured_uncompensated_care_cost": 5056062,
+    "total_eligible_uncompensated": 61974783,
+    "total_dsh_payments_received": 28999984,
+    "total_hospital_cost": 1144355565
+   }
+  },
+  "2021": {
+   "Broadlawns Medical Center": {
+    "dsh_limit": 11330170,
+    "medicaid_ip_util_pct": 59.95,
+    "low_income_util_pct": 58.16,
+    "elig": "EDSH",
+    "ffs_payments": 3164691,
+    "mco_payments": 46924264,
+    "supplemental_enhanced_payments": 954966,
+    "total_medicaid_ip_op_payments": 51043921,
+    "total_cost_of_care_medicaid": 57801675,
+    "medicaid_uncompensated_care_cost": 6757754,
+    "uninsured_cost_of_care": 5956629,
+    "uninsured_uncompensated_care_cost": 4572416,
+    "total_eligible_uncompensated": 11330170,
+    "total_dsh_payments_received": 6495102,
+    "total_hospital_cost": 120550777
+   },
+   "University of Iowa Hospitals and Clinics": {
+    "dsh_limit": 69655495,
+    "medicaid_ip_util_pct": 41.45,
+    "low_income_util_pct": 14.62,
+    "elig": "EDSH",
+    "ffs_payments": 21459805,
+    "mco_payments": 255041066,
+    "supplemental_enhanced_payments": 67650572,
+    "total_medicaid_ip_op_payments": 344151443,
+    "total_cost_of_care_medicaid": 407571963,
+    "medicaid_uncompensated_care_cost": 63420520,
+    "uninsured_cost_of_care": 10008240,
+    "uninsured_uncompensated_care_cost": 6234975,
+    "total_eligible_uncompensated": 69655495,
+    "total_dsh_payments_received": 64818710,
+    "total_hospital_cost": 1507277123
+   }
+  }
+ },
+ "column_correction_note": "2026-07-22: earlier extraction mislabeled schedule columns (F=FFS was called 'dsh_payments', G=MCO called 'ffs', H=Supplemental called 'mco'). dsh_examinations_corrected carries verified values incl. p.7 columns: true 'Total DSH Payments Received' is Broadlawns $7,172,342 (2017) / $6,495,102 (2021) \u2014 close to the $8.56M/yr agreements (gross vs received difference remains, but no order-of-magnitude mystery \u2014 and UIHC DSH received ROSE $29.0M -> $64.8M; the earlier '$33.3M -> $1.5M collapse' framing was a column-shift artifact and is retracted.",
+ "adair_seed": {
+  "org": "Adair County Health System (county hospital, Iowa Code ch. 347; 609 SE Kent St, Greenfield)",
+  "no_990_reason": "governmental (county-owned) \u2014 no Form 990",
+  "audit_trail": [
+   "Annual audited financial statements filed with the Iowa Auditor of State (auditor.iowa.gov report database, searchable by entity name) \u2014 these carry payer mix, net patient revenue, the LTC/swing-bed unit, and county tax support",
+   "Adair County government annual audit (same database) \u2014 county-side flows",
+   "Federal Audit Clearinghouse single audits \u2014 likely present 2020-22 via HHS Provider Relief Fund (93.498); the fetcher now searches both the county and the hospital by auditee name"
+  ],
+  "hypothesis": "Adair's statewide-highest per-eligible Medicaid ($1,577/mo across ~1,558 eligibles) is consistent with a facility-mix signature: the county health system's LTC operation over a tiny eligible base. CONFIRM via (a) the hospital's audited payer-mix note, and (b) the facility-level vendor dataset once located on the Data Hub \u2014 do not narrate before either.",
+  "county_centroid": {
+   "lat": 41.3307,
+   "lon": -94.4709,
+   "source": "Census TIGER BAS26"
+  }
+ }
+}

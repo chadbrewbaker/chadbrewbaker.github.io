@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Polk & Johnson County Medicaid panel: two counties, one ledger</title>
+<style>
+*{box-sizing:border-box} body{font-family:Helvetica,Arial,sans-serif;max-width:980px;margin:0 auto;padding:20px;line-height:1.5;color:#222}
+h1{margin:0 0 8px;font-size:26px} h2{font-size:19px;margin:26px 0 8px} .blurb{color:#444;margin-top:0}
+.banner{border-radius:8px;padding:9px 13px;font-size:13.5px;margin:12px 0}
+.banner.warn{background:#fff8f0;border:1px solid #d4a72c} .banner.ok{background:#f0fff4;border:1px solid #1a7f37}
+#cards{display:flex;gap:14px;flex-wrap:wrap} .card{flex:1;min-width:280px;border:1px solid #d8dee4;border-radius:10px;padding:12px 16px;background:#fff}
+.card h3{margin:0 0 6px;font-size:16px} .kv{color:#57606a;font-size:12px;margin-top:7px} .v{font-size:14px} .v.big{font-size:22px;font-weight:600}
+svg{width:100%;height:auto} .chartbox{border:1px solid #d8dee4;border-radius:8px;background:#fff;padding:8px}
+.note{color:#57606a;font-size:12.5px;margin:4px 0 0}
+table.t{border-collapse:collapse;font-size:13px;width:100%;margin-top:6px}
+.t td,.t th{border:1px solid #d8dee4;padding:4px 7px;text-align:right;white-space:nowrap}
+.t td:first-child,.t th:first-child,.t td:nth-child(2){text-align:left;white-space:normal}
+.t th{background:#f6f8fa} .t tr[data-q]{cursor:pointer}
+.flag{background:#fff8c5;color:#7d4e00;font-size:11px;padding:1px 6px;border-radius:8px}
+button{font-size:13px;padding:5px 10px;border:1px solid #bbb;border-radius:6px;background:#f6f8fa;cursor:pointer;margin-right:6px}
+button.active{background:#0969da;border-color:#0969da;color:#fff}
+.spark{vertical-align:middle;width:110px;height:24px}
+.about{margin-top:26px;border-top:1px solid #ddd;padding-top:14px} .about p{font-size:14px;color:#333}
+footer{margin-top:24px;padding-top:12px;border-top:1px solid #ddd;font-size:13px;color:#555} a{color:#0969da}
+</style></head><body>
+<h1>Polk &amp; Johnson County: two counties, one Medicaid ledger</h1>
+<p class="blurb">A local panel over three snapshots: the state&rsquo;s county-month Medicaid
+payments, county budget levies, hospital DSH examinations, and the IRS&nbsp;990 / federal
+single-audit records of the nonprofit providers who actually deliver Medicaid-funded care.
+County hospital (Broadlawns) meets university hospital (UIHC); Des Moines&rsquo;s provider
+ecosystem meets Iowa City&rsquo;s &mdash; with Adair County alongside as the state&rsquo;s
+per-eligible outlier: the highest Medicaid cost per enrolled member in Iowa, spread over a
+denominator of only ~1,500 eligibles. Small-county per-eligible extremes are usually facility
+mix (a single nursing or ICF facility dominates a tiny base); confirming that for Adair
+specifically needs the facility-level LTC vendor dataset, the natural next snapshot.</p>
+<div id="banner" class="banner"></div>
+
+<div id="cards"></div>
+
+<div style="margin-top:16px"><span class="note">chart scale:</span>
+<button id="pc-abs" class="active">Absolute $</button>
+<button id="pc-cap">Per capita (2020 Census; snapshot population overrides when present)</button></div>
+<h2>Medicaid payments attributed to each county</h2>
+<div class="chartbox" id="medchart"></div>
+<p class="note">Rolling 12-month sums from Iowa Data Hub dataset 973. County attribution has
+weakened over time (a growing share books to a &ldquo;Central Office&rdquo; pseudo-county), so
+levels understate resident spending increasingly; trends within a county remain meaningful.</p>
+
+<div id="levysec">
+<h2>The county mental-health levy, and its abolition</h2>
+<div class="chartbox" id="levychart"></div>
+<h2 style="font-size:16px;margin-top:14px">County debt service (context for fiscal capacity)</h2>
+<div class="chartbox" id="debtchart"></div>
+<p class="note">Annual budgeted debt-service payments from the same county budget dataset \u2014
+the cash cost of county borrowing, shown to normalize the health-spending lines against each
+county\u2019s fiscal obligations. Outstanding principal (bond balances) is a different number,
+published in the Iowa DOM Outstanding Obligations reports.</p>
+<p class="note">County budgeted MH/DD service-area expenditures (hub dataset 939). SF&nbsp;619
+(2021) phased county mental-health levies out in favor of state funding: statewide county MH
+budgets fell from ~$134M (FY2020) to zero (FY2026). By FY2023 the statewide line
+<i>is</i> Polk &mdash; the last county budgeting MH &mdash; reaching zero in FY2026. The money
+moved to state appropriations; this chart is the county half of that handoff.</p>
+</div>
+
+<h2>Broadlawns vs UIHC: the DSH examination trail</h2>
+<div id="hosptable"></div>
+<p class="note" id="hospnote"></p>
+
+<h2>Where the registered money sits</h2>
+<div id="maps" style="display:flex;gap:14px;flex-wrap:wrap"></div>
+<p class="note">Circle area \u221d latest IRS-990 total revenue (organization-wide \u2014 <b>not</b>
+Medicaid-specific), placed at each org's <b>registered (IRS) address</b>, which is a headquarters,
+not service-delivery sites; multi-site orgs collapse to one point. Gray crosses are city centers
+for orientation. Geocoding: U.S. Census Bureau geocoder.</p>
+
+<h2>The provider nonprofits: 990s and single audits</h2>
+<div><button id="tab-polk" class="active">Polk roster</button><button id="tab-johnson">Johnson roster</button><button id="tab-adair">Adair</button></div>
+<div id="orgtable"></div>
+<div class="chartbox" id="orgchart" style="margin-top:10px"></div>
+<p class="note" id="orgchartnote"></p>
+
+<h2>Why is Adair County such an outlier?</h2>
+<div id="adairstory" class="note" style="font-size:13.5px"></div>
+<h2>990 revenue growth since 2019 — leads for reading the filings</h2>
+<div><span class="note">filter:</span> <button id="gf-all" class="active">All</button><button id="gf-polk">Polk</button><button id="gf-johnson">Johnson</button></div>
+<div id="growth"></div>
+<p class="note">Ratios compare the last pre-2020 fiscal year filed to the latest filing. Growth is a
+<b>lead, not a verdict</b>: this window contains CCBHC prospective payment (2024), HCBS rate
+increases, ARPA-era grants, and pandemic programs — the filings themselves say which. Every link
+opens the organization in ProPublica's free Nonprofit Explorer (full 990 PDFs and XML); bulk data:
+<a href="https://www.irs.gov/charities-non-profits/form-990-series-downloads">IRS 990 e-file downloads</a>.</p>
+
+<section class="about">
+<h2>Reading this honestly</h2>
+<p><b>990s are organization-level.</b> An org&rsquo;s revenue covers every program and location
+it operates, not a facility and not a payer split; Medicaid revenue appears only where the org
+itemizes it. <b>Single-audit &ldquo;Medicaid&rdquo; is narrower than Medicaid revenue:</b> the
+SEFA counts federal <i>awards</i> expended, and ordinary Medicaid patient-care payments are not
+awards &mdash; so $0 in the 93.778 column is expected for providers whose Medicaid money is
+service revenue, and the nonzero entries (waiver- and grant-shaped flows) are the interesting
+part. Orgs under $750K/yr federal spend file no single audit at all. <b>University of Iowa has
+no separate single audit</b> &mdash; state universities are audited inside the State of
+Iowa&rsquo;s statewide single audit, so its absence from the federal database is structural, not
+suspicious; UIHC&rsquo;s Medicaid trail here is the DSH examination schedule (as
+&ldquo;Clinics&rdquo;, a name truncation) plus its Auditor-of-State financial audits.
+<b>The two DSH measures disagree:</b> the examinations&rsquo; &ldquo;DSH payments&rdquo; (~$3.2M
+for Broadlawns) and the hospital&rsquo;s own audited &ldquo;DSH payment&rdquo; figures
+($8.5&ndash;10.3M/yr) are different measures of different slices; they are shown separately and
+never summed. Flagged rows (&#x2691;) carry unresolved entity-match questions &mdash; treat
+them as leads, not facts.</p>
+<p>Sources: Iowa Data Hub datasets 973 &amp; 939 (CC BY 4.0); Iowa Auditor of State DSH
+examinations SPRY 2017 &amp; 2021; IRS Form 990 via ProPublica Nonprofit Explorer; Federal
+Audit Clearinghouse. Refresh scripts and the statewide explorer:
+<a href="iowa-medicaid.html">iowa-medicaid.html</a>.</p>
+</section>
+<footer>Static page + three JSON snapshots. Skeleton after <a href="https://github.com/simonw/tools">simonw/tools</a>.</footer>
+<script>
+
+const els = id => document.getElementById(id);
+const fmt$ = v => v==null?'—':(Math.abs(v)>=1e9?'$'+(v/1e9).toFixed(2)+'B':Math.abs(v)>=1e6?'$'+(v/1e6).toFixed(1)+'M':Math.abs(v)>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+v.toFixed(0));
+const PAL=['#0969da','#cf222e','#1a7f37','#9a6700','#8250df'];
+let MED=null, ORGS=null, POLK=null, orgView='polk', selOrg=null, perCapMode=false;
+const POP_FALLBACK={POLK:492401,JOHNSON:152854,ADAIR:7496,_IOWA:3190369,_label:'2020 Census'};
+function popOf(c){const p=MED&&MED.population&&MED.population.by_county;return (p&&p[c])||POP_FALLBACK[c];}
+
+async function grab(f){ try{ const r=await fetch(f); return r.ok? await r.json():null; }catch(e){ return null; } }
+window.addEventListener('load', async ()=>{
+  [MED,ORGS,POLK]=await Promise.all([grab('iowa_medicaid_data.json'),grab('county_orgs.json'),grab('polk_data.json')]);
+  const missing=[['iowa_medicaid_data.json',MED],['county_orgs.json',ORGS],['polk_data.json',POLK]].filter(x=>!x[1]).map(x=>x[0]);
+  els('banner').innerHTML = missing.length
+    ? (location.protocol === 'file:'
+        ? '<b>This page is being opened from disk (file://)</b> \u2014 browsers block <code>fetch()</code> for local files, so the data cannot load even though it is right there. Run <code>python3 -m http.server</code> in this folder and open <code>http://localhost:8000/</code>, or deploy to any static host (GitHub Pages works as-is).'
+        : '<b>Missing sibling files:</b> '+missing.join(', ')+' — place them next to this page. Sections needing them are hidden.')
+    : 'Loaded live data: Medicaid snapshot ('+MED.generated+'), org/990/single-audit data ('+ORGS.generated+'), DSH extractions.';
+  els('banner').className='banner '+(missing.length?'warn':'ok');
+  if(MED){cards();medChart();levyChart();adairStory();
+    els('pc-abs').onclick=()=>{perCapMode=false;setPC();medChart();levyChart();};
+    els('pc-cap').onclick=()=>{perCapMode=true;setPC();medChart();levyChart();};
+    function setPC(){els('pc-abs').classList.toggle('active',!perCapMode);els('pc-cap').classList.toggle('active',perCapMode);}
+    setPC();}
+  if(POLK) hospitals();
+  if(ORGS){drawMaps();growthTable();
+    for(const g of ['all','polk','johnson'])
+      els('gf-'+g).onclick=()=>{growthFilter=g;['all','polk','johnson'].forEach(x=>els('gf-'+x).classList.toggle('active',x===g));growthTable();};}
+  if(ORGS) { els('tab-polk').onclick=()=>{orgView='polk';selOrg=null;orgTable();};
+             els('tab-johnson').onclick=()=>{orgView='johnson';selOrg=null;orgTable();};
+             els('tab-adair').onclick=()=>{orgView='adair';selOrg=null;orgTable();};
+             orgTable(); }
+});
+
+const CITY_XY={'DES MOINES':[41.5868,-93.6250],'WEST DES MOINES':[41.5772,-93.7110],
+ 'JOHNSTON':[41.6730,-93.6977],'ANKENY':[41.7318,-93.6001],'URBANDALE':[41.6267,-93.7122],
+ 'NEWTON':[41.6997,-93.0480],'AMES':[42.0308,-93.6319],'GRIMES':[41.6883,-93.7913],
+ 'IOWA CITY':[41.6611,-91.5302],'CORALVILLE':[41.6764,-91.5805],'NORTH LIBERTY':[41.7490,-91.6113],
+ 'STUART':[41.5033,-94.3186],'GREENFIELD':[41.3053,-94.4614],'FONTANELLE':[41.2886,-94.5561],'ORIENT':[41.2033,-94.4211],'DES MOINES IA':[41.5868,-93.6250]};
+const COUNTY_BOX={polk:{la:[41.49,41.80],lo:[-93.93,-93.30]}, johnson:{la:[41.46,41.87],lo:[-91.84,-91.35]}, adair:{la:[41.16,41.51],lo:[-94.71,-94.24]}};
+const SUPERVISORS={polk:{name:'Polk County Supervisors (111 Court Ave, Des Moines)',lat:41.5859,lon:-93.6196},
+ adair:{name:'Adair County Courthouse (Greenfield)',lat:41.3053,lon:-94.4614},
+ johnson:{name:'Johnson County Supervisors (913 S Dubuque St, Iowa City)',lat:41.6531,lon:-91.5344}};
+function inBox(b,la,lo){ return la>=b.la[0]&&la<=b.la[1]&&lo>=b.lo[0]&&lo<=b.lo[1]; }
+const CITIES=[['Des Moines',41.5868,-93.6250],['West Des Moines',41.5772,-93.7110],
+ ['Johnston',41.6730,-93.6977],['Ankeny',41.7318,-93.6001],['Urbandale',41.6267,-93.7122],
+ ['Newton',41.6997,-93.0480],['Iowa City',41.6611,-91.5302],['Coralville',41.6764,-91.5805],
+ ['North Liberty',41.7490,-91.6113]];
+function drawMaps(){
+  const out=[];
+  for(const cty of (ORGS.counties.adair?['polk','johnson','adair']:['polk','johnson'])){
+    const pts=[]; let cityLevel=0, anchored=0;
+    const cityCount={};
+    for(const o of ORGS.counties[cty].orgs){
+      const m=o.matched;
+      if(!m) continue;
+      const fil=(o.filings||[]).filter(f=>f.revenue!=null);
+      const rev=fil.length?fil[fil.length-1].revenue:0;
+      let la=m.lat, lo=m.lon, prec='street';
+      if(la==null){
+        const c=CITY_XY[String(m.city||'').toUpperCase().trim()];
+        if(!c) continue;
+        const k=String(m.city).toUpperCase(); cityCount[k]=(cityCount[k]||0)+1;
+        const ang=cityCount[k]*2.4;
+        la=c[0]+0.011*Math.sin(ang); lo=c[1]+0.014*Math.cos(ang); prec='city';
+        cityLevel++;
+      }
+      if(!inBox(COUNTY_BOX[cty],la,lo)){
+        const sup=SUPERVISORS[cty];
+        pts.push({name:m.name,lat:sup.lat,lon:sup.lon,rev,kind:o.kind,prec:'supervisors',origin:(m.city||'out of county')});
+        anchored++;
+        continue;
+      }
+      pts.push({name:m.name,lat:la,lon:lo,rev,kind:o.kind,prec});
+    }
+    if(!pts.length){
+      out.push('<div class="card" style="flex:1;min-width:300px"><h3>'+cty[0].toUpperCase()+cty.slice(1)+
+        ' County</h3><p class="note">No locatable orgs.</p></div>');
+      continue;
+    }
+    const lats=pts.map(p=>p.lat), lons=pts.map(p=>p.lon);
+    const pad=0.045;
+    const la0=Math.min(...lats)-pad, la1=Math.max(...lats)+pad;
+    const lo0=Math.min(...lons)-pad*1.3, lo1=Math.max(...lons)+pad*1.3;
+    const W=450, cosf=Math.cos((la0+la1)/2*Math.PI/180);
+    const H=Math.max(200,Math.min(430, W*((la1-la0)/((lo1-lo0)*cosf))));
+    const X=lo=>(lo-lo0)/(lo1-lo0)*W, Y=la=>H-(la-la0)/(la1-la0)*H;
+    const maxR=Math.max(...pts.map(p=>p.rev),1);
+    const R=v=>4+24*Math.sqrt(Math.max(0,v)/maxR);
+    const kc={hcbs:'#0969da',mh:'#cf222e',hcbs_mh:'#8250df',hospice_hcbs:'#1a7f37'};
+    const svg=[];
+    for(const [nm,la,lo] of CITIES){
+      if(la<la0||la>la1||lo<lo0||lo>lo1) continue;
+      svg.push(`<text x="${X(lo)}" y="${Y(la)}" class="cityx" text-anchor="middle">+</text>`);
+      svg.push(`<text x="${X(lo)}" y="${Y(la)+12}" class="citylbl" text-anchor="middle">${nm}</text>`);
+    }
+    const sorted=[...pts].sort((a,b)=>b.rev-a.rev);
+    for(const p of sorted){
+      const dash=p.prec==='street'?'':p.prec==='city'?' stroke-dasharray="4 2"':' stroke-dasharray="1.5 2.5"';
+      const tip=p.name+': '+fmt$(p.rev)+' latest revenue'+(p.prec==='city'?' (city-level position)':p.prec==='supervisors'?' \u2014 registered at '+p.origin+', outside the county; anchored at the '+SUPERVISORS[cty].name:'');
+      svg.push(`<circle cx="${X(p.lon).toFixed(1)}" cy="${Y(p.lat).toFixed(1)}" r="${R(p.rev).toFixed(1)}" fill="${(kc[p.kind]||'#57606a')}33" stroke="${kc[p.kind]||'#57606a'}" stroke-width="1.5"${dash}><title>${tip}</title></circle>`);
+    }
+    sorted.slice(0,3).forEach(p=>{
+      svg.push(`<text x="${X(p.lon).toFixed(1)}" y="${(Y(p.lat)-R(p.rev)-3).toFixed(1)}" class="olbl" text-anchor="middle">${p.name.slice(0,24)}</text>`);
+    });
+    out.push('<div class="card" style="flex:1;min-width:300px"><h3>'+cty[0].toUpperCase()+cty.slice(1)+
+      ' County</h3><svg viewBox="0 0 '+W+' '+H+'" style="border:1px solid #eee;border-radius:6px;background:#fbfcfd">'+
+      '<style>.cityx{font:12px Helvetica;fill:#8b949e}.citylbl{font:9px Helvetica;fill:#8b949e}.olbl{font:10px Helvetica;fill:#333}</style>'+
+      svg.join('')+'</svg>'+
+      '<div class="note">'+pts.length+' orgs ('+pts.filter(q=>q.prec==='street').length+' street, '+pts.filter(q=>q.prec==='city').length+' city-level dashed'+(anchored?', '+pts.filter(q=>q.prec==='supervisors').length+' anchored at Supervisors\u2019 office (registered out of county)':'')+') \u00b7 <span style="color:#0969da">\u25cf</span> HCBS '+
+      '<span style="color:#cf222e">\u25cf</span> MH <span style="color:#8250df">\u25cf</span> both '+
+      '<span style="color:#1a7f37">\u25cf</span> hospice</div></div>');
+  }
+  // Adair: facility map from vendor data when present, guidance otherwise
+  (function(){
+    const AD_CITY={'GREENFIELD':[41.3053,-94.4614],'FONTANELLE':[41.2886,-94.5561],'ADAIR':[41.5008,-94.6436],'ORIENT':[41.2033,-94.4211]};
+    const v=MED&&MED.vendors;
+    if(v&&v.adair_vendors&&v.adair_vendors.length){
+      const roster=Object.fromEntries((v.roster||[]).map(r=>[r.vendor,r]));
+      const pts=v.adair_vendors.map((nm,i)=>{
+        const r=roster[nm]||{};
+        const c=AD_CITY[(r.city||'GREENFIELD').toUpperCase()]||AD_CITY.GREENFIELD;
+        return {name:nm,lat:c[0]+0.011*Math.sin(i*2.4),lon:c[1]+0.014*Math.cos(i*2.4),rev:r.latest12||0};
+      });
+      const la0=41.16,la1=41.53,lo0=-94.72,lo1=-94.20,W=450;
+      const cosf=Math.cos((la0+la1)/2*Math.PI/180);
+      const H2=Math.max(200,Math.min(430,W*((la1-la0)/((lo1-lo0)*cosf))));
+      const X=lo=>(lo-lo0)/(lo1-lo0)*W,Y=la=>H2-(la-la0)/(la1-la0)*H2;
+      const mx=Math.max(...pts.map(q=>q.rev),1);
+      const svg=[];
+      for(const [nm,ll] of Object.entries(AD_CITY)){
+        svg.push(`<text x="${X(ll[1])}" y="${Y(ll[0])}" class="cityx" text-anchor="middle">+</text>`);
+        svg.push(`<text x="${X(ll[1])}" y="${Y(ll[0])+12}" class="citylbl" text-anchor="middle">${nm}</text>`);}
+      pts.forEach(q=>svg.push(`<circle cx="${X(q.lon).toFixed(1)}" cy="${Y(q.lat).toFixed(1)}" r="${(4+24*Math.sqrt(Math.max(0,q.rev)/mx)).toFixed(1)}" fill="#9a670033" stroke="#9a6700" stroke-width="1.5"><title>${q.name}: ${fmt$(q.rev)} Medicaid payments, latest 12mo (facility \u2014 dataset 975)</title></circle>`));
+      out.push('<div class="card" style="flex:1;min-width:300px"><h3>Adair County (facilities)</h3><svg viewBox="0 0 '+W+' '+H2+'" style="border:1px solid #eee;border-radius:6px;background:#fbfcfd"><style>.cityx{font:12px Helvetica;fill:#8b949e}.citylbl{font:9px Helvetica;fill:#8b949e}</style>'+svg.join('')+'</svg><div class="note">circle area \u221d latest-12mo <b>Medicaid facility payments</b> (dataset 975), city-level positions \u2014 a different metric than the org-revenue maps.</div></div>');
+    } else {
+      out.push('<div class="card" style="flex:1;min-width:300px"><h3>Adair County (facilities)</h3><p class="note">Facility map renders from the vendor dataset (975) \u2014 your snapshot predates it. Re-run <code>refresh_iowa_medicaid.py</code> (975 is now wired as the primary vendor source), then reload.</p></div>');
+    }
+  })();
+  els('maps').innerHTML=out.join('');
+}
+function last12(arr,n){ let s=0; for(let i=n-12;i<n;i++) s+=arr[i]||0; return s; }
+function cy(arr,months,y){ let s=0; months.forEach((m,i)=>{ if(m.startsWith(y)) s+=arr[i]||0; }); return s; }
+function cards(){
+  const cm=MED.county.months, n=cm.length, out=[];
+  for(const cnty of ['POLK','JOHNSON','ADAIR']){
+    const s=MED.county.series[cnty];
+    const l=last12(s.payments,n), b=cy(s.payments,cm,'2019');
+    const el=last12(s.eligibles,n)/12, eb=cy(s.eligibles,cm,'2019')/12;
+    let levy='';
+    if(MED.county_budget){
+      const cb=MED.county_budget, fys=cb.fiscal_years;
+      const mh=cb.counties[cnty].mental_health_mr_dd, ds=cb.counties[cnty].debt_service;
+      const dsl=ds[fys.length-1];
+      const pop=MED.population&&MED.population.by_county&&MED.population.by_county[cnty];
+      levy='<div class="kv">MH levy FY2020 → FY2026</div><div class="v">'+fmt$(mh[fys.indexOf('2020')])+' → '+fmt$(mh[fys.indexOf('2026')])+'</div>'+
+        '<div class="kv">county debt service FY'+fys[fys.length-1]+'</div><div class="v">'+fmt$(dsl)+
+        (pop?' ('+fmt$(dsl/pop)+'/capita)':' <span style="color:#8b949e">(per-capita after refresh adds population)</span>')+'</div>';
+    }
+    out.push('<div class="card"><h3>'+cnty[0]+cnty.slice(1).toLowerCase()+' County</h3>'+
+      '<div class="kv">Medicaid, latest 12&nbsp;mo</div><div class="v big">'+fmt$(l)+'</div>'+
+      '<div class="kv">vs CY2019</div><div class="v">×'+(l/b).toFixed(2)+' (eligibles ×'+(el/eb).toFixed(2)+', per-eligible ×'+((l/b)/(el/eb)).toFixed(2)+')</div>'+
+      '<div class="kv">per eligible / month</div><div class="v">'+fmt$(l/12/el)+'</div>'+levy+'</div>');
+  }
+  els('cards').innerHTML=out.join('');
+}
+function roll12(a){ return a.map((_,i)=>{let s=0;for(let k=Math.max(0,i-11);k<=i;k++)s+=a[k]||0;return s;}); }
+function lineChart(labels, seriesList, w, h, fmt){
+  const P={l:58,r:8,t:22,b:30}, iw=w-P.l-P.r, ih=h-P.t-P.b;
+  let max=0; seriesList.forEach(s=>s.data.forEach(v=>{if(v>max)max=v;})); if(!max)max=1;
+  const X=i=>P.l+iw*i/Math.max(1,labels.length-1), Y=v=>P.t+ih*(1-v/max);
+  const o=[];
+  for(let g=0;g<=4;g++){const v=max*g/4,y=Y(v);
+    o.push(`<line x1="${P.l}" y1="${y}" x2="${w-P.r}" y2="${y}" stroke="#eee"/>`);
+    o.push(`<text x="${P.l-5}" y="${y}" text-anchor="end" dominant-baseline="middle" class="ax">${fmt(v)}</text>`);}
+  const st=Math.ceil(labels.length/8);
+  for(let i=0;i<labels.length;i+=st) o.push(`<text x="${X(i)}" y="${h-10}" text-anchor="middle" class="ax">${labels[i]}</text>`);
+  seriesList.forEach((s,k)=>{
+    o.push('<path d="'+s.data.map((v,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')+`" fill="none" stroke="${PAL[k%5]}" stroke-width="2"/>`);});
+  o.push('<text x="'+P.l+'" y="13" class="leg">'+seriesList.map((s,k)=>`<tspan fill="${PAL[k%5]}">▬</tspan> ${s.name}`).join('  ')+'</text>');
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg"><style>.ax{font:10px Helvetica;fill:#666}.leg{font:11px Helvetica;fill:#333}</style>${o.join('')}</svg>`;
+}
+function scale(arr,c){const d=perCapMode?popOf(c):1;return arr.map(v=>v/d);}
+function medChart(){
+  const cm=MED.county.months,sfx=perCapMode?' $/capita':'';
+  els('medchart').innerHTML=lineChart(cm,[
+    {name:'Polk (rolling 12m)'+sfx,data:scale(roll12(MED.county.series.POLK.payments),'POLK')},
+    {name:'Johnson (rolling 12m)'+sfx,data:scale(roll12(MED.county.series.JOHNSON.payments),'JOHNSON')},
+    {name:'Adair (rolling 12m)'+sfx,data:scale(roll12(MED.county.series.ADAIR.payments),'ADAIR')}],940,270,fmt$);
+}
+function adairStory(){
+  const cm=MED.county.months,n=cm.length,s=MED.county.series.ADAIR;
+  const pay=s.payments.slice(n-12).reduce((a,b)=>a+b,0);
+  const el=s.eligibles.slice(n-12).reduce((a,b)=>a+b,0)/12;
+  let t='Adair runs <b>'+fmt$(pay/12/el)+' per eligible per month</b> \u2014 the highest in Iowa \u2014 across only '+
+    Math.round(el).toLocaleString()+' eligibles ('+fmt$(pay)+'/yr total). The hypothesis: <b>facility mix</b> \u2014 '+
+    'long-term-care beds dominating a tiny enrollment base, so a handful of facility residents (at $4\u20136K/mo each) '+
+    'set the county average, not community healthcare costs. ';
+  const v=MED.vendors;
+  if(v&&v.adair_vendors&&v.adair_vendors.length){
+    const roster=Object.fromEntries((v.roster||[]).map(r=>[r.vendor,r]));
+    const fac=v.adair_vendors.reduce((a,nm)=>a+((roster[nm]||{}).latest12||0),0);
+    t+='<b>Evidence from dataset 975:</b> Adair-area LTC facilities received '+fmt$(fac)+' in the latest 12 months \u2014 '+
+      (fac/pay*100).toFixed(0)+'% of the county\u2019s attributed Medicaid'+
+      ((fac/pay>0.35)?', substantially confirming the facility-mix explanation.':' \u2014 partial support; the remainder needs the MCO-paid share, invisible at facility level.');
+  } else {
+    t+='<b>Status:</b> awaiting three evidence streams \u2014 the 975 facility payments (re-run refresh), the Adair County '+
+      'Health System audited financials from auditor.iowa.gov (payer mix + LTC unit), and its FAC single audits (fetcher). '+
+      'Each can confirm or refute independently; none has yet.';
+  }
+  els('adairstory').innerHTML=t;
+}
+function levyChart(){
+  if(!MED.county_budget){ els('levysec').style.display='none'; return; }
+  const cb=MED.county_budget, fys=cb.fiscal_years;
+  const sw=cb.statewide.mental_health_mr_dd;
+  const sc=(a,c)=>perCapMode?a.map(v=>v/(c==='_IOWA'?POP_FALLBACK._IOWA:popOf(c))):a;
+  const sfx=perCapMode?' $/capita':'';
+  els('levychart').innerHTML=lineChart(fys,[
+    {name:'Statewide county MH/DD'+(perCapMode?' $/capita (Iowa)':''),data:sc(sw,'_IOWA')},
+    {name:'Polk'+sfx,data:sc(cb.counties.POLK.mental_health_mr_dd,'POLK')},
+    {name:'Johnson'+sfx,data:sc(cb.counties.JOHNSON.mental_health_mr_dd,'JOHNSON')},
+    {name:'Adair'+sfx,data:sc(cb.counties.ADAIR.mental_health_mr_dd,'ADAIR')}],940,250,fmt$);
+  els('debtchart').innerHTML=lineChart(fys,[
+    {name:'Polk debt service'+sfx,data:sc(cb.counties.POLK.debt_service,'POLK')},
+    {name:'Johnson'+sfx,data:sc(cb.counties.JOHNSON.debt_service,'JOHNSON')},
+    {name:'Adair'+sfx,data:sc(cb.counties.ADAIR.debt_service,'ADAIR')}],940,220,fmt$);
+}
+function hospitals(){
+  const sch=POLK.dsh_schedules_all_hospitals, rows=[];
+  for(const yr of Object.keys(sch).sort()){
+    for(const name of ['Broadlawns Medical Center','Clinics']){
+      const r=sch[yr].find(x=>x.hospital===name);
+      if(r) rows.push([yr, name==='Clinics'?'UIHC (“Clinics”, name-truncated)':name, r]);
+    }
+  }
+  let h='<table class="t"><tr><th>SPRY</th><th>Hospital</th><th>DSH limit</th><th>DSH paid</th><th>Medicaid FFS</th><th>MCO</th><th>Total IP/OP</th><th>IP util</th><th>Low-income util</th></tr>';
+  for(const [yr,nm,r] of rows)
+    h+=`<tr><td>${yr}</td><td>${nm}</td><td>${fmt$(r.hospital_specific_dsh_limit)}</td><td>${fmt$(r.dsh_payments)}</td><td>${fmt$(r.regular_medicaid_ffs_payments)}</td><td>${fmt$(r.mco_payments)}</td><td><b>${fmt$(r.medicaid_ip_op_payments)}</b></td><td>${r.medicaid_ip_utilization_pct}%</td><td>${r.low_income_utilization_pct}%</td></tr>`;
+  h+='</table>';
+  els('hosptable').innerHTML=h;
+  els('hospnote').textContent=POLK.broadlawns.reconciliation_note;
+}
+function spark(data,w,h){ const m=Math.max(...data.filter(v=>v!=null),1e-9);
+  const pts=data.map((v,i)=>(w*i/Math.max(1,data.length-1)).toFixed(1)+','+(h-h*(v||0)/m).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" class="spark"><polyline points="${pts}" fill="none" stroke="#0969da" stroke-width="1.2"/></svg>`; }
+function reviewOf(q){
+  if(POLK) for(const o of POLK.orgs||[]) if(o.query===q && o.review && !/^ok/.test(o.review)) return o.review;
+  return null;
+}
+let growthFilter='all';
+function growthTable(){
+  const rows=[];
+  for(const cty of ['polk','johnson']){
+    if(growthFilter!=='all'&&cty!==growthFilter)continue;
+    for(const o of ORGS.counties[cty].orgs){
+      const m=o.matched; if(!m) continue;
+      const fil=(o.filings||[]).filter(f=>f.revenue!=null).sort((a,b)=>a.year-b.year);
+      const base=fil.filter(f=>f.year<=2019).pop(), last=fil[fil.length-1];
+      if(!base||!last||base.year===last.year||base.revenue<=0) continue;
+      rows.push({cty,name:m.name,ein:m.ein,b:base,l:last,ratio:last.revenue/base.revenue});
+    }
+  }
+  rows.sort((a,b)=>b.ratio-a.ratio);
+  let h='<table class="t"><tr><th>Organization</th><th>county</th><th>FY'+''+'base</th><th>latest</th><th>×</th><th>Δ</th><th>filings</th></tr>';
+  for(const r of rows){
+    h+='<tr><td>'+r.name+'</td><td>'+r.cty+'</td><td>'+fmt$(r.b.revenue)+' ('+r.b.year+')</td><td>'+
+      fmt$(r.l.revenue)+' ('+r.l.year+')</td><td'+(r.ratio>=1.6?' style="background:#ffebe9"':r.ratio>=1.3?' style="background:#fff8c5"':'')+'>×'+r.ratio.toFixed(2)+'</td><td>'+
+      (r.l.revenue-r.b.revenue>=0?'+':'−')+fmt$(Math.abs(r.l.revenue-r.b.revenue))+'</td>'+
+      '<td><a href="https://projects.propublica.org/nonprofits/organizations/'+r.ein+'" target="_blank" rel="noopener">990s →</a></td></tr>';
+  }
+  els('growth').innerHTML=h+'</table>';
+}
+function orgTable(){
+  els('tab-adair').classList.toggle('active',orgView==='adair');
+  els('tab-polk').classList.toggle('active',orgView==='polk');
+  els('tab-johnson').classList.toggle('active',orgView==='johnson');
+  if(orgView==='adair' && !(ORGS.counties.adair&&ORGS.counties.adair.orgs.length)){
+    els('orgtable').innerHTML='<p class="note">Adair’s Medicaid dollars flow overwhelmingly to <b>facilities</b>, not community nonprofits: the county-owned Adair County Health System (governmental — no 990) and LTC facilities. Being county-owned also means <b>audits</b>: annual audited financial statements filed with the Iowa Auditor of State (searchable at auditor.iowa.gov \u2014 payer mix and the LTC unit are in the notes), plus likely Provider-Relief-era federal single audits, which the fetcher now pulls by auditee name. The facility-level vendor dataset completes the diagnosis; find “Iowa Medicaid Payments &amp; Recipients by Month and Vendor” on data.iowa.gov (the 939 play: download rows.csv manually, set VENDOR_LOCAL_FILE in refresh_iowa_medicaid.py). The fetcher now also checks for an Adair roster — re-run it.</p>';
+    els('orgchart').innerHTML='';els('orgchartnote').textContent='';
+    const v=MED&&MED.vendors;
+    if(v&&v.adair_vendors&&v.adair_vendors.length){
+      const roster=Object.fromEntries((v.roster||[]).map(r=>[r.vendor,r]));
+      let t='<table class="t"><tr><th>Facility (dataset 975)</th><th>type</th><th>city</th><th>Medicaid, latest 12mo</th></tr>';
+      for(const nm of v.adair_vendors){const r=roster[nm]||{};
+        t+='<tr data-v="'+nm.replace(/"/g,'&quot;')+'"><td>'+nm+'</td><td>'+(r.type||'\u2014')+'</td><td>'+(r.city||'\u2014')+'</td><td>'+fmt$(r.latest12||0)+'</td></tr>';}
+      els('orgtable').innerHTML+=t+'</table>';
+      els('orgtable').querySelectorAll('tr[data-v]').forEach(tr=>{tr.onclick=()=>{
+        const nm=tr.getAttribute('data-v');
+        els('orgchart').innerHTML=lineChart(v.months,[{name:nm+' \u2014 monthly Medicaid payments',data:v.series[nm]||[]}],940,240,fmt$);
+        els('orgchartnote').textContent='facility-level Medicaid payments (SNF/ICF/RCF/NFMI universe), dataset 975 \u2014 the payment trend, not org revenue';};});
+      els('orgchartnote').textContent='click a facility to chart its Medicaid payment trend';
+    }
+    return;
+  }
+  const orgs=ORGS.counties[orgView].orgs;
+  let h='<table class="t"><tr><th>Organization</th><th>kind</th><th>EIN</th><th>latest revenue</th><th>revenue trend</th><th>FAC latest fed$</th><th>FAC Medicaid (93.778)</th></tr>';
+  for(const o of orgs){
+    const m=o.matched, fil=(o.filings||[]).filter(f=>f.revenue!=null);
+    const flag=reviewOf(o.query);
+    const link=m?'<a href="https://projects.propublica.org/nonprofits/organizations/'+m.ein+'" target="_blank" rel="noopener">'+m.ein+'</a>':'—';
+    const nm=(m?m.name:o.query)+(flag?' <span class="flag" title="'+flag.replace(/"/g,'&quot;')+'">⚑ review</span>':'')+(!m?' <span class="flag">no confident match</span>':'');
+    const sa=o.single_audits, last=sa&&sa[sa.length-1];
+    h+='<tr data-q="'+o.query.replace(/"/g,'&quot;')+'"><td>'+nm+'</td><td>'+o.kind+'</td><td>'+link+'</td>'+
+       '<td>'+(fil.length?fmt$(fil[fil.length-1].revenue):'—')+'</td>'+
+       '<td>'+(fil.length>2?spark(fil.map(f=>f.revenue),110,24):'—')+'</td>'+
+       '<td>'+(last?fmt$(last.total_federal_expended)+' ('+last.audit_year+')':'—')+'</td>'+
+       '<td>'+(last?fmt$(last.medicaid_93_778):'—')+'</td></tr>';
+  }
+  h+='</table>';
+  els('orgtable').innerHTML=h;
+  els('orgtable').querySelectorAll('tr[data-q]').forEach(tr=>{ tr.onclick=()=>{ selOrg=tr.getAttribute('data-q'); orgChart(); }; });
+  els('orgchart').innerHTML=''; els('orgchartnote').textContent='click an organization to chart its 990 revenue & expenses';
+}
+function orgChart(){
+  const o=ORGS.counties[orgView].orgs.find(x=>x.query===selOrg);
+  if(!o) return;
+  const fil=(o.filings||[]).filter(f=>f.revenue!=null);
+  if(!fil.length){ els('orgchart').innerHTML=''; els('orgchartnote').textContent=selOrg+': no extracted financials (documents may still exist as PDFs)'; return; }
+  els('orgchart').innerHTML=lineChart(fil.map(f=>String(f.year)),
+    [{name:(o.matched?o.matched.name:selOrg)+' revenue',data:fil.map(f=>f.revenue)},
+     {name:'expenses',data:fil.map(f=>f.expenses||0)}],940,250,fmt$);
+  els('orgchartnote').textContent='IRS Form 990 extracted financials via ProPublica; org-level (all programs & locations), fiscal years as filed';
+}
+
+</script></body></html>

@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Iowa Medicaid spending browser: what changed since 2019</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Helvetica, Arial, sans-serif; max-width: 980px; margin: 0 auto;
+  padding: 20px; line-height: 1.5; color: #222; }
+h1 { margin: 0 0 8px; font-size: 26px; }
+.blurb { color: #444; margin-top: 0; }
+.banner { border-radius: 8px; padding: 9px 13px; font-size: 13.5px; margin: 12px 0; }
+.banner.warn { background: #fff8f0; border: 1px solid #d4a72c; }
+.banner.ok { background: #f0fff4; border: 1px solid #1a7f37; }
+.anom { background: #fff8f0; border: 1px solid #d4a72c; border-radius: 8px; padding: 7px 12px;
+  font-size: 13px; margin: 6px 0; }
+.anom:empty { display: none; }
+.note { color: #57606a; font-size: 13px; margin: 4px 0; }
+.captag { background: #ddf4ff; color: #0550ae; font-size: 10.5px; padding: 1px 5px;
+  border-radius: 8px; vertical-align: middle; }
+.controls { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; align-items: center; }
+.controls span { color: #57606a; font-size: 13px; }
+button { font-size: 13px; padding: 5px 10px; border: 1px solid #bbb; border-radius: 6px;
+  background: #f6f8fa; cursor: pointer; }
+button.active { background: #0969da; border-color: #0969da; color: #fff; }
+select { font-size: 13px; padding: 4px 6px; border: 1px solid #bbb; border-radius: 6px; background: #f6f8fa; }
+#summary { font-size: 14px; margin: 8px 0; }
+#chart .eracap { font-size: 12.5px; color: #57606a; margin: 10px 0 2px; }
+#chart svg { width: 100%; height: auto; border: 1px solid #d8dee4; border-radius: 8px; background: #fff; }
+#chart-note { color: #57606a; font-size: 12.5px; margin: 4px 0 14px; }
+table.ex { border-collapse: collapse; font-size: 13px; width: 100%; }
+.ex td, .ex th { border: 1px solid #d8dee4; padding: 4px 7px; text-align: right; white-space: nowrap; }
+.ex td:nth-child(2), .ex th:nth-child(2) { text-align: left; white-space: normal; }
+.ex th { background: #f6f8fa; font-weight: 600; }
+.ex th.sortable { cursor: pointer; text-decoration: underline dotted; }
+.ex tr { cursor: pointer; }
+.ex tr.sel td { outline: 2px solid #0969da33; }
+.ex .d { font-weight: 600; }
+.heat3 td { background: #ffebe9; } .heat2 td { background: #fff1e5; }
+.heat1 td { background: #fff8c5; } .cool1 td { background: #ddf4ff; }
+.spark { vertical-align: middle; }
+.about { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 14px; }
+.about h2 { font-size: 18px; }
+.about h3 { font-size: 15px; margin: 18px 0 6px; }
+.about p { font-size: 14px; color: #333; }
+code { background: #f6f8fa; padding: 1px 4px; border-radius: 4px;
+  font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12.5px; }
+.refs { font-size: 13px; color: #444; padding-left: 22px; }
+.refs li { margin-bottom: 3px; }
+footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 13px; color: #555; }
+footer a, .about a { color: #0969da; }
+</style>
+</head>
+<body>
+<h1>Iowa Medicaid spending: what changed since 2019</h1>
+<p class="blurb">A browser over the State of Iowa&rsquo;s own monthly Medicaid payment data
+(Iowa Data Hub datasets 973 and 974, CC&nbsp;BY&nbsp;4.0), built to answer one question first:
+<b>where did spending grow, and was it more people or more dollars per person?</b> Every
+change since the 2019 baseline is decomposed into enrollment &times; per-recipient growth
+&mdash; because the window spans the COVID enrollment boom and its unwind, and those two
+stories demand opposite policy readings.</p>
+
+<div id="banner" class="banner"></div>
+
+<div class="controls">
+  <span>dimension</span>
+  <button id="view-cat">Categories of service</button>
+  <button id="view-ffs">FFS detail (capitation excluded)</button>
+  <button id="view-cnty">Counties</button>
+  <span style="margin-left:14px">baseline</span>
+  <select id="baseyear">
+    <option value="2011">CY2011 (earliest)</option>
+    <option value="2012">CY2012</option>
+    <option value="2015">CY2015 (last full pre-MCO year)</option>
+    <option value="2019" selected>CY2019 (pre-COVID)</option>
+  </select>
+  <span style="margin-left:14px">sort by</span>
+  <select id="sortby">
+    <option value="delta" selected>Δ $ since baseline</option>
+    <option value="levelPer">$ per recipient (level)</option>
+    <option value="perCap">$ per capita</option>
+    <option value="ratio">growth ratio</option>
+  </select>
+  <span style="margin-left:14px">chart metric</span>
+  <button id="met-pay">Monthly (noisy)</button>
+  <button id="met-roll">Rolling 12-mo</button>
+  <button id="met-ppr">Per recipient</button>
+  <button id="met-pcap">Per capita</button>
+  <button id="era-toggle" title="split the timeline at the 2016 managed-care transition and the 2020 pandemic">Split by era</button>
+</div>
+
+<div id="summary"></div>
+<div id="anomaly" class="anom"></div>
+<div id="cnote" class="note"></div>
+<div id="outliers" class="note" style="font-size:13.5px"></div>
+<div id="chart"></div>
+<div id="chart-note"></div>
+<div id="extable"></div>
+
+<section class="about">
+<h2>Reading this honestly</h2>
+
+<h3>1&ensp;What the numbers are, and are not &mdash; answered from the data</h3>
+<p>The category dataset reports <b>MCO capitation as a single line</b>: about $6.9B of the
+latest 12 months&rsquo; ~$7.6B sits in one undifferentiated &ldquo;MCO&rdquo; row (plus dental
+in &ldquo;Prepaid Ambulatory Health Plan&rdquo; since 2023 &mdash; the dental &ldquo;decline&rdquo;
+in the FFS rows is that migration, not less dentistry). Everything else is the fee-for-service
+residue: waivers, PACE, school-based services, and the shrinking direct-billed remainder.
+So this page can show <i>where state checks went</i> exactly, and <i>service-level detail for
+the FFS slice</i> honestly &mdash; but service detail inside the MCO line is not public here.
+Capitation growth 2019&rarr;now decomposes as roughly enrollment &times;1.04 and per-member
+&times;1.33. Two further warts the data itself revealed: monthly figures follow check-write
+timing (some months miss an entire capitation cycle &mdash; use the Rolling 12-mo view), and
+the county dataset books a growing share (4% in 2018 &rarr; ~31% in 2024) to a
+&ldquo;CENTRAL OFFICE&rdquo; pseudo-county, so county attribution weakens over time. The two
+state datasets also disagree with each other in some years (county-dataset CY2024 runs ~$2B
+higher than the category dataset) &mdash; treat either as the state&rsquo;s reporting, not
+gospel.</p>
+<h3>2&ensp;The decomposition, and why 2019&rarr;now needs it</h3>
+<p>Payments &equiv; recipients &times; payments-per-recipient, so the growth ratio factors
+exactly into enrollment &times; per-recipient components (shown per row). The window crosses
+the pandemic&rsquo;s continuous-coverage enrollment surge (March 2020) and the redetermination
+unwind (from April 2023): a category can &ldquo;explode&rdquo; on headcount while its unit
+economics are flat, or vice versa. The baseline selector reaches back to 2011 &mdash; five years before the April 2016 IA Health
+Link transition &mdash; so the managed-care migration itself is measurable: against a CY2015
+baseline the MCO line is essentially all &ldquo;new&rdquo; money while the legacy FFS
+categories crater, which is the transition seen from the payment ledger. The amber dashed
+lines mark financing-regime changes
+&mdash; PHE start, SF&nbsp;619&rsquo;s mental-health funding shift, the unwind, CCBHC PPS,
+and the 2025 behavioral-health districts &mdash; level shifts at those dates are plumbing,
+not epidemiology.</p>
+
+<h3>3&ensp;Provenance</h3>
+<p>Data: Iowa Data Hub datasets
+<a href="https://data.iowa.gov/catalog/dataset/974">974</a> (category &times; month) and
+<a href="https://data.iowa.gov/catalog/dataset/973">973</a> (county &times; month),
+published monthly by Iowa HHS, Division of Medicaid, CC&nbsp;BY&nbsp;4.0; snapshotted by
+<code>refresh_iowa_medicaid.py</code> because the state migrated portals in 2025 and broke
+every prior API URL &mdash; committed snapshots outlive portals. Cross-checks: CMS-64
+Financial Management Reports (federal expenditure truth), LSA monthly Medicaid reports,
+and the B-1 county PDFs. Amounts are nominal dollars; no inflation adjustment is applied.</p>
+
+<h3>References</h3>
+<ol class="refs">
+<li>Iowa Data Hub, datasets 973 &amp; 974, Iowa HHS Division of Medicaid (CC BY 4.0).</li>
+<li>CMS, Expenditure Reports from MBES/CBES (Form CMS-64 Financial Management Reports), FY2014&ndash;FY2024.</li>
+<li>Iowa HHS, Medicaid Performance and Reports; Medicaid B-1 statistical reports (Iowa Publications Online).</li>
+<li>Iowa Legislative Services Agency, monthly Medicaid forecast and expenditure reports.</li>
+<li>Families First Coronavirus Response Act &sect;6008 (FMAP increase, continuous coverage); Consolidated Appropriations Act 2023 (unwind); Iowa SF 619 (2021); Iowa HF 2673 (2024, behavioral health service system).</li>
+</ol>
+</section>
+
+<footer>
+One static file + one JSON snapshot + one stdlib-only Python refresh script. Skeleton after
+<a href="https://github.com/simonw/tools">simonw/tools</a>.
+</footer>
+<script>
+
+// ---------------- explosion analytics (pure) ----------------
+// baseline = calendar 2019; latest = final 12 months with data.
+function windows(months, baseYear) {
+  baseYear = baseYear || '2019';
+  const base = [], latest = [];
+  months.forEach((m, i) => { if (m.startsWith(baseYear)) base.push(i); });
+  for (let i = Math.max(0, months.length - 12); i < months.length; i++) latest.push(i);
+  return { base, latest };
+}
+const sumAt = (arr, idx) => idx.reduce((s, i) => s + (arr[i] || 0), 0);
+function metrics(series, months, excludeFn, baseYear) {
+  const { base, latest } = windows(months, baseYear);
+  if (!base.length || !latest.length) return null;
+  const yearsApart = (latest[Math.floor(latest.length/2)] - base[Math.floor(base.length/2)]) / 12;
+  const out = {};
+  for (const [dim, s] of Object.entries(series)) {
+    if (!s.payments) continue;
+    if (excludeFn && excludeFn(dim)) continue;
+    const b = sumAt(s.payments, base) * (12 / base.length);      // annualized
+    const l = sumAt(s.payments, latest) * (12 / latest.length);
+    const ratio = b > 0 ? l / b : (l > 0 ? Infinity : 1);
+    const cagr = (b > 0 && yearsApart > 0) ? Math.pow(l / b, 1 / yearsApart) - 1 : null;
+    let enroll = null, perRecip = null;
+    // counties: eligibles (enrolled) is the cleaner denominator than recipients (served)
+    const rec = (typeof view !== 'undefined' && view === 'county')
+      ? (s.eligibles || s.recipients) : (s.recipients || s.eligibles);
+    if (rec) {
+      const rb = sumAt(rec, base) / base.length, rl = sumAt(rec, latest) / latest.length;
+      if (rb > 0 && rl > 0 && b > 0) {
+        enroll = rl / rb;
+        perRecip = ratio / enroll;   // ratio = enroll x perRecip exactly
+      }
+    }
+    const recl = rec ? sumAt(rec, latest) / latest.length : 0;
+    const pop = (typeof POPDATA !== 'undefined' && POPDATA) ? POPDATA[dim] : null;
+    out[dim] = { base: b, latest: l, delta: l - b, ratio, cagr, enroll, perRecip,
+                 levelPer: recl > 0 ? l / 12 / recl : null,
+                 perCap: pop ? l / pop : null, pop };
+  }
+  return out;
+}
+function ranked(m, key) {
+  key = key || 'delta';
+  return Object.entries(m).sort((a, b) => {
+    const av = a[1][key], bv = b[1][key];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;
+    if (bv == null) return -1;
+    return bv - av;
+  });
+}
+// per-recipient monthly series for the chart toggle
+function perRecipSeries(s, preferEligibles) {
+  const rec = preferEligibles ? (s.eligibles || s.recipients) : (s.recipients || s.eligibles);
+  if (!s.payments || !rec) return null;
+  return s.payments.map((p, i) => rec[i] > 0 ? p / rec[i] : 0);
+}
+
+// ---------------- data-structure knowledge from the real snapshot ----------------
+const CAPITATION = new Set(['MCO', 'PREPAID AMBULATORY HEALTH PLAN', 'DRUG CAPITATION',
+  'IOWA CARE MED HOME CAPITATION', 'MANAGED SUBSTANCE ABUSE']);
+const COUNTY_PSEUDO = /^CENTRAL OFFICE$|^GRAND TOTAL|^STATEWIDE/i;
+function isCapitation(dim) { return CAPITATION.has(dim.toUpperCase()); }
+// months whose all-dim total is far below trailing median = missed payment batch
+function anomalousMonths(data) {
+  const n = data.months.length, tot = new Array(n).fill(0);
+  for (const s of Object.values(data.series))
+    (s.payments || []).forEach((v, i) => tot[i] += v);
+  const bad = [];
+  for (let i = 24; i < n; i++) {
+    const win = tot.slice(i - 24, i).filter(v => v > 0).sort((a, b) => a - b);
+    const med = win[Math.floor(win.length / 2)] || 0;
+    if (med > 0 && tot[i] < 0.55 * med) bad.push(data.months[i]);
+  }
+  return bad;
+}
+function rolling12(arr) {
+  return arr.map((_, i) => {
+    let s = 0;
+    for (let k = Math.max(0, i - 11); k <= i; k++) s += arr[k] || 0;
+    return s;
+  });
+}
+
+// ---------------- financing-regime annotations ----------------
+const EVENTS = [
+  ['2016-04', 'IA Health Link: statewide mandatory managed care begins'],
+  ['2017-11', 'AmeriHealth Caritas exits Iowa Medicaid'],
+  ['2019-07', 'UnitedHealthcare exits; Iowa Total Care enters'],
+  ['2023-07', 'Molina enters as third MCO'],
+  ['2020-03', 'COVID PHE: FMAP +6.2pt, continuous coverage'],
+  ['2021-07', 'SF 619: MHDS county levy \u2192 state funding'],
+  ['2023-04', 'PHE unwind: redeterminations resume'],
+  ['2024-07', 'CCBHC PPS payment model begins'],
+  ['2025-07', 'Behavioral Health Service System districts'],
+];
+
+// ---------------- formatting ----------------
+const fmt$ = v => v >= 1e9 ? '$' + (v/1e9).toFixed(2) + 'B'
+             : v >= 1e6 ? '$' + (v/1e6).toFixed(1) + 'M'
+             : v >= 1e3 ? '$' + (v/1e3).toFixed(0) + 'K' : '$' + v.toFixed(0);
+const fmtX = v => v === Infinity ? 'new' : '\u00d7' + v.toFixed(2);
+const fmtPct = v => v == null ? '\u2014' : (v >= 0 ? '+' : '') + (v*100).toFixed(1) + '%';
+const heat = r => r >= 2 ? 'heat3' : r >= 1.5 ? 'heat2' : r >= 1.2 ? 'heat1' : r < 0.85 ? 'cool1' : '';
+
+// ---------------- SVG chart ----------------
+const PALETTE = ['#0969da','#cf222e','#1a7f37','#9a6700','#8250df','#bc4c00','#0c8b8b','#6e40aa'];
+function chart(months, seriesList, w, h) {
+  const P = { l: 62, r: 10, t: 26, b: 34 };
+  const iw = w - P.l - P.r, ih = h - P.t - P.b;
+  let max = 0;
+  for (const { data } of seriesList) for (const v of data) if (v > max) max = v;
+  if (max === 0) max = 1;
+  const X = i => P.l + iw * i / Math.max(1, months.length - 1);
+  const Y = v => P.t + ih * (1 - v / max);
+  const out = [];
+  for (let g = 0; g <= 4; g++) {
+    const v = max * g / 4, y = Y(v);
+    out.push(`<line x1="${P.l}" y1="${y}" x2="${w - P.r}" y2="${y}" class="grid"/>`);
+    out.push(`<text x="${P.l - 6}" y="${y}" class="ax" text-anchor="end" dominant-baseline="middle">${fmt$(v)}</text>`);
+  }
+  const step = Math.ceil(months.length / 8);
+  for (let i = 0; i < months.length; i += step)
+    out.push(`<text x="${X(i)}" y="${h - 12}" class="ax" text-anchor="middle">${months[i]}</text>`);
+  for (const [em, label] of EVENTS) {
+    const i = months.indexOf(em);
+    if (i < 0) continue;
+    out.push(`<line x1="${X(i)}" y1="${P.t}" x2="${X(i)}" y2="${P.t + ih}" class="event"><title>${label}</title></line>`);
+    out.push(`<text x="${X(i) + 3}" y="${P.t + 10}" class="evlbl"><title>${label}</title>\u25cf</text>`);
+  }
+  seriesList.forEach(({ name, data }, k) => {
+    const d = data.map((v, i) => (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1)).join(' ');
+    out.push(`<path d="${d}" fill="none" stroke="${PALETTE[k % PALETTE.length]}" stroke-width="2"><title>${name}</title></path>`);
+  });
+  const legend = seriesList.map((s, k) =>
+    `<tspan fill="${PALETTE[k % PALETTE.length]}">\u25ac</tspan> ${s.name.slice(0, 40)}`).join('   ');
+  out.push(`<text x="${P.l}" y="14" class="leg">${legend}</text>`);
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">` +
+    `<style>.grid{stroke:#eee}.ax{font:10px Helvetica;fill:#666}.leg{font:11px Helvetica;fill:#333}` +
+    `.event{stroke:#d4a72c;stroke-dasharray:4 3;stroke-width:1.5}.evlbl{font:9px Helvetica;fill:#9a6700}</style>` +
+    out.join('') + '</svg>';
+}
+function spark(data, w, h) {
+  let max = Math.max(...data, 1e-9);
+  const pts = data.map((v, i) => (w * i / Math.max(1, data.length - 1)).toFixed(1) + ',' + (h - h * v / max).toFixed(1)).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" class="spark"><polyline points="${pts}" fill="none" stroke="#0969da" stroke-width="1.3"/></svg>`;
+}
+
+// ---------------- synthetic demo fixture (clearly labeled in UI) ----------------
+// Shapes chosen to exercise the analytics: per-recipient-driven growth,
+// enrollment-driven PHE bump + unwind, flat, and declining series.
+function demoData() {
+  const months = [];
+  for (let y = 2015; y <= 2026; y++)
+    for (let m = 1; m <= 12; m++) {
+      if (y === 2026 && m > 6) break;
+      months.push(y + '-' + String(m).padStart(2, '0'));
+    }
+  const phe = m => m >= '2020-03' && m < '2023-04';
+  const preMCO = m => m < '2016-04';
+  const unwound = m => m >= '2023-04';
+  function series(basePay, baseRec, payGrow, recShape) {
+    const payments = [], recipients = [];
+    months.forEach((m, i) => {
+      const yr = i / 12;
+      let mcoScale = recShape === 'mco' ? (preMCO(m) ? 0.02 : 1) : (recShape === 'ffscrash' && !preMCO(m) ? 0.12 : 1);
+      let rec = baseRec * mcoScale * (recShape === 'phe'
+        ? (phe(m) ? 1 + 0.09 * Math.min(3, (i - 14) / 12 + 1) : unwound(m) ? 1.05 : 1)
+        : recShape === 'grow' ? 1 + 0.03 * yr : 1);
+      const perR = (basePay / baseRec) * Math.pow(1 + payGrow, yr);
+      const season = 1 + 0.03 * Math.sin(i / 12 * 2 * Math.PI);
+      payments.push(Math.round(rec * perR * season));
+      recipients.push(Math.round(rec));
+    });
+    return { payments, recipients };
+  }
+  return {
+    synthetic: true,
+    generated: 'demo',
+    category: { months, series: {
+      'MCO': series(430e6, 700000, 0.055, 'mco'),
+      'Home & Community Based Services': series(38e6, 26000, 0.115, 'grow'),
+      'Prescribed Drugs':               series(26e6, 210000, 0.05, 'phe'),
+      'Behavioral Health':              series(14e6, 90000, 0.015, 'phe'),
+      'Inpatient Hospital':             series(22e6, 30000, 0.005, 'ffscrash'),
+      'Nursing Facility':               series(30e6, 12500, -0.02, 'flat'),
+      'Dental':                         series(4e6, 95000, 0.03, 'phe'),
+    }},
+    county: { months, series: {
+      'CENTRAL OFFICE': series(30e6, 1, 0.25, 'flat'),
+      'Polk':   series(52e6, 125000, 0.06, 'phe'),
+      'Linn':   series(20e6, 52000, 0.045, 'phe'),
+      'Scott':  series(16e6, 44000, 0.04, 'phe'),
+      'Story':  series(6e6, 16000, 0.01, 'phe'),
+      'Adams':  series(0.6e6, 1500, 0.02, 'flat'),
+    }},
+  };
+}
+
+// ---------------- page wiring ----------------
+const els = id => document.getElementById(id);
+let DATA = null, view = 'category', metric = 'rolling', baseYear = '2019', sortBy = 'delta', chartMode = 'single', selected = new Set();
+let POPDATA = null;
+async function boot() {
+  try {
+    const r = await fetch('iowa_medicaid_data.json');
+    if (r.ok) {
+      const j = await r.json();
+      if (j && j.category && !j.synthetic) {
+        DATA = j;
+        POPDATA = (j.population && j.population.by_county) || null;
+        els('banner').innerHTML = 'Live snapshot generated <b>' + j.generated +
+          '</b> from the Iowa Data Hub (datasets 973, 974; CC BY 4.0). ' +
+          'Re-run <code>refresh_iowa_medicaid.py</code> to update.';
+        els('banner').className = 'banner ok';
+      }
+    }
+  } catch (e) {}
+  if (!DATA) {
+    DATA = demoData();
+    els('banner').innerHTML = (location.protocol === 'file:'
+      ? '<b>This page is being opened from disk (file://)</b> \u2014 browsers block <code>fetch()</code> for local files, so the data cannot load even though it is right there. Run <code>python3 -m http.server</code> in this folder and open <code>http://localhost:8000/</code>, or deploy to any static host (GitHub Pages works as-is). Showing synthetic demo shapes meanwhile.'
+      : '<b>SYNTHETIC DEMO DATA</b> \u2014 shapes are illustrative only, no real ' +
+        'dollar amounts. Run <code>python3 refresh_iowa_medicaid.py</code> next to this file to pull the ' +
+        'real snapshot from the Iowa Data Hub, then reload.');
+    els('banner').className = 'banner warn';
+  }
+  els('view-cat').onclick = () => { view = 'category'; selected.clear(); renderAll(); setActive(); };
+  els('view-ffs').onclick = () => { view = 'ffs'; selected.clear(); renderAll(); setActive(); };
+  els('view-cnty').onclick = () => { view = 'county'; sortBy = 'levelPer'; if (els('sortby')) els('sortby').value = 'levelPer'; selected.clear(); renderAll(); setActive(); };
+  els('baseyear').onchange = e => { baseYear = e.target.value; renderAll(); };
+  els('sortby').onchange = e => { sortBy = e.target.value; renderAll(); };
+  els('met-pay').onclick = () => { metric = 'payments'; renderAll(); setActive(); };
+  els('met-roll').onclick = () => { metric = 'rolling'; renderAll(); setActive(); };
+  els('met-ppr').onclick = () => { metric = 'ppr'; renderAll(); setActive(); };
+  els('met-pcap').onclick = () => { metric = 'pcap'; renderAll(); setActive(); };
+  els('era-toggle').onclick = () => { chartMode = chartMode === 'single' ? 'eras' : 'single';
+    els('era-toggle').classList.toggle('active', chartMode === 'eras'); renderAll(); };
+  function setActive() {
+    els('view-cat').classList.toggle('active', view === 'category');
+    els('view-ffs').classList.toggle('active', view === 'ffs');
+    els('view-cnty').classList.toggle('active', view === 'county');
+    els('met-pay').classList.toggle('active', metric === 'payments');
+    els('met-roll').classList.toggle('active', metric === 'rolling');
+    els('met-ppr').classList.toggle('active', metric === 'ppr');
+    els('met-pcap').classList.toggle('active', metric === 'pcap');
+  }
+  setActive();
+  renderAll();
+}
+function renderAll() {
+  const d = view === 'county' ? DATA.county : DATA.category;
+  const excl = view === 'ffs' ? isCapitation
+             : view === 'county' ? (dim => COUNTY_PSEUDO.test(dim)) : null;
+  const m = metrics(d.series, d.months, excl, baseYear);
+  const rows = ranked(m, sortBy);
+  const bad = anomalousMonths(d).filter(mm => mm >= d.months[Math.max(0, d.months.length - 12)]);
+  if (!Object.keys(m).length) { els('extable').innerHTML = '<p>No data for baseline ' + baseYear + '.</p>'; return; }
+  els('anomaly').innerHTML = bad.length
+    ? '⚠ Months inside the latest-12 window that look like missed payment batches (total < 55% of ' +
+      'trailing median): <b>' + bad.join(', ') + '</b>. Monthly figures reflect check-write timing, not ' +
+      'service dates; the 2019-vs-latest comparison uses 12-month sums, which mostly absorbs this, but ' +
+      'the latest window may still undercount.'
+    : '';
+  // default chart selection: top 3 by delta
+  if (!selected.size) rows.slice(0, 3).forEach(([dim]) => selected.add(dim));
+  renderTable(rows, d);
+  renderChart(d);
+  els('summary').innerHTML = summarize(rows, d);
+  els('cnote').innerHTML = countyNote(d);
+  els('outliers').innerHTML = outlierNote(m);
+}
+function outlierNote(m) {
+  if (view !== 'county') return '';
+  const withL = Object.entries(m).filter(([,v]) => v.levelPer != null)
+                  .sort((a,b) => b[1].levelPer - a[1].levelPer);
+  if (withL.length < 6) return '';
+  const f = ([d,v]) => d + ' (' + fmt$(v.levelPer) + '/mo)';
+  let h = '<b>Per-eligible outliers</b> \u2014 highest: ' + withL.slice(0,3).map(f).join(', ') +
+    '; lowest: ' + withL.slice(-3).reverse().map(f).join(', ') +
+    '. High per-eligible counties are typically small, older populations with facility-heavy service mixes ' +
+    '(one nursing facility moves a small county\u2019s average); low ones skew young or lose attributed ' +
+    'payments to Central Office booking \u2014 an outlier here is a lead for diagnosis, not a verdict.';
+  if (POPDATA) {
+    const withC = Object.entries(m).filter(([,v]) => v.perCap != null)
+                    .sort((a,b) => b[1].perCap - a[1].perCap);
+    if (withC.length >= 6) {
+      const g = ([d,v]) => d + ' (' + fmt$(v.perCap) + '/yr)';
+      h += '<br><b>Per-capita outliers</b> \u2014 highest: ' + withC.slice(0,3).map(g).join(', ') +
+        '; lowest: ' + withC.slice(-3).reverse().map(g).join(', ') +
+        '. Per-capita mixes enrollment rate \u00d7 per-enrollee cost: a high county is poor, old, sick, or all three.';
+    }
+  } else {
+    h += '<br><i>Per-capita column: re-run refresh_iowa_medicaid.py (it now fetches county population from the Census API), then reload.</i>';
+  }
+  return h;
+}
+function countyNote(d) {
+  if (view !== 'county') return '';
+  const co = Object.keys(d.series).find(k => /^CENTRAL OFFICE$/i.test(k));
+  if (!co) return '';
+  const n = d.months.length, s = d.series[co].payments || [];
+  let last12 = 0, all12 = 0;
+  for (let i = n - 12; i < n; i++) {
+    last12 += s[i] || 0;
+    for (const ss of Object.values(d.series)) all12 += (ss.payments || [])[i] || 0;
+  }
+  return 'Excluded from the ranking: <b>CENTRAL OFFICE</b>, a pseudo-county where state-level payments ' +
+    '(largely MCO capitation) are booked — currently ' + (last12/all12*100).toFixed(0) + '% of the ' +
+    'county dataset and growing, which means county-attributed trends increasingly understate true ' +
+    'county-resident spending.';
+}
+function capShare(d, idx) {
+  let cap = 0, all = 0;
+  for (const [dim, s] of Object.entries(d.series)) {
+    const v = idx.reduce((t, i) => t + ((s.payments || [])[i] || 0), 0);
+    all += v;
+    if (isCapitation(dim)) cap += v;
+  }
+  return all > 0 ? cap / all : 0;
+}
+function summarize(rows, d) {
+  const tot = rows.reduce((s, [, v]) => s + v.delta, 0);
+  const top = rows[0];
+  const { base, latest } = windows(d.months, baseYear);
+  const lastM = d.months[d.months.length - 1];
+  let capLine = '';
+  if (view !== 'county') {
+    const cb = capShare(d, base), cl = capShare(d, latest);
+    capLine = ' Capitation share of payments: <b>' + (cb*100).toFixed(1) + '%</b> in ' + baseYear +
+      ' → <b>' + (cl*100).toFixed(1) + '%</b> latest — the ' +
+      (cb < 0.5 && cl > 0.5 ? 'managed-care migration in one number.' : 'capitation era.');
+  }
+  return 'Baseline: calendar ' + baseYear + ' annualized. Latest: 12 months ending ' + lastM +
+    '. Net change across all ' + (view === 'category' ? 'categories' : 'counties') + ': <b>' +
+    (tot >= 0 ? '+' : '') + fmt$(Math.abs(tot)) + '/yr</b>. Largest mover: <b>' +
+    top[0] + '</b> (' + (top[1].delta >= 0 ? '+' : '\u2212') + fmt$(Math.abs(top[1].delta)) + '/yr, ' +
+    fmtX(top[1].ratio) + ').' + capLine;
+}
+const SORTABLE = { 'latest $/yr':'latest', '\u0394 $/yr':'delta', 'ratio':'ratio', 'CAGR':'cagr' };
+function th(label, key) {
+  const active = key && sortBy === key;
+  return '<th' + (key ? ' class="sortable" data-key="' + key + '"' : '') + '>' + label +
+    (active ? ' \u25be' : '') + '</th>';
+}
+function renderTable(rows, d) {
+  let h = '<table class="ex"><tr><th></th><th>' + (view === 'category' ? 'Category' : 'County') +
+    '</th><th>' + baseYear + ' $/yr</th>' + th('latest $/yr','latest') + th('\u0394 $/yr','delta') +
+    th('ratio','ratio') + th('CAGR','cagr') +
+    th((view === 'county' ? 'eligibles' : 'enrollment') + ' \u00d7','enroll') + th((view === 'county' ? 'per-eligible' : 'per-recipient') + ' \u00d7','perRecip') + th('$/' + (view === 'county' ? 'eligible' : 'recip') + '/mo','levelPer') + (view === 'county' && POPDATA ? th('$/capita/yr','perCap') : '') + '<th>trend</th></tr>';
+  for (const [dim, v] of rows) {
+    const s = d.series[dim];
+    h += '<tr class="' + heat(v.ratio) + (selected.has(dim) ? ' sel' : '') + '" data-dim="' + dim.replace(/"/g, '&quot;') + '">' +
+      '<td><input type="checkbox" ' + (selected.has(dim) ? 'checked' : '') + '></td>' +
+      '<td>' + dim + (view === 'category' && isCapitation(dim) ? ' <span class="captag">capitation</span>' : '') +
+      '</td><td>' + fmt$(v.base) + '</td><td>' + fmt$(v.latest) + '</td>' +
+      '<td class="d">' + (v.delta >= 0 ? '+' : '\u2212') + fmt$(Math.abs(v.delta)) + '</td>' +
+      '<td>' + fmtX(v.ratio) + '</td><td>' + fmtPct(v.cagr) + '</td>' +
+      '<td>' + (v.enroll ? fmtX(v.enroll) : '\u2014') + '</td>' +
+      '<td>' + (v.perRecip ? fmtX(v.perRecip) : '\u2014') + '</td>' + '<td>' + (v.levelPer != null ? fmt$(v.levelPer) : '\u2014') + '</td>' + (view === 'county' && POPDATA ? '<td>' + (v.perCap != null ? fmt$(v.perCap) : '\u2014') + '</td>' : '') +
+      '<td>' + (v.levelPer != null ? fmt$(v.levelPer) : '\u2014') + '</td>' +
+      (view === 'county' && POPDATA ? '<td>' + (v.perCap != null ? fmt$(v.perCap) : '\u2014') + '</td>' : '') +
+      '<td>' + spark(s.payments, 120, 26) + '</td></tr>';
+  }
+  h += '</table>';
+  els('extable').innerHTML = h;
+  els('extable').querySelectorAll('th.sortable').forEach(cell => {
+    cell.onclick = () => { sortBy = cell.getAttribute('data-key'); if (els('sortby')) els('sortby').value = sortBy; renderAll(); };
+  });
+  els('extable').querySelectorAll('tr[data-dim]').forEach(tr => {
+    tr.onclick = () => {
+      const dim = tr.getAttribute('data-dim');
+      selected.has(dim) ? selected.delete(dim) : selected.add(dim);
+      renderAll();
+    };
+  });
+}
+const ERAS = [
+  ['2011-01', '2016-03', 'Fee-for-service era (through March 2016): categories are real service payments'],
+  ['2016-04', '2020-02', 'IA Health Link era: capitation absorbs the ledger; FFS lines are residue'],
+  ['2020-03', '9999-12', 'Pandemic & restructuring: PHE enrollment surge, unwind, CCBHC, BH districts'],
+];
+function renderChart(d) {
+  const list = [];
+  for (const dim of selected) {
+    const s = d.series[dim];
+    if (!s) continue;
+    const data = metric === 'ppr' ? (perRecipSeries(s) || s.payments) : s.payments;
+    list.push({ name: dim, data });
+  }
+  if (chartMode === 'eras') {
+    const parts = [];
+    for (const [m0, m1, cap] of ERAS) {
+      const i0 = d.months.findIndex(m => m >= m0);
+      let i1 = d.months.length - 1;
+      for (let i = d.months.length - 1; i >= 0; i--) if (d.months[i] <= m1) { i1 = i; break; }
+      if (i0 < 0 || i1 <= i0) continue;
+      const ms = d.months.slice(i0, i1 + 1);
+      const ls = list.map(s => ({ name: s.name, data: s.data.slice(i0, i1 + 1) }));
+      parts.push('<div class="eracap">' + cap + '</div>' + chart(ms, ls, 940, 190));
+    }
+    els('chart').innerHTML = parts.join('');
+  } else {
+    els('chart').innerHTML = chart(d.months, list, 940, 320);
+  }
+  els('chart-note').textContent = metric === 'ppr'
+    ? (view === 'county'
+        ? 'monthly payments per eligible (per enrolled member, all 99 counties in the table below)'
+        : 'monthly payments per recipient served (price-ish signal; recipient counts as reported by the state)')
+    : metric === 'rolling'
+    ? 'rolling 12-month sum — the honest unit; raw months carry payment-batch timing noise'
+    : 'monthly payments as reported — spikes/dips are check-write timing, not utilization; prefer Rolling 12-mo';
+}
+window.addEventListener('load', boot);
+
+</script>
+</body>
+</html>

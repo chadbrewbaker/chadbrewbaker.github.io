@@ -1,0 +1,61 @@
+
+===== POLK county roster =====
+query                                      EIN         matched name               filings
+ChildServe                                 421271420   Childserve Inc             25 filings (2012..2023)
+            FAC: 5 audits; latest 2025 fed $1,154,076 (Medicaid $469,559)
+Link Associates                            420815363   Link Associates            23 filings (2011..2023)
+            FAC: 2 audits; latest 2022 fed $954,608 (Medicaid $0)
+Candeo                                     421388521   Creative Community Options 23 filings (2011..2023)
+Mainstream Living                          421042459   Mainstream Living Inc Stua 23 filings (2011..2024)
+            FAC: 1 audits; latest 2022 fed $1,188,198 (Medicaid $0)
+Easterseals Iowa                           208392083   Easter Seals Society Of Io 17 filings (2011..2023)
+On With Life                               421308032   On With Life Inc           22 filings (2011..2023)
+Community Support Advocates                274422199   Community Support Advocate 0 filings (?..?)
+Lutheran Services in Iowa                  420698267   Lutheran Services In Iowa  21 filings (2011..2023)
+            FAC: 10 audits; latest 2025 fed $6,757,426 (Medicaid $0)
+Progress Industries                        421122161   Progress Industries        23 filings (2012..2023)
+Genesis Development                        237363533   Genesis Development        23 filings (2012..2021)
+Eyerly Ball Community Mental Health        420942273   Eyerly Ball Community Ment 23 filings (2012..2023)
+Orchard Place                              421463736   Orchard Place              21 filings (2012..2024)
+            FAC: 10 audits; latest 2025 fed $2,343,990 (Medicaid $0)
+Children and Families of Iowa              420680416   Children And Families Of I 23 filings (2012..2023)
+            FAC: 10 audits; latest 2025 fed $1,661,149 (Medicaid $0)
+Youth Emergency Services and Shelter       237442304   Youth Emergency Services & 20 filings (2011..2020)
+EveryStep                                  420680446   Visiting Nurse Services Of 23 filings (2011..2023)
+            FAC: 12 audits; latest 2025 fed $3,287,711 (Medicaid $666,798)
+WesleyLife                                 300577845   Wesleylife                 14 filings (2011..2023)
+            FAC: 6 audits; latest 2025 fed $16,006,845 (Medicaid $0)
+
+===== JOHNSON county roster =====
+query                                      EIN         matched name               filings
+Systems Unlimited                          420985205   Systems Unlimited Inc      23 filings (2011..2023)
+            FAC: 3 audits; latest 2023 fed $1,498,767 (Medicaid $0)
+Successful Living                          421470339   Successful Living Supporti 24 filings (2011..2023)
+Reach For Your Potential                   421349210   Reach For Your Potential I 24 filings (2012..2024)
+Mayors Youth Empowerment Program           421444335   Mayors Youth Empowerment P 23 filings (2011..2023)
+CommUnity Crisis Services                  420955992   Community Crisis Services  23 filings (2011..2023)
+            FAC: 5 audits; latest 2025 fed $4,441,529 (Medicaid $0)
+Shelter House Community Shelter            421231451   Shelter House Community Sh 23 filings (2011..2023)
+            FAC: 10 audits; latest 2025 fed $12,710,951 (Medicaid $0)
+Prelude Behavioral Services                420946031   Prelude Behavioral Service 23 filings (2011..2021)
+            FAC: 7 audits; latest 2022 fed $2,585,897 (Medicaid $0)
+Iowa City Hospice                          421154098   Iowa City Hospice Inc      23 filings (2011..2023)
+United Action for Youth                    420954860   United Action For Youth    22 filings (2011..2023)
+Arc of Southeast Iowa                      NO CONFIDENT MATCH (top: none)
+Goodwill of the Heartland                  420923563   Goodwill Industries Of The 22 filings (2011..2023)
+Abbe Center for Community Mental Health    421045257   Abbe Center For Community  24 filings (2012..2023)
+
+polk_county_government FAC candidates (review):
+   EIN 426004519  POLK COUNTY, IOWA
+   EIN 421336150  POLK COUNTY AVIATION AUTHORITY
+   EIN 421510879  POLK COUNTY HOUSING TRUST FUND
+
+johnson_county_government FAC candidates (review):
+   EIN 426804806  JOHNSON COUNTY, IOWA
+   EIN 421060964  NEIGHBORHOOD CENTERS OF JOHNSON COUNTY
+
+university_of_iowa FAC candidates (review):
+   EIN 426004813  State University of Iowa
+
+wrote county_orgs.json (all counties) + polk_orgs.json (back-compat)
+review the match tables above before trusting them
