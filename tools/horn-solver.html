@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Horn clause solver (Datalog, WASM)</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Helvetica, Arial, sans-serif; max-width: 980px; margin: 0 auto;
+  padding: 20px; line-height: 1.5; color: #222; }
+h1 { margin: 0 0 8px; font-size: 26px; }
+.blurb { color: #444; margin-top: 0; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+button { font-size: 13px; padding: 5px 10px; border: 1px solid #bbb; border-radius: 6px;
+  background: #f6f8fa; cursor: pointer; }
+button:hover { background: #eaeef2; }
+.examples button.active { background: #0969da; border-color: #0969da; color: #fff; }
+#src { width: 100%; height: 220px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13.5px; padding: 10px; border: 1px solid #bbb; border-radius: 6px; resize: vertical; }
+.controls { display: flex; gap: 8px; margin: 10px 0; align-items: center; }
+#bench-btn { margin-left: auto; }
+#status { color: #666; font-size: 13px; min-height: 18px; }
+#status.err { color: #b42318; }
+#out { margin-top: 8px; }
+.summary { background: #14161c; color: #e6edf3; border-radius: 8px; padding: 12px 14px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 13.5px; }
+.summary b { color: #7ee787; }
+table.counts, table.answers { border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+.counts td, .counts th, .answers td, .answers th { border: 1px solid #d8dee4; padding: 3px 10px; text-align: left; }
+.counts th, .answers th { background: #f6f8fa; }
+.query { margin: 12px 0 4px; font-size: 14.5px; }
+.query .yes { color: #1a7f37; font-weight: 600; }
+.query .no { color: #b42318; font-weight: 600; }
+.note { color: #57606a; font-size: 13px; }
+.about { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 14px; }
+.about h2 { font-size: 18px; }
+.about h3 { font-size: 15px; margin: 18px 0 6px; }
+.about p { font-size: 14px; color: #333; }
+.refs { font-size: 13px; color: #444; padding-left: 22px; }
+.refs li { margin-bottom: 3px; }
+footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 13px; color: #555; }
+footer a, .about a { color: #0969da; }
+code { background: #f6f8fa; padding: 1px 4px; border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<h1>Horn clause solver</h1>
+<p class="blurb">Positive Datalog &mdash; facts, definite Horn rules, and queries &mdash; evaluated
+to the least fixpoint by a semi-naive engine compiled to WebAssembly (8.6&thinsp;KB, embedded in
+this page). Facts like <code>edge(a,b).</code>, rules like
+<code>path(X,Y) :- edge(X,Z), path(Z,Y).</code>, queries like <code>?- path(a,X).</code>
+Variables start with a capital letter; 0-ary predicates give you propositional HORNSAT.</p>
+
+<div class="examples" id="examples"></div>
+<textarea id="src" spellcheck="false"></textarea>
+<div class="controls">
+  <button id="run-btn">Run (Ctrl/&#8984;-Enter)</button>
+  <button id="bench-btn">Benchmark: 1000-node transitive closure</button>
+</div>
+<div id="status"></div>
+<div id="out"></div>
+
+<section class="about">
+<h2>How it works, and where it comes from</h2>
+
+<h3>1&ensp;Horn clauses and the least model</h3>
+<p>A definite Horn clause has exactly one positive literal:
+h &or; &not;b&#8321; &or; &hellip; &or; &not;b&#8342;, more readably h &larr; b&#8321; &and; &hellip; &and; b&#8342;.
+Alfred Horn isolated the class in 1951&nbsp;[1]; its computational charm, made precise by
+van&nbsp;Emden and Kowalski in 1976&nbsp;[2], is that a set of definite clauses always has a unique
+<i>least</i> model, computable as the fixpoint of the &ldquo;immediate consequence&rdquo; operator:
+start from the facts and apply every rule until nothing new appears. That is exactly what
+this page does; a query then just inspects the fixpoint. For propositional Horn clauses,
+satisfiability is decidable in linear time by counting unmet body literals
+(Dowling&ndash;Gallier, 1984&nbsp;[3]) &mdash; here the 0-ary case of the same forward chaining.</p>
+
+<h3>2&ensp;Semi-naive evaluation</h3>
+<p>The naive fixpoint recomputes every rule against every fact each round. The semi-naive
+refinement &mdash; standard in the deductive-database literature since the mid-1980s
+(Bancilhon&nbsp;[4]; see also Ullman&nbsp;[5] and the Ceri&ndash;Gottlob&ndash;Tanca survey&nbsp;[6]) &mdash;
+observes that a rule can only derive something new if at least one body atom matches a fact
+derived in the <i>previous</i> round. The engine keeps each relation as an append-only
+tuple store; the delta is just a range of indices, and each rule is evaluated once per body
+position with that atom restricted to the delta. Duplicates are suppressed by a hash table
+per relation, which is also what guarantees termination: Datalog without function symbols
+has a finite Herbrand base.</p>
+
+<h3>3&ensp;The WASM engine</h3>
+<p>The evaluator is ~300 lines of freestanding C compiled with clang to
+<code>wasm32</code> &mdash; no libc, a bump allocator over linear memory, and integer-only data:
+the page interns every symbol to a <code>u32</code> and serializes rules to a flat
+<code>i32</code> array (negative numbers are variables), so the hot join loops never touch a
+string. Joins are nested loops with two accelerations: the delta atom is enumerated first,
+and every relation maintains a per-column hash index (value &rarr; chain of tuples), so an
+atom whose column is already bound costs a hash probe instead of a scan. On this machine
+that closes the transitive closure of a 1000-node chain &mdash; 499,500 derived tuples &mdash;
+in roughly a tenth of a second; the benchmark button reproduces it live. The design is a
+miniature of what production Datalog engines such as Souffl&eacute;&nbsp;[7] do at scale with
+compiled relational algebra and B-tree/trie indexes.</p>
+
+<h3>4&ensp;Scope</h3>
+<p>This is <i>positive</i> Datalog: no negation, no function symbols, no arithmetic. Those
+are principled omissions &mdash; stratified negation and built-ins each deserve their own
+careful semantics &mdash; and they keep the guarantee that every program terminates with a
+unique least model. Unsafe rules (a head variable missing from the body) are rejected at
+parse time with an explanation rather than evaluated wrongly.</p>
+
+<h3>References</h3>
+<ol class="refs">
+<li>A. Horn, On sentences which are true of direct unions of algebras, <i>J. Symbolic Logic</i> 16 (1951) 14&ndash;21.</li>
+<li>M. H. van Emden, R. A. Kowalski, The semantics of predicate logic as a programming language, <i>J. ACM</i> 23 (1976) 733&ndash;742.</li>
+<li>W. F. Dowling, J. H. Gallier, Linear-time algorithms for testing the satisfiability of propositional Horn formulae, <i>J. Logic Programming</i> 1 (1984) 267&ndash;284.</li>
+<li>F. Bancilhon, Naive evaluation of recursively defined relations, in <i>On Knowledge Base Management Systems</i>, Springer, 1986.</li>
+<li>J. D. Ullman, <i>Principles of Database and Knowledge-Base Systems</i>, vol. I&ndash;II, Computer Science Press, 1988&ndash;89.</li>
+<li>S. Ceri, G. Gottlob, L. Tanca, What you always wanted to know about Datalog (and never dared to ask), <i>IEEE Trans. Knowl. Data Eng.</i> 1 (1989) 146&ndash;166.</li>
+<li>H. Jordan, B. Scholz, P. Suboti&#263;, Souffl&eacute;: on synthesis of program analyzers, <i>CAV</i> 2016.</li>
+<li>A. Haas et al., Bringing the web up to speed with WebAssembly, <i>PLDI</i> 2017.</li>
+</ol>
+</section>
+
+<footer>
+One self-contained file: parser and UI in JavaScript, evaluation in an embedded 8.6&thinsp;KB
+WebAssembly module (freestanding C, source in the repo). Page skeleton after
+<a href="https://github.com/simonw/tools">simonw/tools</a>.
+</footer>
+<script>
+const WASM_B64 = "AGFzbQEAAAABKAdgA39/fwF/YAAAYAF/AX9gAAF/YAJ/fwF/YAJ/fwBgBn9/f39/fwADEA8AAAECAwIEAgUCBgICAgMEBQFwAQEBBQMBAAQGCAF/AUGgnQ0LB4oBDAZtZW1vcnkCAAhkbF9yZXNldAACC2RsX2FkZF9wcmVkAAMKZGxfc2NyYXRjaAAEB2RsX2ZhY3QABQhkbF9hbGxvYwAHDGRsX3NldF9ydWxlcwAIBmRsX3J1bgAJCGRsX2NvdW50AAsIZGxfYXJpdHkADAlkbF90dXBsZXMADQhkbF90b3RhbAAOCoA/D5oBAQN/AkAgAkUNACAAIQMgAiEEAkAgAkEHcSIFRQ0AIAJBeHEhBCAAIQMDQCADIAE6AAAgA0EBaiEDIAVBf2oiBQ0ACwsgAkEISQ0AA0AgAyABOgAHIAMgAToABiADIAE6AAUgAyABOgAEIAMgAToAAyADIAE6AAIgAyABOgABIAMgAToAACADQQhqIQMgBEF4aiIEDQALCyAAC8cBAQN/AkAgAkUNAAJAAkAgAkEHcSIDDQAgACEEIAIhBQwBCyACQXhxIQUgACEEA0AgBCABLQAAOgAAIARBAWohBCABQQFqIQEgA0F/aiIDDQALCyACQQhJDQADQCAEIAEtAAA6AAAgBCABLQABOgABIAQgAS0AAjoAAiAEIAEtAAM6AAMgBCABLQAEOgAEIAQgAS0ABToABSAEIAEtAAY6AAYgBCABLQAHOgAHIARBCGohBCABQQhqIQEgBUF4aiIFDQALCyAACz0AQQBBoJ2NgAA2AoCIgIAAQQA/AEEQdDYChIiAgABBAEEANgKIiICAAEGQiICAAEEAQYCQBRCAgICAABoLvAYBBn9BfyEBAkBBACgCiIiAgAAiAkH/A0sNACACQaQBbCIBQZiIgIAAakIANwIAIAFBkIiAgABqIAA2AgAgAUGkiICAAGpBwAA2AgAgAUGUiICAAGpBADYCAAJAAkBBACgCgIiAgAAiAUUNAEEAKAKEiICAACEDDAELQaCdjYAAIQFBAEGgnY2AADYCgIiAgABBAD8AQRB0IgM2AoSIgIAACwJAAkAgAUGAAmoiBCADTQ0AAkACQCAEIANrQf//A2oiA0EQdiIBQcAAIAFBwABLGyIEQABBf0cNAAJAIAFAAEF/Rw0AQQAhAQwECyADQYCAfHEhAQwBCyAEQRB0IQELQQBBACgChIiAgAAgAWo2AoSIgIAAQQAoAoCIgIAAIgFBgAJqIQQLQQAgBDYCgIiAgAALIAJBpAFsIgRBoIiAgABqIAE2AgAgAUEAQYACEICAgIAAGiAEQbCIgIAAakEANgIAIARBqIiAgABqQgA3AgBBfiEBIABBCEsNAAJAIABFDQBBACgCgIiAgAAhBCACQaQBbCEFQQAhAwNAIAUgA0EMbGoiBkG4iICAAGpCwAA3AgACQAJAIARFDQBBACgChIiAgAAhAiAEIQEMAQtBoJ2NgAAhAUEAQaCdjYAANgKAiICAAEEAPwBBEHQiAjYChIiAgAALIAZBtIiAgABqIQYCQAJAIAFBgARqIgQgAk0NAAJAAkAgBCACa0H//wNqIgRBEHYiAUHAACABQcAASxsiAkAAQX9HDQAgAUAAIQJBACgCgIiAgAAhAQJAIAJBf0cNACABIQRBACEBDAQLIARBgIB8cSECDAELIAJBEHQhAkEAKAKAiICAACEBC0EAQQAoAoSIgIAAIAJqNgKEiICAACABQYAEaiEEC0EAIAQ2AoCIgIAACyAGIAE2AgBBfiECA0AgAUL/////DzcCACABQRhqQv////8PNwIAIAFBEGpC/////w83AgAgAUEIakL/////DzcCACABQSBqIQEgAkEIaiICQf4ASQ0ACyAFIANBAnRqQZSJgIAAakEANgIAIANBAWoiAyAARw0ACwtBAEEAKAKIiICAACIBQQFqNgKIiICAAAsgAQsIAEGQmIWAAAs2AQF/QX8hAQJAQQAoAoiIgIAAIABNDQAgAEGkAWxBkIiAgABqQZCYhYAAEIaAgIAAIQELIAELohQBEX8CQAJAIAAoAgAiAg0AQQAhAyAAKAIgDQEgAEEBNgIIIABBATYCIEEBDwsgAkEDcSEEAkACQCACQQRPDQBBxbvyiHghBUEAIQYMAQsgAkF8cSEHQcW78oh4IQVBACEGIAEhCANAIAhBDGooAgAgCEEIaigCACAIQQRqKAIAIAgoAgAgBXNBk4OACGxzQZODgAhsc0GTg4AIbHNBk4OACGwhBSAIQRBqIQggByAGQQRqIgZHDQALCyAAKAIUIQcCQCAERQ0AIAEgBkECdGohCANAIAgoAgAgBXNBk4OACGwhBSAIQQRqIQggBEF/aiIEDQALCwJAIAAoAhAiCSAFQQEgBUEBSxsgB0F/aiIHcSIKQQJ0aigCACIIRQ0AIAAoAgQhBgNAIAYgCEF/aiACbEECdGohCCABIQUgAiEEAkADQCAIKAIAIAUoAgBHDQEgCEEEaiEIIAVBBGohBSAEQX9qIgQNAAtBAA8LIAkgCkEBaiAHcSIKQQJ0aigCACIIDQALCwJAIAAoAggiCCAAKAIMRw0AIAIgCEEBdEHAACAIGyIEbEECdCEHAkACQEEAKAKAiICAACIIRQ0AQQAoAoSIgIAAIQYMAQtBoJ2NgAAhCEEAQaCdjYAANgKAiICAAEEAPwBBEHQiBjYChIiAgAALAkACQCAIIAdqIgUgBk0NAAJAAkAgBSAGa0H//wNqIgZBEHYiCEHAACAIQcAASxsiBUAAQX9HDQACQCAIQABBf0cNAEEAIQgMBAsgBkGAgHxxIQgMAQsgBUEQdCEIC0EAQQAoAoSIgIAAIAhqNgKEiICAAEEAKAKAiICAACIIIAdqIQULQQAgBTYCgIiAgAALIAAoAgAhBQJAIAAoAggiBkUNACAIIAAoAgQgBiAFbEECdBCBgICAABogACgCACEFCyAAIAQ2AgwgACAINgIEAkAgBQ0AQQAhAgwBCyAAQYQBaiEFIARBAnQhCUEAIQcDQAJAAkBBACgCgIiAgAAiCEUNAEEAKAKEiICAACEGDAELQaCdjYAAIQhBAEGgnY2AADYCgIiAgABBAD8AQRB0IgY2AoSIgIAACwJAAkAgCCAJaiIEIAZNDQACQAJAIAQgBmtB//8DaiIGQRB2IghBwAAgCEHAAEsbIgRAAEF/Rw0AAkAgCEAAQX9HDQBBACEIDAQLIAZBgIB8cSEIDAELIARBEHQhCAtBAEEAKAKEiICAACAIajYChIiAgABBACgCgIiAgAAiCCAJaiEEC0EAIAQ2AoCIgIAACwJAIAAoAggiBEUNACAIIAUoAgAgBEECdBCBgICAABoLIAUgCDYCACAFQQRqIQUgB0EBaiIHIAAoAgAiAkkNAAsLIAAoAgQgAiAAKAIIbEECdGogASACQQJ0EIGAgIAAGkEBIQMgACAAKAIIIgtBAWoiDDYCCCAAKAIQIApBAnRqIAw2AgACQCAAKAIARQ0AQQAhDQNAIAAgDUEMbGoiCEEkaiEHAkACQCAIQSxqIg4oAgBBAnQgCEEoaiIPKAIAIghBA2xPDQAgBygCACEGDAELIAhBBHQhAgJAAkBBACgCgIiAgAAiBkUNAEEAKAKEiICAACEEDAELQaCdjYAAIQZBAEGgnY2AADYCgIiAgABBAD8AQRB0IgQ2AoSIgIAACwJAAkAgBiACaiIFIARNDQACQAJAIAUgBGtB//8DaiIGQRB2IgVBwAAgBUHAAEsbIgRAAEF/Rw0AAkAgBUAAQX9HDQBBACEGDAQLIAZBgIB8cSEFDAELIARBEHQhBQtBAEEAKAKEiICAACAFajYChIiAgABBACgCgIiAgAAiBiACaiEFC0EAIAU2AoCIgIAACyAIQQF0IQICQCAIQQJ0IghFDQAgCEF/akEBdkEBaiIEQQJxIQVBACEJAkAgCEEHSQ0AIARBfHEiBEEBdCEJIAYhCANAIAhC/////w83AgAgCEEYakL/////DzcCACAIQRBqQv////8PNwIAIAhBCGpC/////w83AgAgCEEgaiEIIARBfGoiBA0ACwsgBUUNACAGIAlBAnRqIQgDQCAIQv////8PNwIAIAhBCGohCCAFQX9qIgUNAAsLIAcoAgAhECAHIAY2AgAgDygCACERIA8gAjYCAAJAIBENACACIQgMAQtBACEKA0ACQCAQIApBA3RqKAIAIgdBf0YNACAKQQF0IRIgB0Gx893xeWwhCCAPKAIAQX9qIQICQANAIAYgCCACcSIFQQN0aiIJKAIAIgRBf0YNASAFQQFqIQggBCAHRw0ACwsgCSAHNgIAIAYgBUEBdEECdGpBBGogECASQQJ0akEEaigCADYCAAsgCkEBaiIKIBFHDQALIA8oAgAhCAsgCEF/aiEHIAEgDUECdCIQaigCACIJQbHz3fF5bCEIAkADQCAGIAggB3EiBUEDdGoiCigCACIEQX9GIgINASAFQQFqIQggBCAJRw0ACwsgBUEBdCEIAkACQCACDQAgCEEBciEIDAELIAogCTYCACAGIAhBAXIiCEECdGpBADYCACAOIA4oAgBBAWo2AgALIAAgEGpBhAFqKAIAIAtBAnRqIAYgCEECdGoiCCgCADYCACAIIAw2AgAgDUEBaiINIAAoAgBJDQALCyAAKAIIQQJ0IAAoAhQiCEEDbEkNACAIQQN0IQQCQAJAQQAoAoCIgIAAIgVFDQBBACgChIiAgAAhBwwBC0GgnY2AACEFQQBBoJ2NgAA2AoCIgIAAQQA/AEEQdCIHNgKEiICAAAsCQAJAIAUgBGoiBiAHTQ0AAkACQCAGIAdrQf//A2oiB0EQdiIFQcAAIAVBwABLGyIGQABBf0cNAAJAIAVAAEF/Rw0AQQAhBQwECyAHQYCAfHEhBQwBCyAGQRB0IQULQQBBACgChIiAgAAgBWo2AoSIgIAAQQAoAoCIgIAAIgUgBGohBgtBACAGNgKAiICAAAsgCEEBdCEPQQAhEiAFQQAgBBCAgICAACEEAkAgACgCCEUNACAPQX9qIQYgACgCBCERQQAhEANAAkACQCAAKAIAIgoNAEHFu/KIeCEFDAELIApBA3EhBwJAAkAgCkEETw0AQcW78oh4IQVBACECDAELIApBfHEhCSARIAogEmxqIQhBxbvyiHghBUEAIQIDQCAIQQxqKAIAIAhBCGooAgAgCEEEaigCACAIKAIAIAVzQZODgAhsc0GTg4AIbHNBk4OACGxzQZODgAhsIQUgCEEQaiEIIAkgAkEEaiICRw0ACwsgB0UNACARIAogEmwgAkECdGpqIQgDQCAIKAIAIAVzQZODgAhsIQUgCEEEaiEIIAdBf2oiBw0ACwsgBUEBIAVBAUsbIQgDQCAIIAZxIgVBAWohCCAEIAVBAnRqIgUoAgANAAsgBSAQQQFqIhA2AgAgEkEEaiESIBAgACgCCEkNAAsLIAAgDzYCFCAAIAQ2AhBBASEDCyADC+IBAQN/IABBB2pBeHEhAQJAAkBBACgCgIiAgAAiAEUNAEEAKAKEiICAACECDAELQaCdjYAAIQBBAEGgnY2AADYCgIiAgABBAD8AQRB0IgI2AoSIgIAACwJAIAAgAWoiAyACTQ0AAkACQCADIAJrQf//A2oiAkEQdiIAQcAAIABBwABLGyIDQABBf0cNAAJAIABAAEF/Rw0AQQAPCyACQYCAfHEhAAwBCyADQRB0IQALQQBBACgChIiAgAAgAGo2AoSIgIAAQQAoAoCIgIAAIgAgAWohAwtBACADNgKAiICAACAACw0AQQAgADYCkJqFgAALvQ4BEn8jgICAgABBgBNrIgEkgICAgABBACECAkBBACgCiIiAgAAiA0UNACADQQNxIQQCQCADQQRJDQAgA0F8cSEFQZCIgIAAIQZBACECA0AgBkEYakEANgIAIAZBvAFqQQA2AgAgBkHgAmpBADYCACAGQYQEakEANgIAIAZBHGogBkEIaigCADYCACAGQcABaiAGQawBaigCADYCACAGQeQCaiAGQdACaigCADYCACAGQYgEaiAGQfQDaigCADYCACAGQZAFaiEGIAUgAkEEaiICRw0ACwsgBEUNACACQaQBbEGsiICAAGohBgNAIAZBfGpBADYCACAGIAZBbGooAgA2AgAgBkGkAWohBiAEQX9qIgQNAAsLQQAhBwJAA0ACQCAHIABHDQAgACEHDAILAkAgA0UNAEEAIQUCQCADQQRJDQAgA0F8cSECQQAhBUGQiICAACEGIAFBgAJqIQQDQCAEIAZBCGooAgA2AgAgBEEEaiAGQawBaigCADYCACAEQQhqIAZB0AJqKAIANgIAIARBDGogBkH0A2ooAgA2AgAgBEEQaiEEIAZBkAVqIQYgAiAFQQRqIgVHDQALCyADQQNxIgJFDQAgBUGkAWxBmIiAgABqIQYgAUGAAmogBUECdGohBANAIAQgBigCADYCACAGQaQBaiEGIARBBGohBCACQX9qIgINAAsLQQBBADYClJqFgAACQEEAKAKQmoWAACIGKAIAIghFDQAgBkEEaiEJQQAhCgNAIAlBDGoiCyAJKAIEIgxBpAFsQZCIgIAAaiINKAIAIg5BAnRqIQ8gCSgCACEQAkAgCSgCCCIRRQ0AIBFBAXEhEkEAIQQCQCARQQFGDQAgEUF+cSEDQQAhBCABIQYDQCAGIA8oAgAiAjYCACAGQQRqIA9BBGoiBTYCACAGQQhqIAUgAkGkAWxBkIiAgABqKAIAQQJ0aiICKAIAIgU2AgAgBkEMaiACQQRqIgI2AgAgAiAFQaQBbEGQiICAAGooAgBBAnRqIQ8gBkEQaiEGIAMgBEECaiIERw0ACwsgEkUNACABIARBA3RqIgYgD0EEaiIENgIEIAYgDygCACICNgIAIAQgAkGkAWxBkIiAgABqKAIAQQJ0aiEPCwJAIBBFDQBBoJqFgABB/wEgEEECdBCAgICAABoLAkACQCARRQ0AIBFBA3EhDkEAIQNBACARQXxxayEQQQIhCUEAIQIDQAJAAkAgASACQQN0aigCAEGkAWwiBkGoiICAAGooAgAgBkGsiICAAGooAgBJDQAgBkGQiICAAGooAgAgB3INAQtBACEEQQAgAjYCoJyFgABBASEGAkAgEUEESQ0AQQEhBkEDIQQDQAJAIAMgBGoiBUEDRg0AIAZBAnRBoJyFgABqIARBfWo2AgAgBkEBaiEGCwJAIAVBAkYNACAGQQJ0QaCchYAAaiAEQX5qNgIAIAZBAWohBgsCQCAJIARqQQNGDQAgBkECdEGgnIWAAGogBEF/ajYCACAGQQFqIQYLAkAgAiAERg0AIAZBAnRBoJyFgABqIAQ2AgAgBkEBaiEGCyAQIARBBGoiBGpBA0cNAAsgBEF9aiEECwJAIA5FDQAgDiEFA0ACQCACIARGDQAgBkECdEGgnIWAAGogBDYCACAGQQFqIQYLIARBAWohBCAFQX9qIgUNAAsLIAEgEUEAIAIgDCALEIqAgIAACyADQX9qIQMgCUF/aiEJIAJBAWoiAiARRw0ADAILCwJAIA5FDQAgDkEBcSEQQQAhBQJAIA5BAUYNACAJQRBqIQYgDkF+cSEDQQAhBSABQYASaiEEA0ACQCAGQXxqKAIAIgJBf0oNACACQX9zQQJ0QaCahYAAaigCACECCyAEIAI2AgACQCAGKAIAIgJBf0oNACACQX9zQQJ0QaCahYAAaigCACECCyAEQQRqIAI2AgAgBEEIaiEEIAZBCGohBiADIAVBAmoiBUcNAAsLIBBFDQACQCALIAVBAnQiBGooAgAiBkF/Sg0AIAZBf3NBAnRBoJqFgABqKAIAIQYLIAFBgBJqIARqIAY2AgALQQAgDSABQYASahCGgICAAEEAKAKUmoWAAGo2ApSahYAACyAPIQkgCkEBaiIKIAhHDQALQQAoAoiIgIAAIQMLAkAgA0UNACADQQFxIQlBACECAkAgA0EBRg0AIANBfnEhBUEAIQIgAUGAAmohBEGQiICAACEGA0AgBkEYaiAEKAIANgIAIAZBHGogBkEIaigCADYCACAGQbwBaiAEQQRqKAIANgIAIAZBwAFqIAZBrAFqKAIANgIAIAZByAJqIQYgBEEIaiEEIAUgAkECaiICRw0ACwsgCUUNACACQaQBbCIGQaiIgIAAaiABQYACaiACQQJ0aigCADYCACAGQayIgIAAaiAGQZiIgIAAaigCADYCAAsgB0EBaiEHQQAoApSahYAADQALCyABQYATaiSAgICAACAHC9UNARJ/I4CAgIAAQYABayIGJICAgIAAAkACQCACIAFGDQAgAkECdEGgnIWAAGohBwNAIAAgBygCACIIQQN0aigCACIJQaQBbCIKQZCIgIAAaiELAkACQAJAAkAgCCADRw0AIApBrIiAgABqIQwgCkGoiICAAGooAgAhDQJAIAsoAgAiDkUNACADIQgMAgsgDSAMKAIASQ0DDAYLIAsoAgAiDkUNASAJQaQBbEGYiICAAGohDEEAIQ0LIAlBpAFsIgdBlImAgABqIQ8gB0G4iICAAGohECAAIAhBA3RqIgdBBGohESAMKAIAIRIgBygCBCEKA0ACQAJAIAooAgAiB0F/Sg0AIAdBf3NBAnRBoJqFgABqKAIAIgdBAEgNAQsgB0Gx893xeWwhCCAQKAIAQX9qIRMgEEF8aigCACEMAkADQCAMIAggE3EiDkEDdGooAgAiCkF/Rg0BIA5BAWohCCAKIAdHDQALCyAKQX9GDQYgDCAOQQF0QQJ0akEEaigCACIHRQ0GIAJBAWohFCAJQaQBbEGUiICAAGohFQNAAkAgB0F/aiITIA1JDQAgEyASTw0AAkACQAJAIAsoAgAiCA0AQQAhEAwBCyAVKAIAIAggE2xBAnRqIQcgESgCACEKQQAhEEEAIQlBACECAkADQAJAAkAgCigCACIOQQBIDQAgDiAHKAIARg0BDAMLIAcoAgAhDAJAIA5Bf3MiFkECdEGgmoWAAGoiFygCACIOQQBIDQAgDiAMRg0BDAMLIBcgDDYCACAGIBBBAnRqIBY2AgAgEEEBaiEQCyAKQQRqIQogB0EEaiEHIAJBAWoiAiAITyEJIAggAkcNAAsLIAlBAXFFDQELIAAgASAUIAMgBCAFEIqAgIAACyAQRQ0AIBBBA3EhCkEAIQICQCAQQQRJDQAgEEF8cSEIQQAhAiAGIQcDQCAHKAIAQQJ0QaCahYAAakF/NgIAIAdBBGooAgBBAnRBoJqFgABqQX82AgAgB0EIaigCAEECdEGgmoWAAGpBfzYCACAHQQxqKAIAQQJ0QaCahYAAakF/NgIAIAdBEGohByAIIAJBBGoiAkcNAAsLIApFDQAgBiACQQJ0aiEHA0AgBygCAEECdEGgmoWAAGpBfzYCACAHQQRqIQcgCkF/aiIKDQALCyAPKAIAIBNBAnRqKAIAIgcNAAwHCwsgCkEEaiEKIA9BBGohDyAQQQxqIRAgDkF/aiIODQALIA0gEk8NBCANQQJ0IRYgAkEBaiEXIAlBpAFsQZSIgIAAaiERIAAgCEEDdGpBBGohFANAQQAhDAJAAkAgCygCACIIRQ0AIBEoAgAgCCAWbGohByAUKAIAIQpBACEMQQAhCUEAIQICQANAAkACQCAKKAIAIg5BAEgNACAOIAcoAgBGDQEMAwsgBygCACEQAkAgDkF/cyIPQQJ0QaCahYAAaiITKAIAIg5BAEgNACAOIBBGDQEMAwsgEyAQNgIAIAYgDEECdGogDzYCACAMQQFqIQwLIApBBGohCiAHQQRqIQcgAkEBaiICIAhPIQkgCCACRw0ACwsgCUEBcUUNAQsgACABIBcgAyAEIAUQioCAgAALAkAgDEUNACAMQQNxIQpBACECAkAgDEEESQ0AIAxBfHEhCEEAIQIgBiEHA0AgBygCAEECdEGgmoWAAGpBfzYCACAHQQRqKAIAQQJ0QaCahYAAakF/NgIAIAdBCGooAgBBAnRBoJqFgABqQX82AgAgB0EMaigCAEECdEGgmoWAAGpBfzYCACAHQRBqIQcgCCACQQRqIgJHDQALCyAKRQ0AIAYgAkECdGohBwNAIAcoAgBBAnRBoJqFgABqQX82AgAgB0EEaiEHIApBf2oiCg0ACwsgFkEEaiEWIA1BAWoiDSASRw0ADAULCyAKQbCIgIAAaigCAEUNAwsgB0EEaiEHIAEgAkEBaiICRw0ACwsCQCAEQaQBbEGQiICAAGoiCygCACIHRQ0AIAdBAXEhCUEAIQgCQCAHQQFGDQAgB0F+cSEOQQAhCCAGIQcgBSEKA0ACQCAKKAIAIgJBf0oNACACQX9zQQJ0QaCahYAAaigCACECCyAHIAI2AgACQCAKQQRqKAIAIgJBf0oNACACQX9zQQJ0QaCahYAAaigCACECCyAHQQRqIAI2AgAgB0EIaiEHIApBCGohCiAOIAhBAmoiCEcNAAsLIAlFDQACQCAFIAhBAnQiCmooAgAiB0F/Sg0AIAdBf3NBAnRBoJqFgABqKAIAIQcLIAYgCmogBzYCAAtBACALIAYQhoCAgABBACgClJqFgABqNgKUmoWAAAsgBkGAAWokgICAgAALLQEBf0EAIQECQEEAKAKIiICAACAATQ0AIABBpAFsQZiIgIAAaigCACEBCyABCy0BAX9BACEBAkBBACgCiIiAgAAgAE0NACAAQaQBbEGQiICAAGooAgAhAQsgAQsSACAAQaQBbEGUiICAAGooAgALwQEBBX9BACEAAkBBACgCiIiAgAAiAUUNACABQQNxIQICQAJAIAFBBE8NAEEAIQNBACEADAELIAFBfHEhBEEAIQNBhIyAgAAhAUEAIQADQCABKAIAIAFB3H5qKAIAIAFBuH1qKAIAIAFBlHxqKAIAIABqampqIQAgAUGQBWohASAEIANBBGoiA0cNAAsLIAJFDQAgA0GkAWxBmIiAgABqIQEDQCABKAIAIABqIQAgAUGkAWohASACQX9qIgINAAsLIAALALwBBG5hbWUACglob3JuLndhc20BlAEPAAZtZW1zZXQBBm1lbWNweQIIZGxfcmVzZXQDC2RsX2FkZF9wcmVkBApkbF9zY3JhdGNoBQdkbF9mYWN0BgZpbnNlcnQHCGRsX2FsbG9jCAxkbF9zZXRfcnVsZXMJBmRsX3J1bgoEam9pbgsIZGxfY291bnQMCGRsX2FyaXR5DQlkbF90dXBsZXMOCGRsX3RvdGFsBxIBAA9fX3N0YWNrX3BvaW50ZXIAOAlwcm9kdWNlcnMBDHByb2Nlc3NlZC1ieQEMVWJ1bnR1IGNsYW5nETE4LjEuMyAoMXVidW50dTEpACwPdGFyZ2V0X2ZlYXR1cmVzAisPbXV0YWJsZS1nbG9iYWxzKwhzaWduLWV4dA==";
+
+// ---------------- wasm engine ----------------
+let E = null;   // wasm exports
+async function bootEngine() {
+  let instance = null;
+  try {                                    // hosted next to this page
+    const resp = await fetch('horn.wasm');
+    if (resp.ok) {
+      const buf = await resp.arrayBuffer();
+      instance = (await WebAssembly.instantiate(buf)).instance;
+    }
+  } catch (e) { /* fall through to embedded copy */ }
+  if (!instance) {                         // embedded fallback (file:// etc.)
+    const bytes = Uint8Array.from(atob(WASM_B64), c => c.charCodeAt(0));
+    instance = (await WebAssembly.instantiate(bytes)).instance;
+  }
+  E = instance.exports;
+}
+const MAXARITY = 8, MAXVARS = 64, MAXBODY = 32;
+
+// ---------------- parser ----------------
+// Syntax: facts  edge(a,b).   rules  path(X,Y) :- edge(X,Z), path(Z,Y).
+// propositional  b :- a, c.   queries  ?- path(a,X).   comments  % ...
+function tokenize(src) {
+  const toks = [];
+  const re = /\s+|%[^\n]*|(:-)|(\?-)|([A-Z_][A-Za-z0-9_]*)|([a-z][A-Za-z0-9_]*|[0-9]+|'[^']*')|([(),.])/gy;
+  let i = 0;
+  while (i < src.length) {
+    re.lastIndex = i;
+    const m = re.exec(src);
+    if (!m) throw new Error('unexpected character "' + src[i] + '" at position ' + i);
+    i = re.lastIndex;
+    if (m[1]) toks.push({ t: ':-' });
+    else if (m[2]) toks.push({ t: '?-' });
+    else if (m[3]) toks.push({ t: 'var', v: m[3] });
+    else if (m[4]) toks.push({ t: 'const', v: m[4] });
+    else if (m[5]) toks.push({ t: m[5] });
+  }
+  toks.push({ t: 'eof' });
+  return toks;
+}
+function parseProgram(src) {
+  const toks = tokenize(src);
+  let p = 0;
+  const peek = () => toks[p], eat = t => {
+    if (toks[p].t !== t) throw new Error('expected "' + t + '" but found "' + (toks[p].v || toks[p].t) + '"');
+    return toks[p++];
+  };
+  function atom() {
+    const name = eat('const').v;
+    const args = [];
+    if (peek().t === '(') {
+      eat('(');
+      for (;;) {
+        const tk = peek();
+        if (tk.t === 'var') { p++; args.push({ var: tk.v }); }
+        else if (tk.t === 'const') { p++; args.push({ const: tk.v }); }
+        else throw new Error('expected argument in ' + name + '(...)');
+        if (peek().t === ',') { eat(','); continue; }
+        break;
+      }
+      eat(')');
+    }
+    return { name, args };
+  }
+  const facts = [], rules = [], queries = [];
+  while (peek().t !== 'eof') {
+    if (peek().t === '?-') {
+      eat('?-');
+      queries.push(atom());
+      eat('.');
+      continue;
+    }
+    const head = atom();
+    if (peek().t === ':-') {
+      eat(':-');
+      const body = [atom()];
+      while (peek().t === ',') { eat(','); body.push(atom()); }
+      eat('.');
+      rules.push({ head, body });
+    } else {
+      eat('.');
+      if (head.args.some(a => a.var))
+        throw new Error('fact ' + head.name + ' contains a variable — facts must be ground');
+      facts.push(head);
+    }
+  }
+  return { facts, rules, queries };
+}
+
+// ---------------- loading into the engine ----------------
+function loadProgram(prog) {
+  E.dl_reset();
+  const syms = new Map(), names = [];
+  const intern = s => { if (!syms.has(s)) { syms.set(s, names.length); names.push(s); } return syms.get(s); };
+  const preds = new Map(), predInfo = [];
+  const predOf = (name, arity) => {
+    const key = name + '/' + arity;
+    if (!preds.has(key)) {
+      if (arity > MAXARITY) throw new Error(name + '/' + arity + ': arity above engine limit ' + MAXARITY);
+      const id = E.dl_add_pred(arity);
+      if (id < 0) throw new Error('too many predicates');
+      preds.set(key, id);
+      predInfo[id] = { name, arity, key };
+    }
+    return preds.get(key);
+  };
+  // facts
+  const mem32 = () => new Uint32Array(E.memory.buffer);
+  const sp = E.dl_scratch() >>> 2;
+  for (const f of prog.facts) {
+    const pid = predOf(f.name, f.args.length);
+    const M = mem32();
+    f.args.forEach((a, i) => M[sp + i] = intern(a.const));
+    E.dl_fact(pid);
+  }
+  // rules -> blob
+  const blob = [prog.rules.length];
+  for (const r of prog.rules) {
+    const vmap = new Map();
+    const term = a => {
+      if (a.const !== undefined) return intern(a.const);
+      let name = a.var;
+      if (name === '_') name = '_#' + (vmap.size);       // anonymous: always fresh
+      if (!vmap.has(name)) vmap.set(name, vmap.size);
+      return -1 - vmap.get(name);
+    };
+    const bodyEnc = [];
+    const bodyVars = new Set();
+    if (r.body.length > MAXBODY) throw new Error('rule body longer than ' + MAXBODY + ' atoms');
+    for (const b of r.body) {
+      bodyEnc.push(predOf(b.name, b.args.length));
+      for (const a of b.args) {
+        bodyEnc.push(term(a));
+        if (a.var !== undefined) bodyVars.add(a.var);
+      }
+    }
+    const headEnc = [];
+    for (const a of r.head.args) {
+      if (a.var !== undefined && a.var !== '_' && !bodyVars.has(a.var))
+        throw new Error('unsafe rule: variable ' + a.var + ' appears in the head of ' +
+          r.head.name + ' but not in the body (range restriction)');
+      if (a.var === '_') throw new Error('anonymous variable not allowed in a rule head');
+      headEnc.push(term(a));
+    }
+    if (vmap.size > MAXVARS) throw new Error('rule uses more than ' + MAXVARS + ' variables');
+    blob.push(vmap.size, predOf(r.head.name, r.head.args.length), r.body.length, ...headEnc, ...bodyEnc);
+  }
+  // make sure query predicates exist
+  for (const q of prog.queries) predOf(q.name, q.args.length);
+  const ptr = E.dl_alloc(blob.length * 4);
+  const M = new Int32Array(E.memory.buffer);
+  blob.forEach((x, i) => M[(ptr >>> 2) + i] = x);
+  E.dl_set_rules(ptr, blob.length);
+  return { names, preds, predInfo, intern, syms };
+}
+
+function readTuples(pid, arity) {
+  const n = E.dl_count(pid);
+  if (arity === 0) return n ? [[]] : [];
+  const base = E.dl_tuples(pid) >>> 2;
+  const M = new Uint32Array(E.memory.buffer);
+  const out = [];
+  for (let t = 0; t < n; t++) out.push(Array.from({ length: arity }, (_, i) => M[base + t * arity + i]));
+  return out;
+}
+
+// ---------------- page logic ----------------
+const els = id => document.getElementById(id);
+function setStatus(msg, isErr) {
+  const st = els('status');
+  st.textContent = msg || '';
+  st.className = isErr ? 'err' : '';
+}
+function run() {
+  setStatus('');
+  const out = els('out');
+  out.innerHTML = '';
+  if (!E) { setStatus('engine still loading\u2026', true); return; }
+  let prog, ctx;
+  try {
+    prog = parseProgram(els('src').value);
+  } catch (e) { setStatus('parse error: ' + e.message, true); return; }
+  try {
+    const t0 = performance.now();
+    ctx = loadProgram(prog);
+    const rounds = E.dl_run(1000000);
+    const dt = performance.now() - t0;
+    const total = E.dl_total();
+    // summary
+    let html = '<div class="summary">' + prog.facts.length + ' facts, ' + prog.rules.length +
+      ' rules \u2192 <b>' + total + '</b> derived facts in ' + rounds + ' rounds \u00b7 ' +
+      dt.toFixed(1) + ' ms (WASM)</div>';
+    // per-predicate counts
+    const rows = ctx.predInfo.filter(Boolean).map(pi =>
+      '<tr><td>' + pi.name + '/' + pi.arity + '</td><td>' + E.dl_count(ctx.preds.get(pi.key)) + '</td></tr>').join('');
+    html += '<table class="counts"><tr><th>predicate</th><th>tuples</th></tr>' + rows + '</table>';
+    // queries
+    for (const q of prog.queries) {
+      const pid = ctx.preds.get(q.name + '/' + q.args.length);
+      const tuples = readTuples(pid, q.args.length);
+      const varNames = q.args.map(a => a.var).filter(v => v !== undefined && v !== '_');
+      const matches = [];
+      for (const t of tuples) {
+        const bind = {};
+        let ok = true;
+        q.args.forEach((a, i) => {
+          if (!ok) return;
+          if (a.const !== undefined) { if (ctx.syms.get(a.const) !== t[i]) ok = false; }
+          else if (a.var !== '_') {
+            if (bind[a.var] !== undefined) { if (bind[a.var] !== t[i]) ok = false; }
+            else bind[a.var] = t[i];
+          }
+        });
+        if (ok) matches.push(bind);
+      }
+      const qs = q.name + (q.args.length ? '(' + q.args.map(a => a.const ?? a.var).join(',') + ')' : '');
+      if (q.args.length === 0 || varNames.length === 0) {
+        html += '<div class="query"><b>?- ' + qs + '.</b> \u2192 ' +
+          (matches.length ? '<span class="yes">true</span>' : '<span class="no">false</span>') + '</div>';
+      } else {
+        const seen = new Set(), uniq = [];
+        for (const m of matches) {
+          const k = varNames.map(v => m[v]).join(',');
+          if (!seen.has(k)) { seen.add(k); uniq.push(m); }
+        }
+        html += '<div class="query"><b>?- ' + qs + '.</b> \u2192 ' + uniq.length + ' answer' +
+          (uniq.length === 1 ? '' : 's') + '</div>';
+        if (uniq.length) {
+          html += '<table class="answers"><tr>' + varNames.map(v => '<th>' + v + '</th>').join('') + '</tr>';
+          for (const m of uniq.slice(0, 500))
+            html += '<tr>' + varNames.map(v => '<td>' + ctx.names[m[v]] + '</td>').join('') + '</tr>';
+          html += '</table>';
+          if (uniq.length > 500) html += '<div class="note">\u2026 showing first 500</div>';
+        }
+      }
+    }
+    out.innerHTML = html;
+  } catch (e) { setStatus(e.message, true); }
+}
+function benchmark() {
+  if (!E) { setStatus('engine still loading\u2026', true); return; }
+  const N = 1000;
+  E.dl_reset();
+  const edge = E.dl_add_pred(2), path = E.dl_add_pred(2);
+  const sp = E.dl_scratch() >>> 2;
+  for (let v = 1; v < N; v++) {
+    const M = new Uint32Array(E.memory.buffer);
+    M[sp] = v; M[sp + 1] = v + 1;
+    E.dl_fact(edge);
+  }
+  const V = v => -1 - v;
+  const blob = [2, 2, path, 1, V(0), V(1), edge, V(0), V(1),
+                3, path, 2, V(0), V(1), edge, V(0), V(2), path, V(2), V(1)];
+  const ptr = E.dl_alloc(blob.length * 4);
+  const M = new Int32Array(E.memory.buffer);
+  blob.forEach((x, i) => M[(ptr >>> 2) + i] = x);
+  E.dl_set_rules(ptr, blob.length);
+  const t0 = performance.now();
+  E.dl_run(1000000);
+  const dt = performance.now() - t0;
+  const c = E.dl_count(path);
+  els('out').innerHTML = '<div class="summary">Benchmark: transitive closure of a ' + N +
+    '-node chain \u2014 <b>' + c.toLocaleString() + '</b> path tuples in ' + dt.toFixed(1) +
+    ' ms \u00b7 ' + (c / dt * 1000 / 1e6).toFixed(1) + 'M tuples/sec</div>' +
+    '<div class="note">Same rules as the reachability example: path(X,Y) :- edge(X,Y). \u00b7 ' +
+    'path(X,Y) :- edge(X,Z), path(Z,Y).</div>';
+  setStatus('');
+}
+const EXAMPLES = [
+  ['Graph reachability', `% Which nodes can reach which?
+edge(a,b). edge(b,c). edge(c,d). edge(b,e). edge(e,f).
+path(X,Y) :- edge(X,Y).
+path(X,Y) :- edge(X,Z), path(Z,Y).
+?- path(a,X).
+?- path(e,b).`],
+  ['Ancestors', `parent(abe, homer).
+parent(mona, homer).
+parent(homer, bart). parent(homer, lisa). parent(homer, maggie).
+parent(marge, bart). parent(marge, lisa). parent(marge, maggie).
+ancestor(X,Y) :- parent(X,Y).
+ancestor(X,Y) :- parent(X,Z), ancestor(Z,Y).
+?- ancestor(abe, X).
+?- ancestor(X, lisa).`],
+  ['Propositional Horn (HORNSAT)', `% 0-ary predicates: pure propositional Horn clauses.
+% A clause  c :- a, b.  means  a AND b IMPLIES c.
+wet_ground :- rain.
+rain :- storm.
+storm.
+slippery :- wet_ground, cold.
+cold.
+?- slippery.
+?- sunny.`],
+  ['Same generation', `parent(a,b). parent(a,c). parent(b,d). parent(b,e). parent(c,f).
+sg(X,X) :- person(X).
+sg(X,Y) :- parent(P,X), sg(P,Q), parent(Q,Y).
+person(a). person(b). person(c). person(d). person(e). person(f).
+?- sg(d,X).`],
+  ['Access control', `% Role-based access as Horn clauses.
+role(alice, admin).
+role(bob, editor).
+grants(admin, editor). grants(editor, viewer).
+has_role(U,R) :- role(U,R).
+has_role(U,R) :- has_role(U,S), grants(S,R).
+can(U, publish) :- has_role(U, editor).
+can(U, read)    :- has_role(U, viewer).
+?- can(alice, publish).
+?- can(X, read).`],
+];
+window.addEventListener('load', async () => {
+  const exWrap = els('examples');
+  for (const [label, text] of EXAMPLES) {
+    const b = document.createElement('button');
+    b.textContent = label;
+    b.onclick = () => {
+      els('src').value = text;
+      [...exWrap.children].forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      run();
+    };
+    exWrap.appendChild(b);
+  }
+  els('run-btn').onclick = run;
+  els('bench-btn').onclick = benchmark;
+  els('src').addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) run(); });
+  await bootEngine();
+  exWrap.children[0].onclick();
+});
+
+</script>
+</body>
+</html>
