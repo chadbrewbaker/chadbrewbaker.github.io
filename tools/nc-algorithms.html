@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NC algorithms, live (WebGPU + WASM)</title>
+<style>
+* { box-sizing: border-box; }
+body { font-family: Helvetica, Arial, sans-serif; max-width: 980px; margin: 0 auto;
+  padding: 20px; line-height: 1.5; color: #222; }
+h1 { margin: 0 0 8px; font-size: 26px; }
+.blurb { color: #444; margin-top: 0; }
+#gpu-status { font-size: 13.5px; color: #333; background: #fbfcfd; border: 1px solid #d8dee4;
+  border-radius: 8px; padding: 8px 12px; margin: 12px 0; }
+.card { border: 1px solid #d8dee4; border-radius: 8px; padding: 14px 16px; margin: 14px 0; }
+.card h2 { font-size: 16px; margin: 0 0 4px; }
+.card .tw { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12.5px; color: #57606a; margin-bottom: 8px; }
+.controls { display: flex; gap: 8px; align-items: center; margin: 8px 0; }
+button, select { font-size: 13px; padding: 5px 10px; border: 1px solid #bbb; border-radius: 6px;
+  background: #f6f8fa; cursor: pointer; }
+button:hover { background: #eaeef2; }
+.result { margin-top: 8px; }
+table.res { border-collapse: collapse; font-size: 13.5px; width: 100%; }
+.res td, .res th { border: 1px solid #d8dee4; padding: 4px 10px; text-align: left; }
+.res th { background: #f6f8fa; font-weight: 600; }
+.res .ok { color: #1a7f37; }
+.res .bad { color: #b42318; font-weight: 600; }
+.res .flat { color: #57606a; font-style: italic; }
+.note { color: #57606a; font-size: 13px; margin-top: 6px; }
+.note a { color: #0969da; }
+.about { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 14px; }
+.about h2 { font-size: 18px; }
+.about h3 { font-size: 15px; margin: 18px 0 6px; }
+.about p { font-size: 14px; color: #333; }
+.refs { font-size: 13px; color: #444; padding-left: 22px; }
+.refs li { margin-bottom: 3px; }
+footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 13px; color: #555; }
+footer a, .about a { color: #0969da; }
+code { background: #f6f8fa; padding: 1px 4px; border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
+</style>
+</head>
+<body>
+<h1>NC algorithms, live</h1>
+<p class="blurb">The parallel slack and the serial fraction, side by side. Three NC algorithms run
+on your GPU through WebGPU &mdash; with the <i>round count</i> (the depth T, the quantity NC is
+about) displayed next to the wall clock &mdash; each verified exactly against a sequential
+baseline compiled to WebAssembly. And one P-complete problem that pointedly has no GPU column.
+The WGSL kernels for scan and bitonic sort come verbatim from the
+<a href="https://github.com/chadbrewbaker/amdahl">amdahl</a> package&rsquo;s bsd tier.</p>
+
+<div id="gpu-status">booting&hellip;</div>
+
+<div class="card">
+  <h2>Prefix sums</h2>
+  <div class="tw">T = O(log n), W = O(n) &middot; [J&aacute;J&aacute;92] &sect;2.1 &middot; blocked scan, 3 kernel launches (Harris&ndash;Sengupta&ndash;Owens)</div>
+  <div class="controls"><select id="scan-n"></select><button id="scan-run">Run</button></div>
+  <div id="scan-out"></div>
+</div>
+
+<div class="card">
+  <h2>Bitonic sorting network</h2>
+  <div class="tw">T = O(log&sup2; n), W = O(n log&sup2; n) &middot; Batcher 1968, [J&aacute;J&aacute;92] &sect;4.4 &middot; one dispatch per comparator round</div>
+  <div class="controls"><select id="sort-n"></select><button id="sort-run">Run</button></div>
+  <div id="sort-out"></div>
+</div>
+
+<div class="card">
+  <h2>List ranking (pointer jumping)</h2>
+  <div class="tw">T = O(log n), W = O(n log n) &middot; Wyllie 1979, [J&aacute;J&aacute;92] &sect;2.2/3.1 &middot; &lceil;log&#8322;n&rceil; dispatches, ping-ponged buffers</div>
+  <div class="controls"><select id="listrank-n"></select><button id="listrank-run">Run</button></div>
+  <div id="listrank-out"></div>
+</div>
+
+<div class="card">
+  <h2>Matrix multiplication</h2>
+  <div class="tw">T = O(log n), W = O(n&sup3;) &middot; [J&aacute;J&aacute;92] ch. 8 &middot; product layer + binary reduction tree, 1+log&#8322;n dispatches</div>
+  <div class="controls"><select id="matmul-n"></select><button id="matmul-run">Run</button></div>
+  <div id="matmul-out"></div>
+</div>
+
+<div class="card">
+  <h2>Horn unit resolution &mdash; the counterpoint</h2>
+  <div class="tw">P-complete &middot; GHR95 A.6.2 (Jones&ndash;Laaser 1977) &middot; Dowling&ndash;Gallier linear-time, WASM only</div>
+  <div class="controls"><button id="horn-run">Run (200,000 atoms, chain-deep)</button></div>
+  <div id="horn-out"></div>
+</div>
+
+<section class="about">
+<h2>What this page is demonstrating</h2>
+
+<h3>1&ensp;NC, and why rounds are the number that matters</h3>
+<p>NC (&ldquo;Nick&rsquo;s Class&rdquo;, named by Cook for Nick Pippenger&rsquo;s 1979 characterization&nbsp;[3];
+taxonomy in Cook 1985&nbsp;[4]) is the class of problems solvable in polylogarithmic <i>depth</i>
+with polynomially many processors. Depth &mdash; the length of the longest chain of dependent
+operations &mdash; is what survives hardware generations; Brent&rsquo;s theorem&nbsp;[5] says work can
+always be respread over whatever processors exist, but depth cannot. Each card therefore
+prints its round count next to the milliseconds: 3 launches for the blocked scan, log&sup2;
+comparator rounds for Batcher, &lceil;log&#8322;n&rceil; jumps for Wyllie. On a GPU there is no
+grid-wide barrier inside a dispatch, so <i>the round is the kernel launch</i> &mdash; the PRAM
+step made physical, which is the standing model of the amdahl package these kernels come from.</p>
+
+<h3>2&ensp;The serial baselines, and small-n honesty</h3>
+<p>Each GPU result is verified <i>exactly</i> (u32, mod 2&sup3;&sup2;) against a sequential
+implementation compiled from freestanding C to WebAssembly &mdash; and the baseline is the
+strongest natural serial competitor, not a strawman: one-pass accumulation for scan, LSD radix
+for sorting. At these sizes the tuned serial code sometimes wins the wall clock; that is not a
+bug in the theory, it is the theory. Amdahl&rsquo;s 1967 argument&nbsp;[1] caps speedup by the serial
+fraction, dispatch overhead is a real serial fraction, and the asymptotic separation only pays
+past a crossover. Watching the crossover move as n grows is the point of the size selector.</p>
+
+<h3>3&ensp;The P-complete counterpoint</h3>
+<p>Horn unit resolution is P-complete (Jones&ndash;Laaser 1977&nbsp;[8]; entry A.6.2 in
+Greenlaw&ndash;Hoover&ndash;Ruzzo&nbsp;[2]): every polynomial-time problem NC-reduces to it, so a
+polylog-round GPU kernel for it would prove NC&nbsp;=&nbsp;P. The card runs a chain-deep instance
+where the propagation depth equals the atom count &mdash; forward chaining that cannot be
+flattened, as far as forty years of effort can tell. It is the same algorithm as this
+site&rsquo;s <a href="horn-solver.html">Horn clause solver</a>, shaped adversarially. The
+empty GPU cell is the exhibit: this is the flat line the amdahl package is named for.
+Notably, the frontier moves: bipartite perfect matching sat in the open-problems appendix of
+[2] for three decades before the 2026 proof that it is in NC&nbsp;[9].</p>
+
+<h3>References</h3>
+<ol class="refs">
+<li>G. M. Amdahl, Validity of the single processor approach to achieving large scale computing capabilities, <i>AFIPS</i> 1967.</li>
+<li>R. Greenlaw, H. J. Hoover, W. L. Ruzzo, <i>Limits to Parallel Computation: P-Completeness Theory</i>, Oxford, 1995.</li>
+<li>N. Pippenger, On simultaneous resource bounds, <i>FOCS</i> 1979.</li>
+<li>S. A. Cook, A taxonomy of problems with fast parallel algorithms, <i>Inform. and Control</i> 64 (1985) 2&ndash;22.</li>
+<li>R. P. Brent, The parallel evaluation of general arithmetic expressions, <i>J. ACM</i> 21 (1974) 201&ndash;206.</li>
+<li>J. J&aacute;J&aacute;, <i>An Introduction to Parallel Algorithms</i>, Addison-Wesley, 1992.</li>
+<li>K. E. Batcher, Sorting networks and their applications, <i>AFIPS SJCC</i> 1968. &middot; J. C. Wyllie, <i>The Complexity of Parallel Computations</i>, PhD thesis, Cornell, 1979. &middot; R. E. Ladner, M. J. Fischer, Parallel prefix computation, <i>J. ACM</i> 27 (1980). &middot; W. D. Hillis, G. L. Steele, Data parallel algorithms, <i>CACM</i> 29 (1986). &middot; G. E. Blelloch, <i>Vector Models for Data-Parallel Computing</i>, MIT Press, 1990. &middot; M. Harris, S. Sengupta, J. D. Owens, Parallel prefix sum (scan) with CUDA, <i>GPU Gems 3</i> ch. 39, 2007.</li>
+<li>N. D. Jones, W. T. Laaser, Complete problems for deterministic polynomial time, <i>Theoret. Comput. Sci.</i> 3 (1977) 105&ndash;117. &middot; R. E. Ladner, The circuit value problem is log space complete for P, <i>SIGACT News</i> 7 (1975).</li>
+<li>A. Chatterjee, S. Ghosh, R. Gurjar, R. Raj, T. Thierauf, Bipartite matching is in NC, ECCC TR26-100, 2026.</li>
+<li>W3C, <i>WebAssembly Core Specification</i>; W3C, <i>WebGPU</i> and <i>WGSL</i> working drafts.</li>
+</ol>
+</section>
+
+<footer>
+One page: WGSL compute kernels (scan and bitonic verbatim from the
+<a href="https://github.com/chadbrewbaker/amdahl">amdahl</a> repo, list ranking in the same
+style), serial baselines in a 5&thinsp;KB freestanding-C WASM module (fetched as
+<code>nc.wasm</code>, embedded fallback), exact verification on every run. Skeleton after
+<a href="https://github.com/simonw/tools">simonw/tools</a>.
+</footer>
+<script>
+const WASM_B64 = "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";
+const SCAN_WGSL = "// scan.wgsl \u2014 blocked inclusive prefix sums, WebGPU/WGSL (bsd tier).\n//\n// Provenance: [J\u00e1J\u00e192] \u00a72.1; structure = perf/prefix.c's measured blocked\n// design (pass 1: per-block scan + block sums; pass 2: scan the sums;\n// pass 3: add offsets), which is also the canonical GPU scan\n// (Harris-Sengupta-Owens, GPU Gems 3 ch. 39). In-workgroup step is\n// Hillis-Steele (log WG rounds, n log n work inside the block) \u2014 chosen\n// for legibility over Blelloch; the perf tier switches to hardware scan\n// primitives (Metal simd_prefix_inclusive_sum, MSL 4.1 \u00a76.10).\n//\n// WGSL grounding notes (WebGPU spec): integer types are 32-bit only\n// (u32/i32 \u2014 no u64 in WGSL), so the bsd GPU tier computes mod 2^32,\n// exactly matching a uint32_t C reference; '+' wraps by spec, no UB.\n// workgroupBarrier() synchronizes a workgroup; NOTHING synchronizes the\n// whole grid inside a dispatch \u2014 hence three entry points, one dispatch\n// each, matching the package's rounds-are-kernel-launches model.\n//\n// Capacity (bsd tier): WG = 256 threads, 1 element/thread, block sums\n// scanned by a single workgroup => n <= 256*256 = 65536. Hosts assert.\n\nconst WG: u32 = 256u;\n\n@group(0) @binding(0) var<storage, read_write> data: array<u32>;\n@group(0) @binding(1) var<storage, read_write> sums: array<u32>;\n\nvar<workgroup> tmp: array<u32, WG>;\n\n// pass 1: inclusive scan inside each block; block total -> sums[wg]\n@compute @workgroup_size(WG)\nfn block_scan(@builtin(global_invocation_id) gid: vec3<u32>,\n              @builtin(local_invocation_id) lid: vec3<u32>,\n              @builtin(workgroup_id) wid: vec3<u32>) {\n    let i = gid.x;\n    let t = lid.x;\n    tmp[t] = select(0u, data[i], i < arrayLength(&data));\n    workgroupBarrier();\n    // Hillis-Steele: after round d, tmp[t] = sum of up to 2^(d+1) elems\n    for (var d: u32 = 1u; d < WG; d = d << 1u) {\n        var v: u32 = tmp[t];\n        if (t >= d) { v = v + tmp[t - d]; }\n        workgroupBarrier();\n        tmp[t] = v;\n        workgroupBarrier();\n    }\n    if (i < arrayLength(&data)) { data[i] = tmp[t]; }\n    if (t == WG - 1u) { sums[wid.x] = tmp[t]; }\n}\n\n// pass 2: scan the block sums (single workgroup; nblocks <= WG)\n@compute @workgroup_size(WG)\nfn scan_sums(@builtin(local_invocation_id) lid: vec3<u32>) {\n    let t = lid.x;\n    tmp[t] = select(0u, sums[t], t < arrayLength(&sums));\n    workgroupBarrier();\n    for (var d: u32 = 1u; d < WG; d = d << 1u) {\n        var v: u32 = tmp[t];\n        if (t >= d) { v = v + tmp[t - d]; }\n        workgroupBarrier();\n        tmp[t] = v;\n        workgroupBarrier();\n    }\n    if (t < arrayLength(&sums)) { sums[t] = tmp[t]; }\n}\n\n// pass 3: add the preceding blocks' total to every element\n@compute @workgroup_size(WG)\nfn add_offsets(@builtin(global_invocation_id) gid: vec3<u32>,\n               @builtin(workgroup_id) wid: vec3<u32>) {\n    let i = gid.x;\n    if (wid.x > 0u && i < arrayLength(&data)) {\n        data[i] = data[i] + sums[wid.x - 1u];\n    }\n}\n";
+const BITONIC_WGSL = "// bitonic.wgsl \u2014 Batcher's bitonic sorting network, WebGPU/WGSL (bsd\n// tier). Provenance: [J\u00e1J\u00e192] \u00a74.4; mirrors bsd/nc/bitonic.py and\n// bsd/nc/bitonic.c exactly: the host loops the (k, j) rounds and issues\n// one dispatch per round (no grid-wide barrier exists inside a dispatch\n// \u2014 the round IS the dispatch, the package's standing model). The\n// comparator schedule is data-independent; u32 keys; pad with 0xFFFFFFFF.\n// Pair safety: thread i acts only when l = i ^ j > i, so each exchange\n// has a unique owner \u2014 same argument as bench/bench_threads.c.\n\nstruct Params { k: u32, j: u32, n: u32, pad: u32 };\n\n@group(0) @binding(0) var<storage, read_write> v: array<u32>;\n@group(0) @binding(1) var<uniform> p: Params;\n\n@compute @workgroup_size(256)\nfn round(@builtin(global_invocation_id) gid: vec3<u32>) {\n    let i = gid.x;\n    if (i >= p.n) { return; }\n    let l = i ^ p.j;\n    if (l > i) {\n        let up = (i & p.k) == 0u;\n        let a = v[i];\n        let b = v[l];\n        if ((a > b) == up) { v[i] = b; v[l] = a; }\n    }\n}\n";
+const MATMUL_WGSL = "// matmul.wgsl \u2014 dense C = A*B as an explicit NC circuit, WebGPU/WGSL\n// (bsd tier). Provenance: [J\u00e1J\u00e192] ch. 8 (matrix ops on the PRAM).\n// T = O(log n), W = O(n^3): dispatch 1 (\"mul\") materializes all n^3\n// products prod[(i*n+j)*n + k] = A[i][k]*B[k][j]; then log2(n) \"reduce\"\n// dispatches halve the k-extent by pairwise sums \u2014 the binary reduction\n// tree of the depth-O(log n) circuit, one tree level per kernel launch\n// (the round IS the dispatch, cf. scan.wgsl). C[i][j] ends in\n// prod[(i*n+j)*n + 0]. u32 mod 2^32 exactly, matching seq_matmul in nc.c.\n// The k-major product layout keeps each reduce round's reads coalesced.\n// Capacity: n^3 u32s must fit one storage buffer (n=256 -> 64 MiB).\n\nstruct Params { n: u32, s: u32, pad0: u32, pad1: u32 };\n\n@group(0) @binding(0) var<storage, read>       A: array<u32>;\n@group(0) @binding(1) var<storage, read>       B: array<u32>;\n@group(0) @binding(2) var<storage, read_write> prod: array<u32>;\n@group(0) @binding(3) var<uniform> p: Params;\n\n// Dispatches are 2D: total threads can exceed 65535*256 in one dimension\n// (n=256 needs 65536 groups \u2014 one past maxComputeWorkgroupsPerDimension,\n// caught on llvmpipe). Linear id = gid.x + gid.y * groups_x * 256.\n@compute @workgroup_size(256)\nfn mul(@builtin(global_invocation_id) gid: vec3<u32>,\n       @builtin(num_workgroups) nwg: vec3<u32>) {\n    let t = gid.x + gid.y * nwg.x * 256u;\n    let n = p.n;\n    if (t >= n * n * n) { return; }\n    let k = t % n;\n    let ij = t / n;\n    let i = ij / n;\n    let j = ij % n;\n    prod[t] = A[i * n + k] * B[k * n + j];\n}\n\n@compute @workgroup_size(256)\nfn reduce(@builtin(global_invocation_id) gid: vec3<u32>,\n          @builtin(num_workgroups) nwg: vec3<u32>) {\n    let t = gid.x + gid.y * nwg.x * 256u;\n    let n = p.n;\n    let s = p.s;\n    if (t >= n * n * s) { return; }\n    let k = t % s;\n    let ij = t / s;\n    let base = ij * n + k;\n    // in-row guard: without it, base+s crosses into the next (i,j) cell's\n    // k-range whenever k+s >= n (non-power-of-2 n) \u2014 caught on llvmpipe.\n    if (k + s < n) {\n        prod[base] = prod[base] + prod[base + s];\n    }\n}\n";
+const LISTRANK_WGSL = "// listrank.wgsl \u2014 Wyllie pointer jumping, WebGPU/WGSL (bsd tier).\n// Provenance: [J\u00e1J\u00e192] Sec. 2.2 / 3.1; mirrors bsd/nc/listrank.py:\n// rank'[i] = rank[i] + rank[next[i]]; next'[i] = next[next[i]].\n// T = O(log n), W = O(n log n) \u2014 Wyllie, deliberately not work-optimal\n// (same note as listrank.py; the point here is the round count).\n// The host issues ceil(log2 n) dispatches, ping-ponging (rank,next)\n// buffers between bind groups \u2014 the round IS the dispatch, no grid-wide\n// barrier exists inside one (the package's standing model, cf. scan.wgsl).\n// succ[tail] == tail keeps rank[tail] = 0 through every round.\n\n@group(0) @binding(0) var<storage, read>       rank_in:  array<u32>;\n@group(0) @binding(1) var<storage, read>       next_in:  array<u32>;\n@group(0) @binding(2) var<storage, read_write> rank_out: array<u32>;\n@group(0) @binding(3) var<storage, read_write> next_out: array<u32>;\n\n@compute @workgroup_size(256)\nfn jump(@builtin(global_invocation_id) gid: vec3<u32>) {\n    let i = gid.x;\n    if (i >= arrayLength(&rank_in)) { return; }\n    let nx = next_in[i];\n    rank_out[i] = rank_in[i] + rank_in[nx];\n    next_out[i] = next_in[nx];\n}\n";
+
+// ---------------- engines ----------------
+let W = null;           // wasm exports (serial fraction)
+let G = null;           // webgpu {device, pipelines...} or null
+async function bootWasm() {
+  let inst = null;
+  try {
+    const resp = await fetch('nc.wasm');
+    if (resp.ok) inst = (await WebAssembly.instantiate(await resp.arrayBuffer())).instance;
+  } catch (e) {}
+  if (!inst) {
+    const bytes = Uint8Array.from(atob(WASM_B64), c => c.charCodeAt(0));
+    inst = (await WebAssembly.instantiate(bytes)).instance;
+  }
+  W = inst.exports;
+}
+async function bootGpu() {
+  if (!('gpu' in navigator)) return null;
+  try {
+    const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+    if (!adapter) return null;
+    const device = await adapter.requestDevice();
+    const mk = (code, entry) => device.createComputePipeline({
+      layout: 'auto',
+      compute: { module: device.createShaderModule({ code }), entryPoint: entry } });
+    G = {
+      device,
+      scanBlock: mk(SCAN_WGSL, 'block_scan'),
+      scanSums:  mk(SCAN_WGSL, 'scan_sums'),
+      scanAdd:   mk(SCAN_WGSL, 'add_offsets'),
+      bitonic:   mk(BITONIC_WGSL, 'round'),
+      jump:      mk(LISTRANK_WGSL, 'jump'),
+      mmMul:     mk(MATMUL_WGSL, 'mul'),
+      mmReduce:  mk(MATMUL_WGSL, 'reduce'),
+      name: (adapter.info && (adapter.info.description || adapter.info.vendor)) || 'GPU',
+    };
+  } catch (e) { G = null; }
+  return G;
+}
+const WG = 256;
+
+function sbuf(device, u32arr, usage) {
+  const b = device.createBuffer({ size: u32arr.byteLength, usage, mappedAtCreation: true });
+  new Uint32Array(b.getMappedRange()).set(u32arr);
+  b.unmap();
+  return b;
+}
+async function readBack(device, buf, bytes) {
+  const staging = device.createBuffer({ size: bytes, usage: GPUBufferUsage.COPY_DST | GPUBufferUsage.MAP_READ });
+  const enc = device.createCommandEncoder();
+  enc.copyBufferToBuffer(buf, 0, staging, 0, bytes);
+  device.queue.submit([enc.finish()]);
+  await staging.mapAsync(GPUMapMode.READ);
+  const out = new Uint32Array(staging.getMappedRange().slice(0));
+  staging.unmap(); staging.destroy();
+  return out;
+}
+async function gpuTime(device, encodeFn) {
+  const t0 = performance.now();
+  encodeFn();
+  await device.queue.onSubmittedWorkDone();
+  return performance.now() - t0;
+}
+
+// xorshift RNG, seeded per run for reproducibility
+function rng(seed) {
+  let s = seed >>> 0 || 1;
+  return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return s >>> 0; };
+}
+
+// ---------------- WASM helpers ----------------
+function wasmScan(input) {
+  W.nc_reset();
+  const ptr = W.nc_alloc(input.length * 4);
+  new Uint32Array(W.memory.buffer).set(input, ptr >>> 2);
+  const t0 = performance.now();
+  W.seq_scan(ptr, input.length);
+  const dt = performance.now() - t0;
+  return { out: new Uint32Array(W.memory.buffer.slice(ptr, ptr + input.length * 4)), ms: dt };
+}
+function wasmSort(input) {
+  W.nc_reset();
+  const ptr = W.nc_alloc(input.length * 4);
+  new Uint32Array(W.memory.buffer).set(input, ptr >>> 2);
+  const t0 = performance.now();
+  W.seq_sort(ptr, input.length);
+  const dt = performance.now() - t0;
+  return { out: new Uint32Array(W.memory.buffer.slice(ptr, ptr + input.length * 4)), ms: dt };
+}
+function wasmListrank(succ) {
+  W.nc_reset();
+  const ps = W.nc_alloc(succ.length * 4), pr = W.nc_alloc(succ.length * 4);
+  new Uint32Array(W.memory.buffer).set(succ, ps >>> 2);
+  const t0 = performance.now();
+  W.seq_listrank(ps, pr, succ.length);
+  const dt = performance.now() - t0;
+  return { out: new Uint32Array(W.memory.buffer.slice(pr, pr + succ.length * 4)), ms: dt };
+}
+
+function grid2d(threads) {   // WebGPU caps workgroups per dimension at 65535
+  const g = Math.ceil(threads / WG);
+  const y = Math.ceil(g / 32768), x = Math.ceil(g / y);
+  return [x, y];
+}
+function wasmMatmul(A, B, n) {
+  W.nc_reset();
+  const pa = W.nc_alloc(n * n * 4), pb = W.nc_alloc(n * n * 4), pc = W.nc_alloc(n * n * 4);
+  const M = new Uint32Array(W.memory.buffer);
+  M.set(A, pa >>> 2); M.set(B, pb >>> 2);
+  const t0 = performance.now();
+  W.seq_matmul(pa, pb, pc, n);
+  const dt = performance.now() - t0;
+  return { out: new Uint32Array(W.memory.buffer.slice(pc, pc + n * n * 4)), ms: dt };
+}
+async function runMatmul(n, out) {
+  const r = rng(0xA7A7 ^ n);
+  const A = new Uint32Array(n * n), B = new Uint32Array(n * n);
+  for (let i = 0; i < n * n; i++) { A[i] = r(); B[i] = r(); }
+  const s = wasmMatmul(A, B, n);
+  let lg = 0; while ((1 << lg) < n) lg++;
+  let gpuHTML = gpuUnavailable();
+  if (G) {
+    const bA = sbuf(G.device, A, GPUBufferUsage.STORAGE);
+    const bB = sbuf(G.device, B, GPUBufferUsage.STORAGE);
+    const prod = G.device.createBuffer({ size: n * n * n * 4,
+      usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+    const uMul = sbuf(G.device, new Uint32Array([n, 0, 0, 0]), GPUBufferUsage.UNIFORM);
+    const uRounds = [];
+    for (let st = 1 << (lg - 1); st >= 1; st >>= 1)
+      uRounds.push([st, sbuf(G.device, new Uint32Array([n, st, 0, 0]), GPUBufferUsage.UNIFORM)]);
+    const bgm = G.device.createBindGroup({ layout: G.mmMul.getBindGroupLayout(0), entries: [
+      { binding: 0, resource: { buffer: bA } }, { binding: 1, resource: { buffer: bB } },
+      { binding: 2, resource: { buffer: prod } }, { binding: 3, resource: { buffer: uMul } }] });
+    const bgr = uRounds.map(([, u]) => G.device.createBindGroup({
+      layout: G.mmReduce.getBindGroupLayout(0), entries: [
+      { binding: 2, resource: { buffer: prod } }, { binding: 3, resource: { buffer: u } }] }));
+    const ms = await gpuTime(G.device, () => {
+      const enc = G.device.createCommandEncoder();
+      const cp = enc.beginComputePass();
+      cp.setPipeline(G.mmMul); cp.setBindGroup(0, bgm);
+      cp.dispatchWorkgroups(...grid2d(n * n * n));
+      cp.setPipeline(G.mmReduce);
+      uRounds.forEach(([st], i) => {
+        cp.setBindGroup(0, bgr[i]);
+        cp.dispatchWorkgroups(...grid2d(n * n * st));
+      });
+      cp.end();
+      G.device.queue.submit([enc.finish()]);
+    });
+    const raw = await readBack(G.device, prod, n * n * n * 4);
+    let ok = true;
+    for (let i = 0; i < n * n; i++) if (raw[i * n] !== s.out[i]) { ok = false; break; }
+    [bA, bB, prod, uMul].forEach(b => b.destroy()); uRounds.forEach(([, u]) => u.destroy());
+    gpuHTML = gpuCell(1 + lg, ms, ok);
+  }
+  render(out, 'matrix multiply', n, gpuHTML, s.ms,
+    'depth: the O(log n) circuit made literal &mdash; one product dispatch, then log&#8322;n = ' + lg +
+    ' reduction-tree dispatches over the k-extent ([J&aacute;J&aacute;92] ch. 8); W = O(n&sup3;), ' +
+    'n&sup3; intermediate products (' + ((n*n*n*4)/(1<<20)).toFixed(0) + ' MiB) materialized on purpose');
+}
+// ---------------- algorithms ----------------
+async function runScan(n, out) {
+  const r = rng(0xC0FFEE ^ n);
+  const input = new Uint32Array(n); for (let i = 0; i < n; i++) input[i] = r();
+  const s = wasmScan(input);
+  let gpuHTML = gpuUnavailable();
+  if (G) {
+    const nblocks = Math.ceil(n / WG);
+    const data = sbuf(G.device, input, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
+    const sums = sbuf(G.device, new Uint32Array(nblocks), GPUBufferUsage.STORAGE);
+    // layout:'auto' gives each entry point a layout with ONLY the bindings it
+    // uses — scan_sums touches just @binding(1), so its bind group must too
+    // (caught on the llvmpipe runner before it could bite in Chrome).
+    const bg = (pipe, ents) => G.device.createBindGroup({ layout: pipe.getBindGroupLayout(0),
+      entries: ents });
+    const eData = { binding: 0, resource: { buffer: data } };
+    const eSums = { binding: 1, resource: { buffer: sums } };
+    const ms = await gpuTime(G.device, () => {
+      const enc = G.device.createCommandEncoder();
+      const cp = enc.beginComputePass();
+      cp.setPipeline(G.scanBlock); cp.setBindGroup(0, bg(G.scanBlock, [eData, eSums])); cp.dispatchWorkgroups(nblocks);
+      cp.setPipeline(G.scanSums);  cp.setBindGroup(0, bg(G.scanSums,  [eSums]));        cp.dispatchWorkgroups(1);
+      cp.setPipeline(G.scanAdd);   cp.setBindGroup(0, bg(G.scanAdd,   [eData, eSums])); cp.dispatchWorkgroups(nblocks);
+      cp.end();
+      G.device.queue.submit([enc.finish()]);
+    });
+    const got = await readBack(G.device, data, n * 4);
+    const ok = got.every((v, i) => v === s.out[i]);
+    data.destroy(); sums.destroy();
+    gpuHTML = gpuCell(3, ms, ok);
+  }
+  render(out, 'prefix sums', n, gpuHTML, s.ms,
+    'depth: log&#8322;' + WG + ' Hillis-Steele rounds inside each block, 3 kernel launches total (blocked scan, GPU Gems 3 ch. 39)');
+}
+async function runSort(n, out) {
+  const r = rng(0xBADC0DE ^ n);
+  const input = new Uint32Array(n); for (let i = 0; i < n; i++) input[i] = r();
+  const s = wasmSort(input);
+  let gpuHTML = gpuUnavailable();
+  let m = 1; while (m < n) m <<= 1;
+  const lg = Math.log2(m), rounds = lg * (lg + 1) / 2;
+  if (G) {
+    const padded = new Uint32Array(m).fill(0xFFFFFFFF); padded.set(input);
+    const data = sbuf(G.device, padded, GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC);
+    const ubufs = [];
+    for (let k = 2; k <= m; k <<= 1)
+      for (let j = k >> 1; j >= 1; j >>= 1)
+        ubufs.push(sbuf(G.device, new Uint32Array([k, j, m, 0]), GPUBufferUsage.UNIFORM));
+    const bgs = ubufs.map(u => G.device.createBindGroup({ layout: G.bitonic.getBindGroupLayout(0),
+      entries: [{ binding: 0, resource: { buffer: data } }, { binding: 1, resource: { buffer: u } }] }));
+    const ms = await gpuTime(G.device, () => {
+      const enc = G.device.createCommandEncoder();
+      const cp = enc.beginComputePass();
+      cp.setPipeline(G.bitonic);
+      for (const bgi of bgs) { cp.setBindGroup(0, bgi); cp.dispatchWorkgroups(Math.ceil(m / WG)); }
+      cp.end();
+      G.device.queue.submit([enc.finish()]);
+    });
+    const got = await readBack(G.device, data, n * 4);
+    const ok = got.every((v, i) => v === s.out[i]);
+    data.destroy(); ubufs.forEach(u => u.destroy());
+    gpuHTML = gpuCell(rounds, ms, ok);
+  }
+  render(out, 'bitonic sort', n, gpuHTML, s.ms,
+    'depth: log&#8322;&sup2; rounds &mdash; ' + rounds + ' comparator rounds for m=' + m +
+    ' (Batcher 1968); WASM baseline is LSD radix, the tuned serial competitor');
+}
+async function runListrank(n, out) {
+  const r = rng(0x5EED ^ n);
+  const perm = Array.from({ length: n }, (_, i) => i);
+  for (let i = n - 1; i > 0; i--) { const j = r() % (i + 1); [perm[i], perm[j]] = [perm[j], perm[i]]; }
+  const succ = new Uint32Array(n);
+  for (let i = 0; i < n - 1; i++) succ[perm[i]] = perm[i + 1];
+  succ[perm[n - 1]] = perm[n - 1];
+  const s = wasmListrank(succ);
+  const rounds = Math.ceil(Math.log2(Math.max(n, 2)));
+  let gpuHTML = gpuUnavailable();
+  if (G) {
+    const rank0 = new Uint32Array(n);
+    for (let i = 0; i < n; i++) rank0[i] = succ[i] === i ? 0 : 1;
+    const RW = GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC;
+    const rankA = sbuf(G.device, rank0, RW), rankB = sbuf(G.device, rank0, RW);
+    const nextA = sbuf(G.device, succ, RW), nextB = sbuf(G.device, succ, RW);
+    const bg = (ri, ni, ro, no) => G.device.createBindGroup({ layout: G.jump.getBindGroupLayout(0),
+      entries: [{ binding: 0, resource: { buffer: ri } }, { binding: 1, resource: { buffer: ni } },
+                { binding: 2, resource: { buffer: ro } }, { binding: 3, resource: { buffer: no } }] });
+    const ab = bg(rankA, nextA, rankB, nextB), ba = bg(rankB, nextB, rankA, nextA);
+    const ms = await gpuTime(G.device, () => {
+      const enc = G.device.createCommandEncoder();
+      const cp = enc.beginComputePass();
+      cp.setPipeline(G.jump);
+      for (let rd = 0; rd < rounds; rd++) {
+        cp.setBindGroup(0, rd % 2 === 0 ? ab : ba);
+        cp.dispatchWorkgroups(Math.ceil(n / WG));
+      }
+      cp.end();
+      G.device.queue.submit([enc.finish()]);
+    });
+    const finalBuf = rounds % 2 === 1 ? rankB : rankA;
+    const got = await readBack(G.device, finalBuf, n * 4);
+    const ok = got.every((v, i) => v === s.out[i]);
+    [rankA, rankB, nextA, nextB].forEach(b => b.destroy());
+    gpuHTML = gpuCell(rounds, ms, ok);
+  }
+  render(out, 'list ranking (Wyllie)', n, gpuHTML, s.ms,
+    'depth: &lceil;log&#8322;n&rceil; = ' + rounds + ' pointer-jumping rounds, one dispatch each; ' +
+    'W = O(n log n), deliberately not work-optimal &mdash; the round count is the exhibit');
+}
+function runHorn(n, out) {
+  // layered chain with random extra bodies: propagation depth = n (inherently sequential)
+  const r = rng(0x480E ^ n);
+  const blob = [n];
+  blob.push(0, 0);
+  for (let i = 1; i < n; i++) {
+    if ((r() & 3) === 0 && i > 2) blob.push(i, 2, i - 1, r() % (i - 1));
+    else blob.push(i, 1, i - 1);
+  }
+  W.nc_reset();
+  const u = new Uint32Array(blob);
+  const ptr = W.nc_alloc(u.length * 4);
+  new Uint32Array(W.memory.buffer).set(u, ptr >>> 2);
+  const t0 = performance.now();
+  const ntrue = W.horn_solve(ptr, n);
+  const ms = performance.now() - t0;
+  out.innerHTML =
+    '<div class="result"><table class="res"><tr><th></th><th>rounds (T)</th><th>time</th><th></th></tr>' +
+    '<tr><td>GPU</td><td colspan="3" class="flat">no GPU track &mdash; P-complete (GHR95 A.6.2, ' +
+    'Jones&ndash;Laaser 1977). A polylog-round algorithm here would prove NC = P.</td></tr>' +
+    '<tr><td>WASM serial</td><td>' + n + ' propagation steps (depth = n by construction)</td><td>' +
+    ms.toFixed(1) + ' ms</td><td class="ok">&#10003; ' + ntrue + '/' + n + ' atoms derived</td></tr>' +
+    '</table><div class="note">Dowling&ndash;Gallier linear-time unit resolution over a chain-deep ' +
+    'instance: the serial fraction that names the package. This is the same forward chaining as the ' +
+    '<a href="horn-solver.html">Horn clause solver</a>, worst-case shaped.</div></div>';
+}
+function gpuUnavailable() {
+  return '<tr><td>GPU</td><td colspan="3" class="flat">WebGPU not available in this browser &mdash; ' +
+    'serial baseline below still runs; try Chrome/Edge 113+ for the parallel track</td></tr>';
+}
+function gpuCell(rounds, ms, ok) {
+  return '<tr><td>GPU (' + (G ? G.name : '') + ')</td><td>' + rounds + ' dispatch' + (rounds === 1 ? '' : 'es') +
+    '</td><td>' + ms.toFixed(1) + ' ms</td><td class="' + (ok ? 'ok' : 'bad') + '">' +
+    (ok ? '&#10003; exact match vs serial' : '&#10007; MISMATCH') + '</td></tr>';
+}
+function render(out, name, n, gpuRow, wasmMs, depthNote) {
+  out.innerHTML = '<div class="result"><table class="res">' +
+    '<tr><th></th><th>rounds (T)</th><th>time</th><th>verification</th></tr>' + gpuRow +
+    '<tr><td>WASM serial</td><td>n = ' + n.toLocaleString() + ' sequential steps</td><td>' +
+    wasmMs.toFixed(1) + ' ms</td><td></td></tr></table>' +
+    '<div class="note">' + depthNote + '</div></div>';
+}
+
+// ---------------- page wiring ----------------
+const els = id => document.getElementById(id);
+window.addEventListener('load', async () => {
+  await bootWasm();
+  await bootGpu();
+  els('gpu-status').innerHTML = G
+    ? 'WebGPU: <b>' + G.name + '</b> &middot; WASM serial baselines loaded'
+    : 'WebGPU: <b>not available</b> (cards run their WASM serial baselines; the depth numbers are still shown)';
+  const cards = [
+    ['scan',     runScan,     [4096, 16384, 65536], 65536],
+    ['sort',     runSort,     [4096, 16384, 65536], 65536],
+    ['listrank', runListrank, [4096, 16384, 65536], 65536],
+    ['matmul',   runMatmul,   [64, 128, 256], 128],
+  ];
+  for (const [id, fn, sizes, dflt] of cards) {
+    const sel = els(id + '-n');
+    for (const s of sizes) {
+      const o = document.createElement('option');
+      o.value = s; o.textContent = 'n = ' + s.toLocaleString();
+      if (s === dflt) o.selected = true;
+      sel.appendChild(o);
+    }
+    els(id + '-run').onclick = () => fn(parseInt(sel.value, 10), els(id + '-out'));
+  }
+  els('horn-run').onclick = () => runHorn(200000, els('horn-out'));
+});
+
+</script>
+</body>
+</html>
