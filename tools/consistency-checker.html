@@ -39,6 +39,10 @@ code { background: #f6f8fa; padding: 1px 4px; border-radius: 4px;
 .lint-box ul { margin: 6px 0 2px; padding-left: 20px; }
 .lint-high { color: #953800; }
 .lint-med { color: #7d4e00; }
+.raw { margin: 8px 0; font-size: 13px; }
+.raw summary { cursor: pointer; color: #57606a; }
+.raw pre { background: #f6f8fa; border: 1px solid #d8dee4; border-radius: 6px; padding: 8px;
+  white-space: pre-wrap; font-size: 12px; max-height: 240px; overflow: auto; }
 .about { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 14px; }
 .about h2 { font-size: 18px; }
 .about h3 { font-size: 15px; margin: 18px 0 6px; }
@@ -76,6 +80,7 @@ feature on this page.</p>
 <div class="controls"><button id="check-btn">3&ensp;Check consistency (exact, WASM)</button></div>
 
 <div id="status"></div>
+<div id="raw-wrap"></div>
 <div id="lint"></div>
 <div id="verdict"></div>
 
@@ -117,7 +122,7 @@ exact engine rather than asked of a constant-depth neural forward pass.</p>
 <h3>4&ensp;The Prompt API</h3>
 <p>Extraction uses the built-in <code>LanguageModel</code> interface&nbsp;[8]: availability
 check, session with a system prompt, and structured output via a JSON-schema
-<code>responseConstraint</code> where supported, with a plain-JSON fallback. Chrome 148+
+<code>responseConstraint</code> where supported, where supported; every other engine is asked for the clause syntax directly as text between markers — the same format the edit box uses — so a sloppy model costs dropped lines, not a broken document. Chrome 148+
 ships it by default on capable desktop hardware; Edge&rsquo;s Phi-based implementation is
 currently behind a flag in Canary. The model runs locally and the page makes no network
 requests after load, so documents stay on the device. When no model is present, steps 2
@@ -391,36 +396,169 @@ function renderLint(warns) {
     ':</b><ul>' + warns.map(w => '<li class="lint-' + w.sev + '">' + w.msg + '</li>').join('') + '</ul></div>';
 }
 
+// ---------------- JSON repair for small-model output ----------------
+// Edge's Phi (and plain-JSON Nano) emit almost-JSON: unescaped quotes inside
+// the verbatim "quote" fields, raw newlines in strings, single quotes,
+// unquoted keys, missing/trailing commas and colons, markdown fences,
+// token-limit truncation. Repair structurally rather than guessing.
+function repairJSON(src) {
+  src = src.replace(/```[a-zA-Z]*\n?/g, '').replace(/```/g, '');
+  const first = src.search(/[{\[]/);
+  if (first < 0) throw new Error('no JSON object in model output');
+  src = src.slice(first);
+  const out = [];
+  const stack = [];                 // '{' or '['
+  const phase = [];                 // for '{': 'key'|'colon'|'value'|'comma'; for '[': 'item'|'comma'
+  let i = 0, inStr = false, strQ = '"';
+  const lastNonWs = () => { for (let k = out.length - 1; k >= 0; k--) if (!/\s/.test(out[k])) return k; return -1; };
+  const dropTrailingComma = () => { const k = lastNonWs(); if (k >= 0 && out[k] === ',') out.splice(k, 1); };
+  const need = (want) => {          // contextual separators before a new token
+    const top = stack[stack.length - 1];
+    if (!top) return;
+    const ph = phase[phase.length - 1];
+    if (top === '{') {
+      if (ph === 'colon' && want === 'value') { out.push(':'); phase[phase.length - 1] = 'value'; }
+      else if (ph === 'comma') { out.push(','); phase[phase.length - 1] = want === 'value' ? 'value' : 'key'; }
+    } else if (top === '[' && ph === 'comma') { out.push(','); phase[phase.length - 1] = 'item'; }
+  };
+  const advance = (isValue) => {    // after a completed token
+    const top = stack[stack.length - 1];
+    if (!top) return;
+    if (top === '{') phase[phase.length - 1] = phase[phase.length - 1] === 'key' || !isValue ? 'colon' : 'comma';
+    else phase[phase.length - 1] = 'comma';
+  };
+  while (i < src.length) {
+    const c = src[i];
+    if (inStr) {
+      if (c === '\\' && i + 1 < src.length) { out.push('\\', src[i + 1]); i += 2; continue; }
+      if (c === '\n') { out.push('\\n'); i++; continue; }
+      if (c === '\r') { i++; continue; }
+      if (c === '\t') { out.push('\\t'); i++; continue; }
+      if (c === strQ) {
+        // close only if the next non-space char can legally follow a string;
+        // otherwise this is an unescaped literal quote inside the value
+        let j = i + 1;
+        while (j < src.length && /[ \t]/.test(src[j])) j++;
+        const nxt = src[j];
+        if (nxt === undefined || ',:}]\n'.includes(nxt) ||
+            (stack[stack.length - 1] === '{' && phase[phase.length - 1] === 'key' && nxt === '"') ) {
+          out.push('"'); inStr = false;
+          const top = stack[stack.length - 1];
+          if (top === '{' && phase[phase.length - 1] === 'key') phase[phase.length - 1] = 'colon';
+          else if (top === '{') phase[phase.length - 1] = 'comma';
+          else if (top === '[') phase[phase.length - 1] = 'comma';
+        } else out.push('\\"');
+        i++; continue;
+      }
+      if (c === '"') { out.push('\\"'); i++; continue; }   // other quote char inside
+      out.push(c); i++; continue;
+    }
+    if (/\s/.test(c)) { i++; continue; }
+    if (c === '"' || c === "'") {
+      const top = stack[stack.length - 1];
+      need(top === '{' && phase[phase.length - 1] !== 'colon' && phase[phase.length - 1] !== 'value' ? 'key' : 'value');
+      out.push('"'); inStr = true; strQ = c; i++; continue;
+    }
+    if (c === '{' || c === '[') {
+      need('value');
+      out.push(c); stack.push(c); phase.push(c === '{' ? 'key' : 'item'); i++; continue;
+    }
+    if (c === '}' || c === ']') {
+      dropTrailingComma();
+      if (stack.length) {
+        const top = stack.pop(); phase.pop();
+        out.push(top === '{' ? '}' : ']');       // close what is actually open
+        advance(true);
+      }
+      i++; continue;
+    }
+    if (c === ',') { const k = lastNonWs(); if (k >= 0 && ',{[:'.includes(out[k])) { i++; continue; }
+      out.push(','); const top = stack[stack.length - 1];
+      if (top) phase[phase.length - 1] = top === '{' ? 'key' : 'item';
+      i++; continue; }
+    if (c === ':') { out.push(':'); if (stack[stack.length - 1] === '{') phase[phase.length - 1] = 'value'; i++; continue; }
+    const m = /^(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?|true|false|null)/.exec(src.slice(i));
+    if (m) { need('value'); out.push(m[1]); i += m[1].length; advance(true); continue; }
+    const w = /^[A-Za-z_][A-Za-z0-9_\- ]*/.exec(src.slice(i));
+    if (w) {                                      // unquoted key or bare word value
+      const top = stack[stack.length - 1];
+      const isKey = top === '{' && (phase[phase.length - 1] === 'key' || phase[phase.length - 1] === 'comma');
+      need(isKey ? 'key' : 'value');
+      out.push('"' + w[0].trim() + '"');
+      i += w[0].length;
+      if (top === '{' && isKey) phase[phase.length - 1] = 'colon'; else advance(true);
+      continue;
+    }
+    i++;                                          // unrecognized char: drop it
+  }
+  if (inStr) out.push('"');
+  dropTrailingComma();
+  while (stack.length) { dropTrailingComma(); out.push(stack.pop() === '{' ? '}' : ']'); phase.pop(); }
+  return out.join('');
+}
+function parseModelJSON(raw) {
+  const m = raw.match(/\{[\s\S]*\}/) || raw.match(/\[[\s\S]*\]/);
+  const cand = m ? m[0] : raw;
+  try { return JSON.parse(cand); } catch (e) {}
+  try { return JSON.parse(repairJSON(raw)); }
+  catch (e) {
+    const err = new Error('model output was not repairable JSON (' + e.message + ')');
+    err.raw = raw;
+    throw err;
+  }
+}
+
 // ---------------- on-device model ----------------
 let session = null;
-const SYSTEM =
-  'You convert prose (policies, specs, meeting notes, chat logs) into propositional Horn logic as JSON. ' +
+const SYSTEM_CORE =
+  'You convert prose (policies, specs, meeting notes, chat logs) into propositional Horn logic. ' +
   'Follow these rules exactly:\n' +
   '1. FACTS are only unconditional statements about specific named entities or events.\n' +
   '2. Conditional or policy statements ("X requires Y", "anyone who X has Y", "X only if Y", ' +
-  '"people who X are Y") are RULES, never facts. "X requires Y" becomes rule y :- x.\n' +
+  '"people who X are Y") are RULES, never facts. "X requires Y" becomes rule: y :- x.\n' +
   '3. Ground atoms on the named entity: dave_trained, karen_excused \u2014 not generic phrases.\n' +
   '4. When the text denies something, use the not_ prefix on EXACTLY the same atom name as the ' +
   'positive version. A contradiction is only detectable when p and not_p share a name.\n' +
-  '5. One statement per atom. Never join phrases into one long atom name.\n' +
+  '5. One statement per atom, snake_case, lowercase. Never join phrases into one long atom name.\n' +
   '6. Quote the exact source words for every atom. Extract nothing the text does not say.';
+const TEXT_FORMAT =
+  '\nWrite the extraction as plain text between the markers ===BEGIN LOGIC=== and ===END LOGIC===, ' +
+  'one item per line, in this exact syntax:\n' +
+  '%% atom_name: "verbatim source words"   (one comment line per atom)\n' +
+  'atom_name.                             (facts)\n' +
+  'head :- body1, body2.                  (rules)\n' +
+  'No other prose between the markers.';
 const FEWSHOT_USER = 'Text:\nPolicy: gym access requires a signed waiver. ' +
   'Access log: Ana used the gym on Tuesday. Records: Ana has never signed a waiver.';
-const FEWSHOT_ASSISTANT = JSON.stringify({
+const FEWSHOT_JSON = JSON.stringify({
   atoms: [
     { id: 'ana_used_gym', quote: 'Ana used the gym on Tuesday' },
     { id: 'ana_waiver', quote: 'gym access requires a signed waiver' },
     { id: 'not_ana_waiver', quote: 'Ana has never signed a waiver' }],
   facts: ['ana_used_gym', 'not_ana_waiver'],
   rules: [{ head: 'ana_waiver', body: ['ana_used_gym'] }] });
-const SCHEMA = { type: 'object', properties: {
-  atoms: { type: 'array', items: { type: 'object', properties: {
-    id: { type: 'string' }, quote: { type: 'string' } }, required: ['id', 'quote'] } },
-  facts: { type: 'array', items: { type: 'string' } },
-  rules: { type: 'array', items: { type: 'object', properties: {
-    head: { type: 'string' }, body: { type: 'array', items: { type: 'string' } } },
-    required: ['head', 'body'] } } },
-  required: ['atoms', 'facts', 'rules'] };
+const FEWSHOT_TEXT = ['===BEGIN LOGIC===',
+  '% ana_used_gym: "Ana used the gym on Tuesday"',
+  '% ana_waiver: "gym access requires a signed waiver"',
+  '% not_ana_waiver: "Ana has never signed a waiver"',
+  'ana_used_gym.',
+  'not_ana_waiver.',
+  'ana_waiver :- ana_used_gym.',
+  '===END LOGIC==='].join('\n');
+
+// pull the clause block out of a text-mode response. markers preferred;
+// tolerate a missing end marker, or no markers at all (the line-tolerant
+// clause parser drops any surrounding prose anyway).
+function parseModelText(raw) {
+  let t = String(raw).replace(/```[a-zA-Z]*\n?/g, '').replace(/```/g, '');
+  const b = t.search(/===\s*BEGIN LOGIC\s*===/i);
+  if (b >= 0) {
+    t = t.slice(t.indexOf('===', b + 3) >= 0 ? t.indexOf('\n', b) + 1 : b);
+    const e = t.search(/===\s*END LOGIC\s*===/i);
+    if (e >= 0) t = t.slice(0, e);
+  }
+  return t.trim();
+}
 
 function apiShape() {
   if (typeof self !== 'undefined' && 'LanguageModel' in self) return 'LanguageModel';
@@ -485,7 +623,7 @@ function jsonToClauses(raw) {
   for (const a of j.atoms.slice(0, 64)) {
     const id = sanitizeId(a.id);
     known.add(id);
-    lines.push('% ' + id + ': "' + String(a.quote || '').replace(/"/g, "'").slice(0, 160) + '"');
+    lines.push('% ' + id + ': "' + String(a.quote || '').replace(/\s+/g, ' ').replace(/"/g, "'").slice(0, 160) + '"');
   }
   lines.push('', '% --- facts ---');
   for (const f of j.facts.slice(0, 128)) lines.push(sanitizeId(f) + '.');
@@ -512,37 +650,54 @@ function withTimeout(promise, ac) {
 async function extract(fullPrompt, onProgress) {
   const shape = apiShape();
   if (!shape) throw new Error('no on-device model API in this browser');
-  const JSON_ASK = '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}';
-  let raw;
   if (shape === 'LanguageModel') {
+    // first choice: decoder-constrained JSON (Chrome) -- structure guaranteed
     session = await LanguageModel.create({
-      initialPrompts: [{ role: 'system', content: SYSTEM },
+      initialPrompts: [{ role: 'system', content: SYSTEM_CORE },
                        { role: 'user', content: FEWSHOT_USER },
-                       { role: 'assistant', content: FEWSHOT_ASSISTANT }],
+                       { role: 'assistant', content: FEWSHOT_JSON }],
       monitor(m) { m.addEventListener('downloadprogress', e => onProgress && onProgress(e.loaded)); },
     });
     try {
-      let ac = new AbortController();
-      try {
-        raw = await withTimeout(session.prompt(fullPrompt, { responseConstraint: SCHEMA, signal: ac.signal }), ac);
-      } catch (e) {
-        if (/timed out/.test(e.message)) throw e;
-        ac = new AbortController();       // responseConstraint unsupported -> plain JSON ask
-        raw = await withTimeout(session.prompt(fullPrompt + JSON_ASK, { signal: ac.signal }), ac);
-      }
+      const ac = new AbortController();
+      const raw = await withTimeout(session.prompt(fullPrompt, { responseConstraint: SCHEMA, signal: ac.signal }), ac);
+      return jsonToClauses(parseModelJSON(raw));
+    } catch (e) {
+      if (/timed out/.test(e.message)) throw e;
+      // responseConstraint unsupported or JSON unusable -> plain text mode below
+    } finally { session.destroy && session.destroy(); session = null; }
+  }
+  // text mode: the model writes the clause DSL directly between markers.
+  // no JSON anywhere; malformed lines are dropped by the tolerant parser.
+  const sys = SYSTEM_CORE + TEXT_FORMAT;
+  let raw;
+  if (shape === 'LanguageModel') {
+    session = await LanguageModel.create({
+      initialPrompts: [{ role: 'system', content: sys },
+                       { role: 'user', content: FEWSHOT_USER },
+                       { role: 'assistant', content: FEWSHOT_TEXT }],
+    });
+    try {
+      const ac = new AbortController();
+      raw = await withTimeout(session.prompt(fullPrompt, { signal: ac.signal }), ac);
     } finally { session.destroy && session.destroy(); session = null; }
   } else {
-    const s = await window.ai.languageModel.create({ systemPrompt: SYSTEM + '\n\nExample:\n' + FEWSHOT_USER + '\n' + FEWSHOT_ASSISTANT });
-    try {
-      raw = await withTimeout(s.prompt(fullPrompt + JSON_ASK), null);
-    } finally { s.destroy && s.destroy(); }
+    const sess = await window.ai.languageModel.create({
+      systemPrompt: sys + '\n\nExample:\n' + FEWSHOT_USER + '\n' + FEWSHOT_TEXT });
+    try { raw = await withTimeout(sess.prompt(fullPrompt), null); }
+    finally { sess.destroy && sess.destroy(); }
   }
-  const m = raw.match(/\{[\s\S]*\}/);
-  if (!m) throw new Error('model did not return JSON');
-  return JSON.parse(m[0]);
+  const text = parseModelText(raw);
+  const prog = parseClauses(text);
+  if (!prog.facts.length && !prog.rules.length) {
+    const err = new Error('model produced no parseable clauses');
+    err.raw = raw;
+    throw err;
+  }
+  return text;
 }
 
-// ---------------- page logic ----------------
+// ---------------- page logic ----------------// ---------------- page logic ----------------
 const els = id => document.getElementById(id);
 function setStatus(msg, isErr) {
   els('status').textContent = msg || '';
@@ -605,20 +760,29 @@ async function analyze() {
   setStatus('');
   els('verdict').innerHTML = '';
   els('lint').innerHTML = '';
+  els('raw-wrap').innerHTML = '';
   round = 0;
   const t = els('transcript').value.trim();
   if (!t) { setStatus('paste some source text first', true); return; }
   setStatus('asking the on-device model\u2026 (60s limit; first run may download the model)');
   try {
-    const j = await extract('Text:\n' + t, loaded => setStatus('downloading model\u2026 ' + Math.round(loaded * 100) + '%'));
-    const clauses = jsonToClauses(j);
+    const clauses = await extract('Text:\n' + t, loaded => setStatus('downloading model\u2026 ' + Math.round(loaded * 100) + '%'));
     els('clauses').value = clauses;
     const warns = lintOf(clauses, t);
     renderLint(warns);
     setStatus(warns.some(w => w.sev === 'high')
       ? 'extraction complete with warnings \u2014 press \u201cImprove with linter feedback\u201d, or edit by hand, then check'
       : 'extraction complete \u2014 review or edit the clauses, then check consistency');
-  } catch (e) { setStatus('extraction failed: ' + e.message + ' \u2014 use a sample extraction or write clauses by hand', true); }
+  } catch (e) {
+    setStatus('extraction failed: ' + e.message + ' \u2014 use a sample extraction or write clauses by hand', true);
+    showRaw(e.raw);
+  }
+}
+function showRaw(raw) {
+  els('raw-wrap').innerHTML = raw
+    ? '<details class="raw"><summary>raw model output (for manual salvage or a bug report)</summary><pre>' +
+      String(raw).replace(/&/g, '&amp;').replace(/</g, '&lt;') + '</pre></details>'
+    : '';
 }
 async function improve() {
   setStatus('');
@@ -631,18 +795,20 @@ async function improve() {
   round++;
   setStatus('improvement round ' + round + ': sending linter feedback to the model\u2026 (60s limit)');
   try {
-    const j = await extract('Text:\n' + t +
+    const clauses = await extract('Text:\n' + t +
       '\n\nCurrent extraction (Horn clauses):\n' + c +
       '\n\nAutomated checks found these problems:\n' + (lintReport(before) || '- (none, but the user asked for a better extraction)') +
-      '\n\nProduce a corrected extraction as JSON. Remember: denied statements need not_ on the SAME atom name as the positive; policy statements are rules, not facts; keep atoms grounded on named entities.');
-    const clauses = jsonToClauses(j);
+      '\n\nProduce a corrected extraction. Remember: denied statements need not_ on the SAME atom name as the positive; policy statements are rules, not facts; keep atoms grounded on named entities.');
     els('clauses').value = clauses;
     const after = lintOf(clauses, t);
     renderLint(after);
     const hb = before.filter(w => w.sev === 'high').length, ha = after.filter(w => w.sev === 'high').length;
     setStatus('round ' + round + ' done \u2014 high-severity warnings: ' + hb + ' \u2192 ' + ha +
       (ha >= hb && ha > 0 ? ' (no better \u2014 consider editing by hand; each press runs one more round)' : ' \u2014 press again to iterate, or check consistency'));
-  } catch (e) { setStatus('round ' + round + ' failed: ' + e.message + ' \u2014 the previous clauses are untouched', true); }
+  } catch (e) {
+    setStatus('round ' + round + ' failed: ' + e.message + ' \u2014 the previous clauses are untouched', true);
+    showRaw(e.raw);
+  }
 }
 const EXAMPLES = [
   { label: 'Mandatory Fun Day',
@@ -709,7 +875,7 @@ beer_reimbursable :- client_dinner_tuesday.
 
 % contradiction constraints for p / not_p pairs are added automatically` },
 ];
-if (typeof window !== 'undefined') window.__cc = { jsonToClauses, parseClauses, normalize, lintClauses };
+if (typeof window !== 'undefined') window.__cc = { jsonToClauses, parseClauses, normalize, lintClauses, repairJSON, parseModelJSON, parseModelText };
 window.addEventListener('load', async () => {
   await bootEngine();
   const st = await modelStatus();
