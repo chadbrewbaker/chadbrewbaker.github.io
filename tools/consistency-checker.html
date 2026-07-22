@@ -67,10 +67,11 @@ feature on this page.</p>
 <textarea id="transcript" spellcheck="false"></textarea>
 <div class="controls">
   <button id="analyze-btn">Analyze with on-device model</button>
+  <button id="improve-btn">Improve with linter feedback</button>
   <button id="sample-btn">Load sample extraction instead</button>
 </div>
 
-<h2 class="step">2&ensp;Extracted logic <span>&mdash; the fallible step, so it stays editable; quotes bind atoms to sources</span></h2>
+<h2 class="step">2&ensp;Extracted logic <span>&mdash; the fallible step: editable, lint-checked, and improvable one round per press; malformed lines are dropped, not fatal</span></h2>
 <textarea id="clauses" spellcheck="false" placeholder="% atom: &quot;quoted source words&quot;&#10;fact.&#10;head :- body1, body2."></textarea>
 <div class="controls"><button id="check-btn">3&ensp;Check consistency (exact, WASM)</button></div>
 
@@ -161,22 +162,15 @@ async function bootEngine() {
 }
 
 // ---------------- clause parser (facts, rules, % comments with quotes) ----------------
-function parseClauses(src) {
-  const quotes = {};                       // atom -> source quote
-  const lines = src.split('\n');
-  let body = '';
-  for (const line of lines) {
-    const m = /^\s*%\s*([a-z][A-Za-z0-9_]*)\s*:\s*"(.*)"\s*$/.exec(line);
-    if (m) { quotes[m[1]] = m[2]; continue; }
-    body += line.replace(/%.*$/, '') + '\n';
-  }
+function parseOne(text) {
+  // parse one line as a sequence of clauses; throws on malformed input
   const toks = [];
   const re = /\s+|(:-)|([A-Z_][A-Za-z0-9_]*)|([a-z][A-Za-z0-9_]*)|([(),.])/gy;
   let i = 0;
-  while (i < body.length) {
+  while (i < text.length) {
     re.lastIndex = i;
-    const m = re.exec(body);
-    if (!m) throw new Error('unexpected character "' + body[i] + '"');
+    const m = re.exec(text);
+    if (!m) throw new Error('unexpected character "' + text[i] + '"');
     i = re.lastIndex;
     if (m[1]) toks.push({ t: ':-' });
     else if (m[2]) toks.push({ t: 'var', v: m[2] });
@@ -211,17 +205,36 @@ function parseClauses(src) {
     const head = atom();
     if (peek().t === ':-') {
       eat(':-');
-      const bodyAtoms = [atom()];
-      while (peek().t === ',') { eat(','); bodyAtoms.push(atom()); }
+      const body = [atom()];
+      while (peek().t === ',') { eat(','); body.push(atom()); }
       eat('.');
-      rules.push({ head, body: bodyAtoms });
+      rules.push({ head, body });
     } else {
       eat('.');
-      if (head.args.some(a => a.var)) throw new Error('fact ' + head.name + ' contains a variable');
+      if (head.args.some(a => a.var)) throw new Error('fact contains a variable');
       facts.push(head);
     }
   }
-  return { facts, rules, quotes };
+  return { facts, rules };
+}
+function parseClauses(src) {
+  // line-tolerant: the model can emit garbage; keep every line that parses,
+  // drop and report the rest. one clause (or several) per line.
+  const quotes = {}, facts = [], rules = [], dropped = [];
+  for (const rawLine of src.split('\n')) {
+    const qm = /^\s*%\s*([a-z][A-Za-z0-9_]*)\s*:\s*"(.*)"\s*$/.exec(rawLine);
+    if (qm) { quotes[qm[1]] = qm[2]; continue; }
+    const line = rawLine.replace(/%.*$/, '').trim();
+    if (!line) continue;
+    try {
+      const one = parseOne(line);
+      facts.push(...one.facts);
+      rules.push(...one.rules);
+    } catch (e) {
+      dropped.push({ line: rawLine.trim().slice(0, 90), err: e.message });
+    }
+  }
+  return { facts, rules, quotes, dropped };
 }
 
 // ---------------- load & solve ----------------
@@ -259,8 +272,17 @@ function solve(prog) {
     f.args.forEach((a, i) => M[sp + i] = intern(a.const));
     E.dl_fact(pid);
   }
-  const blob = [allRules.length];
+  const skipped = [];
+  const kept = [];
   for (const r of allRules) {
+    const bodyVars0 = new Set();
+    for (const b of r.body) for (const a of b.args) if (a.var !== undefined) bodyVars0.add(a.var);
+    const bad = r.head.args.find(a => a.var !== undefined && !bodyVars0.has(a.var));
+    if (bad) { skipped.push(r); continue; }
+    kept.push(r);
+  }
+  const blob = [kept.length];
+  for (const r of kept) {
     const vmap = new Map();
     const term = a => {
       if (a.const !== undefined) return intern(a.const);
@@ -274,11 +296,7 @@ function solve(prog) {
       for (const a of b.args) { bodyEnc.push(term(a)); if (a.var !== undefined) bodyVars.add(a.var); }
     }
     const headEnc = [];
-    for (const a of r.head.args) {
-      if (a.var !== undefined && !bodyVars.has(a.var))
-        throw new Error('unsafe rule: head variable ' + a.var + ' not in body');
-      headEnc.push(term(a));
-    }
+    for (const a of r.head.args) headEnc.push(term(a));
     blob.push(vmap.size, predOf(r.head.name, r.head.args.length), r.body.length, ...headEnc, ...bodyEnc);
   }
   predOf('inconsistent', 0);
@@ -286,7 +304,7 @@ function solve(prog) {
   new Int32Array(E.memory.buffer).set(blob, ptr >>> 2);
   E.dl_set_rules(ptr, blob.length);
   const rounds = E.dl_run(100000);
-  return { preds, predInfo, names, rules: allRules, rounds, quotes: prog.quotes,
+  return { preds, predInfo, names, rules: kept, skipped, rounds, quotes: prog.quotes,
            inconsistent: E.dl_count(preds.get('inconsistent/0')) > 0 };
 }
 
@@ -327,6 +345,11 @@ function derivation(ctx) {
 // ---------------- extraction lint (deterministic checks on the seam) ----------------
 function lintClauses(prog, sourceText) {
   const warns = [];
+  if (prog.dropped && prog.dropped.length)
+    warns.push({ sev: 'med', msg: 'Dropped ' + prog.dropped.length + ' malformed line' +
+      (prog.dropped.length === 1 ? '' : 's') + ' (kept everything that parses): ' +
+      prog.dropped.slice(0, 5).map(d => '<code>' + d.line.replace(/</g, '&lt;') + '</code>').join('; ') +
+      (prog.dropped.length > 5 ? ' …' : '') });
   const zero = a => a.args.length === 0;
   const factSet = new Set(prog.facts.filter(zero).map(f => f.name));
   const headSet = new Set(prog.rules.filter(r => zero(r.head)).map(r => r.head.name));
@@ -475,9 +498,21 @@ function jsonToClauses(raw) {
   lines.push('', '% contradiction constraints for p / not_p pairs are added automatically');
   return lines.join('\n');
 }
-async function extract(transcript, onProgress) {
+const PROMPT_TIMEOUT_MS = 60000;
+function withTimeout(promise, ac) {
+  // aborts the underlying prompt when the API supports signals; otherwise
+  // stops waiting so the page never hangs on a stalled model
+  let timer;
+  const timeout = new Promise((_, rej) => {
+    timer = setTimeout(() => { try { ac && ac.abort(); } catch (e) {} 
+      rej(new Error('model timed out after ' + PROMPT_TIMEOUT_MS / 1000 + 's')); }, PROMPT_TIMEOUT_MS);
+  });
+  return Promise.race([promise.finally(() => clearTimeout(timer)), timeout]);
+}
+async function extract(fullPrompt, onProgress) {
   const shape = apiShape();
   if (!shape) throw new Error('no on-device model API in this browser');
+  const JSON_ASK = '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}';
   let raw;
   if (shape === 'LanguageModel') {
     session = await LanguageModel.create({
@@ -487,18 +522,19 @@ async function extract(transcript, onProgress) {
       monitor(m) { m.addEventListener('downloadprogress', e => onProgress && onProgress(e.loaded)); },
     });
     try {
+      let ac = new AbortController();
       try {
-        raw = await session.prompt('Text:\n' + transcript, { responseConstraint: SCHEMA });
-      } catch (e) {   // responseConstraint unsupported -> plain JSON ask
-        raw = await session.prompt('Text:\n' + transcript +
-          '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}');
+        raw = await withTimeout(session.prompt(fullPrompt, { responseConstraint: SCHEMA, signal: ac.signal }), ac);
+      } catch (e) {
+        if (/timed out/.test(e.message)) throw e;
+        ac = new AbortController();       // responseConstraint unsupported -> plain JSON ask
+        raw = await withTimeout(session.prompt(fullPrompt + JSON_ASK, { signal: ac.signal }), ac);
       }
     } finally { session.destroy && session.destroy(); session = null; }
   } else {
     const s = await window.ai.languageModel.create({ systemPrompt: SYSTEM + '\n\nExample:\n' + FEWSHOT_USER + '\n' + FEWSHOT_ASSISTANT });
     try {
-      raw = await s.prompt('Text:\n' + transcript +
-        '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}');
+      raw = await withTimeout(s.prompt(fullPrompt + JSON_ASK), null);
     } finally { s.destroy && s.destroy(); }
   }
   const m = raw.match(/\{[\s\S]*\}/);
@@ -517,12 +553,18 @@ function check() {
   const out = els('verdict');
   out.innerHTML = '';
   if (!E) { setStatus('engine still loading\u2026', true); return; }
-  let prog, ctx;
-  try { prog = parseClauses(els('clauses').value); }
-  catch (e) { setStatus('clause parse error: ' + e.message, true); return; }
+  const prog = parseClauses(els('clauses').value);
+  if (!prog.facts.length && !prog.rules.length) {
+    renderLint(lintClauses(prog, els('transcript').value));
+    setStatus('no parseable clauses — every line was malformed or empty', true);
+    return;
+  }
   renderLint(lintClauses(prog, els('transcript').value));
+  let ctx;
   try { ctx = solve(prog); }
   catch (e) { setStatus(e.message, true); return; }
+  if (ctx.skipped.length)
+    setStatus('note: skipped ' + ctx.skipped.length + ' unsafe rule(s) (head variable not bound in body)');
   if (!ctx.inconsistent) {
     out.innerHTML = '<div class="ok-box"><b>No inconsistency derivable.</b> ' +
       'The forward-chaining fixpoint (' + ctx.rounds + ' rounds) never derives ' +
@@ -553,38 +595,54 @@ function check() {
   out.innerHTML = html;
 }
 function lintOf(clauseText, source) {
-  try { return lintClauses(parseClauses(clauseText), source); }
-  catch (e) { return [{ sev: 'high', msg: 'clauses do not parse: ' + e.message }]; }
+  return lintClauses(parseClauses(clauseText), source);
 }
+function lintReport(warns) {
+  return warns.map(w => '- ' + w.msg.replace(/<[^>]+>/g, '')).join('\n');
+}
+let round = 0;
 async function analyze() {
   setStatus('');
   els('verdict').innerHTML = '';
   els('lint').innerHTML = '';
+  round = 0;
   const t = els('transcript').value.trim();
   if (!t) { setStatus('paste some source text first', true); return; }
-  setStatus('asking the on-device model\u2026');
+  setStatus('asking the on-device model\u2026 (60s limit; first run may download the model)');
   try {
-    const j = await extract(t, loaded => setStatus('downloading model\u2026 ' + Math.round(loaded * 100) + '%'));
-    let clauses = jsonToClauses(j);
-    let warns = lintOf(clauses, t);
-    if (warns.some(w => w.sev === 'high')) {
-      setStatus('extraction has problems \u2014 asking the model to repair (1 retry)\u2026');
-      try {
-        const report = warns.map(w => '- ' + w.msg.replace(/<[^>]+>/g, '')).join('\n');
-        const j2 = await extract(t + '\n\nYour previous extraction had these problems:\n' + report +
-          '\nProduce a corrected extraction. Remember: denied statements need not_ on the SAME atom name as the positive; policy statements are rules, not facts.');
-        const clauses2 = jsonToClauses(j2);
-        const warns2 = lintOf(clauses2, t);
-        const score = w => w.filter(x => x.sev === 'high').length * 10 + w.length;
-        if (score(warns2) < score(warns)) { clauses = clauses2; warns = warns2; }
-      } catch (e) { /* keep the first attempt */ }
-    }
+    const j = await extract('Text:\n' + t, loaded => setStatus('downloading model\u2026 ' + Math.round(loaded * 100) + '%'));
+    const clauses = jsonToClauses(j);
     els('clauses').value = clauses;
+    const warns = lintOf(clauses, t);
     renderLint(warns);
     setStatus(warns.some(w => w.sev === 'high')
-      ? 'extraction complete, with warnings \u2014 edit the clauses (or re-run), then check consistency'
+      ? 'extraction complete with warnings \u2014 press \u201cImprove with linter feedback\u201d, or edit by hand, then check'
       : 'extraction complete \u2014 review or edit the clauses, then check consistency');
   } catch (e) { setStatus('extraction failed: ' + e.message + ' \u2014 use a sample extraction or write clauses by hand', true); }
+}
+async function improve() {
+  setStatus('');
+  els('verdict').innerHTML = '';
+  const t = els('transcript').value.trim();
+  const c = els('clauses').value.trim();
+  if (!c) { setStatus('nothing to improve \u2014 run Analyze or load a sample first', true); return; }
+  const before = lintOf(c, t);
+  renderLint(before);
+  round++;
+  setStatus('improvement round ' + round + ': sending linter feedback to the model\u2026 (60s limit)');
+  try {
+    const j = await extract('Text:\n' + t +
+      '\n\nCurrent extraction (Horn clauses):\n' + c +
+      '\n\nAutomated checks found these problems:\n' + (lintReport(before) || '- (none, but the user asked for a better extraction)') +
+      '\n\nProduce a corrected extraction as JSON. Remember: denied statements need not_ on the SAME atom name as the positive; policy statements are rules, not facts; keep atoms grounded on named entities.');
+    const clauses = jsonToClauses(j);
+    els('clauses').value = clauses;
+    const after = lintOf(clauses, t);
+    renderLint(after);
+    const hb = before.filter(w => w.sev === 'high').length, ha = after.filter(w => w.sev === 'high').length;
+    setStatus('round ' + round + ' done \u2014 high-severity warnings: ' + hb + ' \u2192 ' + ha +
+      (ha >= hb && ha > 0 ? ' (no better \u2014 consider editing by hand; each press runs one more round)' : ' \u2014 press again to iterate, or check consistency'));
+  } catch (e) { setStatus('round ' + round + ' failed: ' + e.message + ' \u2014 the previous clauses are untouched', true); }
 }
 const EXAMPLES = [
   { label: 'Mandatory Fun Day',
@@ -673,6 +731,7 @@ window.addEventListener('load', async () => {
       els('clauses').value = '';
       els('verdict').innerHTML = '';
       els('lint').innerHTML = '';
+      round = 0;
       [...exWrap.children].forEach(x => x.classList.remove('active'));
       b.classList.add('active');
       setStatus('example loaded \u2014 Analyze with the model, or load the sample extraction');
@@ -680,6 +739,7 @@ window.addEventListener('load', async () => {
     exWrap.appendChild(b);
   }
   els('analyze-btn').onclick = analyze;
+  els('improve-btn').onclick = improve;
   els('sample-btn').onclick = () => {
     const t = els('transcript').value;
     const ex = EXAMPLES.find(e => e.transcript === t);
