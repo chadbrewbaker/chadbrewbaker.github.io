@@ -1,0 +1,1427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sequence triple: recurrence &harr; generating function &harr; closed form</title>
+<style>
+* { box-sizing: border-box; }
+body {
+    font-family: Helvetica, Arial, sans-serif;
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 20px;
+    line-height: 1.5;
+    color: #222;
+}
+h1 { margin: 0 0 8px; font-size: 26px; }
+.blurb { color: #444; margin-top: 0; }
+.examples { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.examples button, .panel button {
+    font-size: 13px; padding: 5px 10px; border: 1px solid #bbb;
+    border-radius: 6px; background: #f6f8fa; cursor: pointer;
+}
+.examples button:hover, .panel button:hover { background: #eaeef2; }
+.examples button.active { background: #0969da; border-color: #0969da; color: #fff; }
+.panels { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+@media (max-width: 760px) { .panels { grid-template-columns: 1fr; } }
+.panel h2 { font-size: 15px; margin: 0 0 6px; }
+.panel textarea {
+    width: 100%; height: 96px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; padding: 8px; border: 1px solid #bbb; border-radius: 6px; resize: vertical;
+}
+.panel .hint { font-size: 12px; color: #666; margin: 4px 0 6px; min-height: 16px; }
+.render {
+    margin-top: 8px; font-size: 15px; min-height: 22px;
+    overflow-x: auto; padding: 2px 0;
+}
+.render .note { color: #57606a; font-size: 13.5px; }
+.frac { display: inline-flex; flex-direction: column; text-align: center; vertical-align: middle; }
+.frac > span:first-child { border-bottom: 1px solid #222; padding: 0 6px; }
+.frac > span:last-child { padding: 0 6px; }
+#terms-wrap { background: #14161c; border-radius: 8px; padding: 14px 16px; overflow-x: auto; margin-top: 18px; }
+#terms {
+    margin: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; line-height: 1.5; font-variant-ligatures: none; color: #e6edf3; min-height: 40px;
+    white-space: pre;
+}
+#status { color: #666; font-size: 13px; min-height: 18px; margin-top: 8px; }
+#status.err { color: #b42318; }
+.pb-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+  font-size: 13.5px; margin: 4px 0 14px; padding: 10px 12px;
+  border: 1px solid #d8dee4; border-radius: 8px; background: #fbfcfd; }
+.pb-row input { width: 56px; font-size: 13px; padding: 4px 6px;
+  border: 1px solid #bbb; border-radius: 6px; }
+.pb-row button { font-size: 13px; padding: 5px 10px; border: 1px solid #bbb;
+  border-radius: 6px; background: #f6f8fa; cursor: pointer; }
+.pb-row button:hover { background: #eaeef2; }
+.pb-note { color: #57606a; flex-basis: 100%; }
+.lens-section { margin-top: 18px; padding: 12px 14px; border: 1px solid #d8dee4;
+  border-radius: 8px; background: #fbfcfd; }
+.lens-section h2 { font-size: 16px; margin: 0 0 6px; }
+.lens-blurb { font-size: 13.5px; color: #444; margin: 0 0 10px; }
+.lens-section button { font-size: 13px; padding: 5px 10px; border: 1px solid #bbb;
+  border-radius: 6px; background: #f6f8fa; cursor: pointer; }
+.lens-section button:hover { background: #eaeef2; }
+#lens-out { margin-top: 10px; }
+.lens-hit { font-size: 14.5px; padding: 6px 0; border-top: 1px dashed #e0e4e8; }
+.lens-hit:first-child { border-top: none; }
+.lens-hit .ok { color: #1a7f37; font-size: 12.5px; margin-left: 8px; }
+.lens-hit b { color: #0969da; font-weight: 600; margin-right: 4px; }
+.lens-bi { background: #f2f7ff; border-radius: 6px; padding: 8px 10px; margin-top: 6px; }
+.about { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 14px; }
+.about h2 { font-size: 18px; }
+.about h3 { font-size: 15px; margin: 18px 0 6px; }
+.about p { font-size: 14px; color: #333; }
+.refs { font-size: 13px; color: #444; padding-left: 22px; }
+.refs li { margin-bottom: 3px; }
+footer { margin-top: 24px; padding-top: 12px; border-top: 1px solid #ddd; font-size: 13px; color: #555; }
+footer a { color: #0969da; }
+</style>
+</head>
+<body>
+<h1>Sequence triple</h1>
+<p class="blurb">Enter any one of a constant-coefficient recurrence, a rational generating
+function, or a closed form &mdash; the other two are derived exactly (BigInt rationals, no
+floating point except for displaying irreducible roots). The dark strip at the bottom
+recomputes the first terms independently from each representation and checks they agree;
+nothing is shown unverified.</p>
+
+<div class="examples" id="examples"></div>
+
+<div class="pb-row">
+  <span class="pb-label">Poly-Bernoulli row <b>B<sub>n</sub><sup>(&minus;k)</sup></b>:</span>
+  k = <input id="pb-k" type="number" min="1" max="12" value="2">
+  <button id="pb-btn">Generate closed form</button>
+  <span class="pb-note">Brewbaker: B<sub>n</sub><sup>(&minus;k)</sup> counts n&times;k lonesum matrices,
+  = &Sigma;<sub>j</sub> (j!)&sup2;&thinsp;S(n+1,j+1)&thinsp;S(k+1,j+1)
+  = &Sigma;<sub>j</sub> (&minus;1)<sup>j+k</sup>&thinsp;j!&thinsp;S(k,j)&thinsp;(j+1)<sup>n</sup>.
+  The strip below checks the derived C-finite form against the double-Stirling sum independently.</span>
+</div>
+
+<div class="panels">
+  <div class="panel">
+    <h2>Recurrence</h2>
+    <textarea id="rec" spellcheck="false" placeholder="a(n) = 3*a(n-1) + a(n-2) - a(n-3), a(0)=1, a(1)=2, a(2)=7"></textarea>
+    <div class="hint">constant coefficients only; list a(0)&hellip;a(r&minus;1)</div>
+    <button id="rec-btn">Convert from recurrence</button>
+  </div>
+  <div class="panel">
+    <h2>Generating function</h2>
+    <textarea id="gf" spellcheck="false" placeholder="(1 - x)/(1 - 3*x - x^2 + x^3)"></textarea>
+    <div class="hint">any rational expression in x</div>
+    <button id="gf-btn">Convert from generating function</button>
+    <div class="render" id="gf-render"></div>
+  </div>
+  <div class="panel">
+    <h2>Closed form</h2>
+    <textarea id="cf" spellcheck="false" placeholder="(3*n + 1)*2^n - n^2"></textarea>
+    <div class="hint">polynomials in n, rational bases b^n, (-1)^n; &radic; forms are output-only</div>
+    <button id="cf-btn">Convert from closed form</button>
+    <div class="render" id="cf-render"></div>
+  </div>
+</div>
+
+<div id="status"></div>
+
+<div class="lens-section">
+  <h2>Stirling lens</h2>
+  <p class="lens-blurb">Rewrites the current sequence as a(n) = &Sigma;<sub>m</sub> &lambda;(m)&middot;K(n,m)
+  for six triangular kernels K &mdash; Stirling, surjection, binomial, and signed-binomial transforms.
+  Each kernel determines &lambda; <i>uniquely</i> by exact forward substitution; a result is shown only
+  when &lambda; itself has a recognizable closed form, which certifies the sum on every term.</p>
+  <button id="lens-btn">Run the lens on this sequence</button>
+  <div id="lens-out"></div>
+</div>
+<div id="terms-wrap"><pre id="terms"></pre></div>
+
+<section class="about">
+<h2>How the conversions work, and where they come from</h2>
+
+<h3>1&ensp;The C-finite triple</h3>
+<p>A sequence satisfying a linear recurrence with <i>constant</i> coefficients is called
+C-finite. Its three descriptions are interchangeable by elementary power-series algebra:
+the recurrence a(n) = c&#8321;a(n&minus;1) + &hellip; + c&#7523;a(n&minus;r) says exactly that the series
+A(x) = &Sigma; a(n)x&#8319; becomes a polynomial after multiplication by
+1 &minus; c&#8321;x &minus; &hellip; &minus; c&#7523;x&#691;, so A(x) is rational with that denominator; conversely long
+division of a rational function reads the recurrence off the denominator and the initial
+values off the quotient. This equivalence is folklore of the subject &mdash; a modern
+treatment is Chapter&nbsp;4 of Stanley&rsquo;s <i>Enumerative Combinatorics</i>&nbsp;[13] and the
+&ldquo;C-finite&rdquo; chapter of Kauers&ndash;Paule&nbsp;[8]. Recovering a recurrence from raw terms by
+solving a small linear system is the &ldquo;guessing&rdquo; tradition automated in
+<code>gfun</code>&nbsp;[12] and in the OEIS Superseeker&nbsp;[11]; this page does the same with exact
+BigInt rationals.</p>
+
+<h3>2&ensp;Closed forms from the characteristic polynomial</h3>
+<p>Writing the recurrence as p(z) = z&#691; &minus; c&#8321;z&#691;&#8315;&#185; &minus; &hellip; &minus; c&#7523; and factoring,
+each root &rho; of multiplicity m contributes (polynomial of degree &lt; m)&middot;&rho;&#8319; to the
+solution. Solving linear recurrences this way goes back to Abraham de Moivre&rsquo;s
+<i>Miscellanea Analytica</i> (1730)&nbsp;[1], where generating functions first appear; the
+explicit Fibonacci form usually credited to Binet (1843) was already known to de Moivre,
+Daniel Bernoulli and Euler. This page factors p exactly: rational roots by the rational-root
+theorem; an irreducible quadratic gives an exact Binet form computed in the field
+&#8474;(&radic;D); factors dividing z&#7504; &minus; 1 have roots of unity, and the sequence restricted to each
+residue class mod m is then polynomial-with-rational-bases &mdash; the quasi-polynomial
+case. Quasi-polynomials are classical in lattice-point counting (Ehrhart, 1962&nbsp;[3]) and
+are precisely the expected shape of crystal coordination sequences
+(Grosse-Kunstleve&ndash;Brunner&ndash;Sloane&nbsp;[6]). Anything irreducible of higher degree is
+reported honestly with numerically approximated roots (simultaneous iteration of
+Durand&nbsp;[2] and Kerner&nbsp;[9]) rather than a fake formula.</p>
+
+<h3>3&ensp;The Stirling lens: inversion, then recognition</h3>
+<p>Sums like &Sigma; S(n,m)&lambda;(m) or &Sigma; (&minus;1)&#8319;&#8315;&#7504;C(n,m)&lambda;(m) use
+<i>triangular</i> kernels: K(n,m) = 0 for m &gt; n and K(n,n) &ne; 0. For such a kernel the
+coefficients &lambda; are not fitted &mdash; they are forced, term by term, by forward
+substitution, and this inversion is exact. The classical theory of these inverse relations
+(binomial, Stirling, and their signed variants) is Riordan&rsquo;s
+<i>Combinatorial Identities</i>&nbsp;[10]; the Stirling numbers themselves date to
+James Stirling&rsquo;s <i>Methodus Differentialis</i> (1730)&nbsp;[14], and the alternating
+binomial sums are inclusion&ndash;exclusion, whose closed principle is usually credited to
+da Silva (1854) and Sylvester (1883), with the derangement computation already in
+de Montmort (1708&ndash;13). The lens then asks whether the forced &lambda; is itself simple:
+finitely supported, polynomial, exponential-polynomial, or a hypergeometric term
+(&lambda;(m+1)/&lambda;(m) a rational function of m, so &lambda; is a product of factorials,
+Pochhammer symbols and a geometric part). Because inversion is exact, a recognized
+&lambda; that matches every inverted value certifies the sum identity on every published
+term with no further proof obligation. Applying transforms and then trying to recognize the
+result is the strategy of Sloane&rsquo;s Superseeker&nbsp;[11]; the lens differs in doing the
+inverse direction exactly and in accepting only certified matches.</p>
+
+<h3>4&ensp;Poly-Bernoulli numbers and Brewbaker&rsquo;s formula</h3>
+<p>Kaneko&nbsp;[7] defined the poly-Bernoulli numbers B<sub>n</sub><sup>(k)</sup> through the
+polylogarithm generating function Li<sub>k</sub>(1&minus;e&#8315;&#7511;)/(1&minus;e&#8315;&#7511;); for negative
+upper index they are positive integers with the striking symmetry
+B<sub>n</sub><sup>(&minus;k)</sup> = B<sub>k</sub><sup>(&minus;n)</sup>. Brewbaker&nbsp;[4] proved they
+count <i>lonesum</i> matrices &mdash; 0&ndash;1 matrices reconstructible from their row and
+column sums, a class characterized by Ryser&rsquo;s forbidden-pattern theorem (1957)&nbsp;[5] &mdash;
+and derived both the alternating surjection sum
+&Sigma;&#7524; (&minus;1)&#8319;&#8314;&#7524; j!&thinsp;S(n,j)&thinsp;(j+1)&#7511; and the positive product form
+&Sigma;<sub>m</sub> (m!)&sup2;&thinsp;S(n+1,m+1)&thinsp;S(k+1,m+1). The generator above uses the
+first (via the duality) to produce each row&rsquo;s exponential-polynomial closed form; the
+lens, run while a row is active, re-derives the second mechanically: inverting the full
+array under the S(&middot;+1,m+1) kernel in both variables produces a diagonal coefficient
+matrix whose diagonal is recognized as (m!)&sup2;.</p>
+
+<h3>5&ensp;What is deliberately out of scope</h3>
+<p>Recurrences with <i>polynomial</i> coefficients (P-recursive sequences), definite
+hypergeometric summation, and proofs of sum identities belong to the
+Gosper&nbsp;[5a]&ndash;Zeilberger&nbsp;[15]&ndash;Petkov&scaron;ek&nbsp;[16] algorithmic world described in
+<i>A&nbsp;=&nbsp;B</i>&nbsp;[17]; that machinery certifies recurrences for sums and decides when
+hypergeometric closed forms exist. This page stops at the C-finite boundary on purpose,
+and says so when a characteristic polynomial has no rational, quadratic-surd, or
+root-of-unity structure.</p>
+
+<h3>References</h3>
+<ol class="refs">
+<li>A. de Moivre, <i>Miscellanea Analytica de Seriebus et Quadraturis</i>, London, 1730.</li>
+<li>E. Durand, <i>Solutions num&eacute;riques des &eacute;quations alg&eacute;briques</i>, Masson, 1960.</li>
+<li>E. Ehrhart, Sur les poly&egrave;dres rationnels homoth&eacute;tiques &agrave; n dimensions, <i>C. R. Acad. Sci. Paris</i> 254 (1962) 616&ndash;618.</li>
+<li>C. Brewbaker, A combinatorial interpretation of the poly-Bernoulli numbers and two Fermat analogues, <i>INTEGERS</i> 8 (2008), #A02.</li>
+<li>H. J. Ryser, Combinatorial properties of matrices of zeros and ones, <i>Canad. J. Math.</i> 9 (1957) 371&ndash;377.</li>
+<li value="5" style="list-style:none">5a.&ensp;R. W. Gosper, Decision procedure for indefinite hypergeometric summation, <i>Proc. Natl. Acad. Sci. USA</i> 75 (1978) 40&ndash;42.</li>
+<li value="6">R. W. Grosse-Kunstleve, G. O. Brunner, N. J. A. Sloane, Algebraic description of coordination sequences and exact topological densities for zeolites, <i>Acta Cryst.</i> A52 (1996) 879&ndash;889.</li>
+<li>M. Kaneko, Poly-Bernoulli numbers, <i>J. Th&eacute;or. Nombres Bordeaux</i> 9 (1997) 221&ndash;228.</li>
+<li>M. Kauers, P. Paule, <i>The Concrete Tetrahedron</i>, Springer, 2011.</li>
+<li>I. O. Kerner, Ein Gesamtschrittverfahren zur Berechnung der Nullstellen von Polynomen, <i>Numer. Math.</i> 8 (1966) 290&ndash;294.</li>
+<li>J. Riordan, <i>Combinatorial Identities</i>, Wiley, 1968.</li>
+<li>N. J. A. Sloane, S. Plouffe, <i>The Encyclopedia of Integer Sequences</i>, Academic Press, 1995; and the OEIS Superseeker, <a href="https://oeis.org">oeis.org</a>.</li>
+<li>B. Salvy, P. Zimmermann, Gfun: a Maple package for the manipulation of generating and holonomic functions in one variable, <i>ACM Trans. Math. Software</i> 20 (1994) 163&ndash;177.</li>
+<li>R. P. Stanley, <i>Enumerative Combinatorics</i>, vol. 1, 2nd ed., Cambridge Univ. Press, 2011, ch. 4.</li>
+<li>J. Stirling, <i>Methodus Differentialis</i>, London, 1730.</li>
+<li>D. Zeilberger, The method of creative telescoping, <i>J. Symbolic Comput.</i> 11 (1991) 195&ndash;204.</li>
+<li>M. Petkov&scaron;ek, Hypergeometric solutions of linear recurrences with polynomial coefficients, <i>J. Symbolic Comput.</i> 14 (1992) 243&ndash;264.</li>
+<li>M. Petkov&scaron;ek, H. S. Wilf, D. Zeilberger, <i>A&nbsp;=&nbsp;B</i>, A K Peters, 1996.</li>
+</ol>
+</section>
+
+<footer>
+Exact three-way conversion for C-finite sequences: rational and quadratic-surd Binet forms,
+roots-of-unity components as residue-class quasi-polynomials, and honest refusal (with
+numeric roots) when the characteristic polynomial has no such structure. Page skeleton
+adapted from <a href="https://github.com/simonw/tools">simonw/tools</a>
+(<code>mermaid-ascii</code>). Ctrl/&#8984;-Enter converts from the pane you are typing in.
+</footer>
+<script>
+// seqconv core: exact conversions between C-finite recurrences,
+// rational generating functions, and closed forms. BigInt throughout.
+'use strict';
+
+// ---------- rationals ----------
+const bgcd = (a, b) => { a = a < 0n ? -a : a; b = b < 0n ? -b : b;
+  while (b) { [a, b] = [b, a % b]; } return a; };
+class Q {
+  constructor(n, d = 1n) {
+    n = BigInt(n); d = BigInt(d);
+    if (d === 0n) throw new Error('division by zero');
+    if (d < 0n) { n = -n; d = -d; }
+    const g = bgcd(n, d) || 1n;
+    this.n = n / g; this.d = d / g;
+  }
+  add(o) { return new Q(this.n * o.d + o.n * this.d, this.d * o.d); }
+  sub(o) { return new Q(this.n * o.d - o.n * this.d, this.d * o.d); }
+  mul(o) { return new Q(this.n * o.n, this.d * o.d); }
+  div(o) { return new Q(this.n * o.d, this.d * o.n); }
+  neg()  { return new Q(-this.n, this.d); }
+  isZero() { return this.n === 0n; }
+  isOne()  { return this.n === 1n && this.d === 1n; }
+  eq(o) { return this.n === o.n && this.d === o.d; }
+  isInt() { return this.d === 1n; }
+  pow(k) { let r = Q.one, b = this; if (k < 0) { b = Q.one.div(b); k = -k; }
+    for (let i = 0; i < k; i++) r = r.mul(b); return r; }
+  toNumber() { return Number(this.n) / Number(this.d); }
+  toString() { return this.d === 1n ? String(this.n) : this.n + '/' + this.d; }
+}
+Q.zero = new Q(0n); Q.one = new Q(1n); Q.mone = new Q(-1n);
+
+// ---------- polynomials (coeff[i] = coefficient of v^i, Q entries) ----------
+const P = {
+  trim: c => { const a = c.slice(); while (a.length > 1 && a[a.length-1].isZero()) a.pop(); return a; },
+  deg: c => c.length - 1,
+  isZero: c => c.length === 1 && c[0].isZero(),
+  add: (a, b) => { const r = []; for (let i = 0; i < Math.max(a.length, b.length); i++)
+      r.push((a[i] || Q.zero).add(b[i] || Q.zero)); return P.trim(r); },
+  sub: (a, b) => P.add(a, b.map(x => x.neg())),
+  mul: (a, b) => { const r = Array(a.length + b.length - 1).fill(Q.zero);
+    for (let i = 0; i < a.length; i++) for (let j = 0; j < b.length; j++)
+      r[i + j] = r[i + j].add(a[i].mul(b[j])); return P.trim(r); },
+  scale: (a, s) => P.trim(a.map(x => x.mul(s))),
+  evalAt: (a, x) => { let s = Q.zero; for (let i = a.length - 1; i >= 0; i--) s = s.mul(x).add(a[i]); return s; },
+  // division with remainder
+  divmod: (a, b) => { let r = a.slice(), q = Array(Math.max(1, a.length - b.length + 1)).fill(Q.zero);
+    const db = P.deg(b), lb = b[db];
+    while (P.deg(r) >= db && !P.isZero(r)) {
+      const dr = P.deg(r), c = r[dr].div(lb), k = dr - db;
+      q[k] = q[k].add(c);
+      for (let i = 0; i <= db; i++) r[k + i] = r[k + i].sub(c.mul(b[i]));
+      r = P.trim(r);
+      if (P.deg(r) < db) break;
+    }
+    return [P.trim(q), P.trim(r)]; },
+  gcd: (a, b) => { a = P.trim(a); b = P.trim(b);
+    while (!P.isZero(b)) { const [, r] = P.divmod(a, b); a = b; b = r; }
+    const lead = a[P.deg(a)]; return P.scale(a, Q.one.div(lead)); },
+  // clear denominators, divide by content, make leading (or trailing) sign convention
+  integerize: a => { let den = 1n;
+    for (const c of a) den = den * (c.d / bgcd(den, c.d));
+    let iv = a.map(c => c.n * (den / c.d));
+    let g = 0n; for (const x of iv) g = bgcd(g, x);
+    if (g > 1n) iv = iv.map(x => x / g);
+    return iv; },
+};
+const Pconst = q => [q];
+const Pvar = [Q.zero, Q.one];
+
+// ---------- expression parser -> generic algebra via ops object ----------
+// ops must provide: fromQ(q), varValue(), add, mul, div, pow(int), neg
+function parseExpr(src, ops, varNames) {
+  let i = 0;
+  const s = src.replace(/\s+/g, '');
+  const peek = () => s[i];
+  const err = m => { throw new Error(m + ' (at "' + s.slice(Math.max(0, i - 5), i + 8) + '")'); };
+  function number() {
+    const m = /^\d+/.exec(s.slice(i));
+    if (!m) err('number expected');
+    i += m[0].length;
+    return new Q(BigInt(m[0]));
+  }
+  function atom() {
+    if (peek() === '(') { i++; const e = expr(); if (peek() !== ')') err('expected )'); i++; return e; }
+    if (/\d/.test(peek() || '')) return ops.fromQ(number());
+    for (const v of varNames) if (s.startsWith(v, i)) { i += v.length; return ops.varValue(); }
+    err('unexpected token');
+  }
+  function factor() {
+    let base = atom();
+    if (peek() === '^') {
+      i++;
+      // exponent: integer, or the variable (only exp-poly ops support that), or (n+k)/(n-k)
+      if (ops.expBase) {
+        const save = i;
+        let shift = null;
+        if (peek() === '(') {
+          const m = /^\((n)([+-]\d+)?\)/.exec(s.slice(i));
+          if (m && varNames.includes('n')) { i += m[0].length; shift = m[2] ? BigInt(m[2]) : 0n; }
+        } else if (s.startsWith('n', i) && varNames.includes('n')) { i += 1; shift = 0n; }
+        if (shift !== null) return ops.expBase(base, shift);
+        i = save;
+      }
+      let neg = false;
+      if (peek() === '(') { // allow ^(-2)
+        const m = /^\((-?\d+)\)/.exec(s.slice(i));
+        if (!m) err('integer exponent expected');
+        i += m[0].length;
+        const k = parseInt(m[1], 10);
+        return ops.pow(base, k);
+      }
+      if (peek() === '-') { neg = true; i++; }
+      const k = Number(number().n) * (neg ? -1 : 1);
+      return ops.pow(base, k);
+    }
+    return base;
+  }
+  function term() {
+    let v = factor();
+    for (;;) {
+      const c = peek();
+      if (c === '*') { i++; v = ops.mul(v, factor()); }
+      else if (c === '/') { i++; v = ops.div(v, factor()); }
+      else if (c === '(' || /\d/.test(c || '') || varNames.some(vn => s.startsWith(vn, i)))
+        v = ops.mul(v, factor());          // implicit multiplication
+      else return v;
+    }
+  }
+  function expr() {
+    let v;
+    if (peek() === '-') { i++; v = ops.neg(term()); }
+    else { if (peek() === '+') i++; v = term(); }
+    while (peek() === '+' || peek() === '-') {
+      const op = s[i++]; const t = term();
+      v = op === '+' ? ops.add(v, t) : ops.add(v, ops.neg(t));
+    }
+    return v;
+  }
+  const v = expr();
+  if (i !== s.length) err('trailing input');
+  return v;
+}
+
+// rational-function algebra over x  ({num, den} polys)
+const RF = {
+  norm(r) { const g = P.gcd(r.num, r.den);
+    let num = P.divmod(r.num, g)[0], den = P.divmod(r.den, g)[0];
+    const lead = den[P.deg(den)];
+    return { num: P.scale(num, Q.one.div(lead)), den: P.scale(den, Q.one.div(lead)) }; },
+  fromQ: q => ({ num: Pconst(q), den: Pconst(Q.one) }),
+  varValue: () => ({ num: Pvar.slice(), den: Pconst(Q.one) }),
+  add: (a, b) => RF.norm({ num: P.add(P.mul(a.num, b.den), P.mul(b.num, a.den)), den: P.mul(a.den, b.den) }),
+  mul: (a, b) => RF.norm({ num: P.mul(a.num, b.num), den: P.mul(a.den, b.den) }),
+  div: (a, b) => { if (P.isZero(b.num)) throw new Error('division by zero polynomial');
+    return RF.norm({ num: P.mul(a.num, b.den), den: P.mul(a.den, b.num) }); },
+  neg: a => ({ num: a.num.map(x => x.neg()), den: a.den }),
+  pow: (a, k) => { let r = RF.fromQ(Q.one), b = k < 0 ? RF.div(RF.fromQ(Q.one), a) : a;
+    for (let i = 0; i < Math.abs(k); i++) r = RF.mul(r, b); return r; },
+};
+
+// exp-poly algebra over n: list of {base: Q, poly: Poly-in-n}; value = sum poly(n)*base^n
+const EP = {
+  norm(t) { const m = new Map();
+    for (const { base, poly } of t) {
+      const k = base.toString();
+      m.set(k, m.has(k) ? { base, poly: P.add(m.get(k).poly, poly) } : { base, poly });
+    }
+    return [...m.values()].filter(x => !P.isZero(x.poly)); },
+  fromQ: q => q.isZero() ? [] : [{ base: Q.one, poly: Pconst(q) }],
+  varValue: () => [{ base: Q.one, poly: Pvar.slice() }],
+  add: (a, b) => EP.norm(a.concat(b)),
+  neg: a => a.map(({ base, poly }) => ({ base, poly: poly.map(x => x.neg()) })),
+  mul: (a, b) => { const out = [];
+    for (const x of a) for (const y of b)
+      out.push({ base: x.base.mul(y.base), poly: P.mul(x.poly, y.poly) });
+    return EP.norm(out); },
+  div: (a, b) => { if (b.length !== 1 || P.deg(b[0].poly) !== 0)
+      throw new Error('closed forms may only be divided by constants');
+    const c = b[0];
+    return a.map(({ base, poly }) => ({ base: base.div(c.base), poly: P.scale(poly, Q.one.div(c.poly[0])) })); },
+  pow: (a, k) => { if (k < 0) { if (a.length === 1 && P.deg(a[0].poly) === 0)
+        return EP.pow(EP.div(EP.fromQ(Q.one), a), -k);
+      throw new Error('negative powers only allowed on constants'); }
+    let r = EP.fromQ(Q.one); for (let i = 0; i < k; i++) r = EP.mul(r, a); return r; },
+  // base^(n+shift)  -- base must be a nonzero constant
+  expBase: (b, shift) => { if (b.length !== 1 || P.deg(b[0].poly) !== 0 || !b[0].base.isOne())
+      throw new Error('exponent n is only allowed on a constant base');
+    const c = b[0].poly[0];
+    if (c.isZero()) throw new Error('0^n is not supported');
+    let coef = Q.one; const k = shift < 0n ? -shift : shift;
+    for (let i = 0n; i < k; i++) coef = shift < 0n ? coef.div(c) : coef.mul(c);
+    return [{ base: c, poly: Pconst(coef) }]; },
+  evalAt(t, nv) { let s = Q.zero;
+    for (const { base, poly } of t) {
+      if (nv < 0n && base.isZero()) continue;
+      let bp = Q.one; for (let i = 0n; i < nv; i++) bp = bp.mul(base);
+      s = s.add(P.evalAt(poly, new Q(nv)).mul(bp));
+    }
+    return s; },
+};
+
+// ---------- parsing the three inputs ----------
+function parseRecurrence(src) {
+  const text = src.replace(/\s+/g, '');
+  const parts = text.split(/[,;]/).filter(Boolean);
+  const head = parts.find(p => /^a\(n\)=/.test(p));
+  if (!head) throw new Error('need a line of the form  a(n) = c1*a(n-1) + ...');
+  const inits = new Map();
+  for (const p of parts) {
+    const m = /^a\((\d+)\)=(-?\d+(?:\/\d+)?)$/.exec(p);
+    if (m) { const [nn, dd] = m[2].split('/');
+      inits.set(BigInt(m[1]), new Q(BigInt(nn), BigInt(dd || 1))); }
+  }
+  // parse RHS as linear combination of a(n-k)
+  let rhs = head.slice(5).replace(/a\(n-(\d+)\)/g, 'A@$1@');
+  const coeffs = new Map();  // k -> Q
+  const terms = rhs.replace(/-/g, '+-').split('+').filter(Boolean);
+  for (const t of terms) {
+    const m = /^(-)?(\d+(?:\/\d+)?)?\*?A@(\d+)@$/.exec(t);
+    if (!m) throw new Error('cannot read term "' + t + '" — only constant*a(n-k) terms are supported (C-finite). For polynomial coefficients, this tool does not apply.');
+    let c = Q.one;
+    if (m[2]) { const [nn, dd] = m[2].split('/'); c = new Q(BigInt(nn), BigInt(dd || 1)); }
+    if (m[1]) c = c.neg();
+    const k = parseInt(m[3], 10);
+    if (k < 1) throw new Error('a(n-0) on the right side');
+    coeffs.set(k, (coeffs.get(k) || Q.zero).add(c));
+  }
+  const r = Math.max(...coeffs.keys());
+  const c = Array(r + 1).fill(Q.zero);           // c[k] multiplies a(n-k)
+  for (const [k, v] of coeffs) c[k] = v;
+  const init = [];
+  for (let j = 0n; inits.has(j); j++) init.push(inits.get(j));
+  if (init.length < r) throw new Error('missing initial value a(' + init.length + ') — an order-' + r + ' recurrence needs a(0)..a(' + (r - 1) + ')');
+  return { order: r, coeffs: c, init };
+}
+
+function parseGF(src) {
+  const rf = parseExpr(src, RF, ['x']);
+  const r = RF.norm(rf);
+  if (P.evalAt(r.den, Q.zero).isZero()) throw new Error('denominator vanishes at x = 0 — not a power series');
+  return r;
+}
+
+function parseClosedForm(src) {
+  return parseExpr(src, EP, ['n']);
+}
+
+// ---------- conversions ----------
+function recTerms(rec, N) {
+  const t = rec.init.slice();
+  for (let n = t.length; n < N; n++) {
+    let s = Q.zero;
+    for (let k = 1; k <= rec.order; k++) s = s.add(rec.coeffs[k].mul(t[n - k]));
+    t.push(s);
+  }
+  return t.slice(0, N);
+}
+
+function recToGF(rec) {
+  const den = [Q.one];
+  for (let k = 1; k <= rec.order; k++) den[k] = rec.coeffs[k].neg();
+  const terms = recTerms(rec, rec.order + 1);
+  // num = (series * den) truncated below order+... deg num < order
+  const num = Array(rec.order).fill(Q.zero);
+  for (let i = 0; i < rec.order; i++) {
+    let s = Q.zero;
+    for (let k = 0; k <= i; k++) if (k < den.length) s = s.add(den[k].mul(terms[i - k]));
+    num[i] = s;
+  }
+  return RF.norm({ num: P.trim(num), den: P.trim(den) });
+}
+
+function gfSeries(gf, N) {
+  const out = [], d0 = gf.den[0];
+  for (let i = 0; i < N; i++) {
+    let s = (gf.num[i] || Q.zero);
+    for (let k = 1; k <= Math.min(i, P.deg(gf.den)); k++)
+      s = s.sub(gf.den[k].mul(out[i - k]));
+    out.push(s.div(d0));
+  }
+  return out;
+}
+
+function gfToRec(gf) {
+  const den = gf.den, r = P.deg(den);
+  if (r === 0) { // polynomial gf: finite sequence -> not C-finite in interesting sense
+    throw new Error('the generating function is a polynomial — the sequence is eventually zero; no recurrence needed');
+  }
+  const d0 = den[0];
+  const coeffs = Array(r + 1).fill(Q.zero);
+  for (let k = 1; k <= r; k++) coeffs[k] = den[k].div(d0).neg();
+  const validFrom = Math.max(r, P.deg(gf.num) + 1);
+  const need = Math.max(r, validFrom);
+  const init = gfSeries(gf, need);
+  return { order: r, coeffs, init, validFrom };
+}
+
+// characteristic polynomial of the recurrence: z^r - c1 z^(r-1) - ... - cr
+function charPoly(rec) {
+  const p = Array(rec.order + 1).fill(Q.zero);
+  p[rec.order] = Q.one;
+  for (let k = 1; k <= rec.order; k++) p[rec.order - k] = rec.coeffs[k].neg();
+  return P.trim(p);
+}
+
+function rationalRoots(poly) {
+  // returns [ [root, multiplicity], ... ] plus the remaining factor
+  let p = poly.slice();
+  const roots = [];
+  const iv = P.integerize(p);
+  const lead = iv[iv.length - 1], tail0 = iv.find(x => x !== 0n) ?? 0n;
+  const divisors = x => { x = x < 0n ? -x : x; const out = [];
+    for (let d = 1n; d * d <= x; d++) if (x % d === 0n) { out.push(d); if (d * d !== x) out.push(x / d); }
+    return out.length ? out : [1n]; };
+  const cands = [];
+  for (const pn of divisors(tail0 || 1n)) for (const pd of divisors(lead))
+    for (const s of [1n, -1n]) cands.push(new Q(s * pn, pd));
+  cands.push(Q.zero);
+  for (const c of cands) {
+    let m = 0;
+    for (;;) {
+      if (P.deg(p) < 1) break;
+      if (!P.evalAt(p, c).isZero()) break;
+      const [q, r] = P.divmod(p, [c.neg(), Q.one]);
+      if (!P.isZero(r)) break;
+      p = q; m++;
+    }
+    if (m > 0) roots.push([c, m]);
+  }
+  return { roots, rest: P.trim(p) };
+}
+
+// does poly divide z^m - 1?  (all roots are m-th roots of unity)
+function dividesUnity(poly, maxM = 24) {
+  for (let m = 1; m <= maxM; m++) {
+    const zm = Array(m + 1).fill(Q.zero); zm[0] = Q.mone; zm[m] = Q.one;
+    const [, r] = P.divmod(zm, poly);
+    if (P.isZero(r)) return m;
+  }
+  return null;
+}
+
+// exact linear solve over a field with Q-like interface
+function solveLinear(A, b, F) {
+  const nv = A[0].length, rows = A.length;
+  const M = A.map((row, i) => row.concat([b[i]]));
+  let rank = 0;
+  for (let col = 0; col < nv && rank < rows; col++) {
+    let piv = -1;
+    for (let r = rank; r < rows; r++) if (!F.isZero(M[r][col])) { piv = r; break; }
+    if (piv < 0) return null;
+    [M[rank], M[piv]] = [M[piv], M[rank]];
+    const inv = F.inv(M[rank][col]);
+    M[rank] = M[rank].map(x => F.mul(x, inv));
+    for (let r = 0; r < rows; r++) if (r !== rank && !F.isZero(M[r][col])) {
+      const f = M[r][col];
+      M[r] = M[r].map((x, j) => F.sub(x, F.mul(f, M[rank][j])));
+    }
+    rank++;
+  }
+  if (rank < nv) return null;
+  for (let r = rank; r < rows; r++) if (!F.isZero(M[r][nv])) return null;
+  return M.slice(0, nv).map(row => row[nv]);
+}
+const QF = { isZero: x => x.isZero(), inv: x => Q.one.div(x),
+  mul: (a, b) => a.mul(b), sub: (a, b) => a.sub(b), add: (a, b) => a.add(b),
+  fromQ: q => q, zero: Q.zero };
+// Q(sqrt(D)) field: {a, b} = a + b*sqrt(D)
+function surdField(D) {
+  return {
+    D,
+    fromQ: q => ({ a: q, b: Q.zero }),
+    zero: { a: Q.zero, b: Q.zero },
+    isZero: x => x.a.isZero() && x.b.isZero(),
+    add: (x, y) => ({ a: x.a.add(y.a), b: x.b.add(y.b) }),
+    sub: (x, y) => ({ a: x.a.sub(y.a), b: x.b.sub(y.b) }),
+    mul: (x, y) => ({ a: x.a.mul(y.a).add(x.b.mul(y.b).mul(D)), b: x.a.mul(y.b).add(x.b.mul(y.a)) }),
+    inv: x => { const nrm = x.a.mul(x.a).sub(x.b.mul(x.b).mul(D));
+      return { a: x.a.div(nrm), b: x.b.neg().div(nrm) }; },
+  };
+}
+
+// closed form of a C-finite recurrence
+function recToClosed(rec, opts = {}) {
+  const cp = charPoly(rec);
+  const { roots, rest } = rationalRoots(cp);
+  const N = 3 * (rec.order + 2);
+  const terms = recTerms(rec, N);
+
+  if (P.deg(rest) === 0) {
+    // all roots rational -> exp-poly with rational bases
+    const basis = [];
+    for (const [rt, m] of roots) for (let t = 0; t < m; t++) basis.push({ base: rt, t });
+    const K = basis.length;
+    const A = [], b = [];
+    for (let n = 0; n < K; n++) {
+      const row = basis.map(({ base, t }) => {
+        if (base.isZero()) return n === 0 && t === 0 ? Q.one : (n === t ? Q.one : Q.zero); // 0^n handling: root 0 contributes only finitely; treat via delta
+        let bp = Q.one; for (let i = 0; i < n; i++) bp = bp.mul(base);
+        return new Q(BigInt(n)).pow(t).mul(bp);
+      });
+      A.push(row); b.push(terms[n]);
+    }
+    const sol = solveLinear(A, b, QF);
+    if (!sol) return { kind: 'fail', note: 'zero root with multiplicity — sequence has a transient; enter the generating function instead' };
+    const ep = EP.norm(basis.map(({ base, t }, i) => {
+      const poly = Array(t + 1).fill(Q.zero); poly[t] = sol[i];
+      return { base, poly };
+    }));
+    for (let n = 0; n < N; n++)
+      if (!EP.evalAt(ep, BigInt(n)).eq(terms[n])) return { kind: 'fail', note: 'internal check failed' };
+    return { kind: 'exp-poly', ep, verified: N };
+  }
+
+  const m = dividesUnity(rest);
+  if (m && roots.every(([rt]) => !rt.isZero())) {
+    // roots-of-unity component: give per-residue closed forms of a(Mt+c)
+    const M = m;
+    const cases = [];
+    const long = recTerms(rec, Math.max(N, M * (rec.order + 4)));
+    for (let c = 0; c < M; c++) {
+      const sub = []; for (let j = c; j < long.length; j += M) sub.push(sub.length !== undefined ? long[j] : long[j]);
+      // guess an exp-poly for the subsequence via its own recurrence: bases are lambda^M
+      const subRec = fitRecFromTerms(sub, rec.order);
+      if (!subRec) return { kind: 'fail', note: 'could not resolve residue class ' + c };
+      const cf = recToClosed(subRec);
+      if (cf.kind !== 'exp-poly') return { kind: 'quasi-note', M, note: 'roots of unity of order ' + M + ' present, but a residue class is not rational-based' };
+      cases.push(cf.ep);
+    }
+    return { kind: 'quasi', M, cases, verified: long.length };
+  }
+
+  if (P.deg(rest) === 2 && roots.length === 0) {
+    // pure quadratic: exact Binet over Q(sqrt(D))
+    const a2 = rest[2], a1 = rest[1], a0 = rest[0];
+    const Dq = a1.mul(a1).sub(new Q(4n).mul(a2).mul(a0));
+    const F = surdField(Dq);
+    const half = Q.one.div(new Q(2n).mul(a2));
+    const r1 = { a: a1.neg().mul(half), b: half };          // (-a1 + sqrt(D)) / 2a2
+    const r2 = { a: a1.neg().mul(half), b: half.neg() };
+    const A = [], b = [];
+    for (let n = 0; n < 2; n++) {
+      const p1 = powS(F, r1, n), p2 = powS(F, r2, n);
+      A.push([p1, p2]); b.push(F.fromQ(terms[n]));
+    }
+    const sol = solveLinear(A, b, F);
+    if (sol) {
+      // verify a few terms numerically-exactly in the field
+      let ok = true;
+      for (let n = 0; n < Math.min(N, 12); n++) {
+        const v = F.add(F.mul(sol[0], powS(F, r1, n)), F.mul(sol[1], powS(F, r2, n)));
+        if (!(v.b.isZero() && v.a.eq(terms[n]))) { ok = false; break; }
+      }
+      if (ok) return { kind: 'binet', D: Dq, roots: [r1, r2], coef: sol, verified: Math.min(N, 12) };
+    }
+  }
+
+  // mixed rational + quadratic surd
+  if (P.deg(rest) === 2) {
+    const a2 = rest[2], a1 = rest[1], a0 = rest[0];
+    const Dq = a1.mul(a1).sub(new Q(4n).mul(a2).mul(a0));
+    const F = surdField(Dq);
+    const half = Q.one.div(new Q(2n).mul(a2));
+    const surds = [{ a: a1.neg().mul(half), b: half }, { a: a1.neg().mul(half), b: half.neg() }];
+    const basis = [];
+    for (const [rt, mm] of roots) for (let t = 0; t < mm; t++) basis.push({ q: rt, t });
+    for (const sroot of surds) basis.push({ s: sroot, t: 0 });
+    const K = basis.length, A = [], b = [];
+    for (let n = 0; n < K; n++) {
+      A.push(basis.map(e => {
+        if (e.q !== undefined) {
+          let bp = Q.one; for (let i = 0; i < n; i++) bp = bp.mul(e.q);
+          return F.fromQ(new Q(BigInt(n)).pow(e.t).mul(bp));
+        }
+        return powS(F, e.s, n);
+      }));
+      b.push(F.fromQ(terms[n]));
+    }
+    const sol = solveLinear(A, b, F);
+    if (sol) return { kind: 'binet-mixed', D: Dq, basis, coef: sol, verified: K };
+  }
+
+  return { kind: 'irreducible', rest, roots,
+    note: 'characteristic factor of degree ' + P.deg(rest) + ' with no rational or quadratic-surd or root-of-unity structure — the Binet form exists over its splitting field but has no elementary radical expression this tool can print' };
+}
+function powS(F, x, n) { let r = F.fromQ(Q.one); for (let i = 0; i < n; i++) r = F.mul(r, x); return r; }
+
+// small exact C-finite fitter (for residue-class subsequences)
+function fitRecFromTerms(terms, maxOrder) {
+  for (let r = 1; r <= Math.min(maxOrder, Math.floor((terms.length - 4) / 2)); r++) {
+    const rows = terms.length - r, A = [], b = [];
+    for (let n = 0; n < rows; n++) {
+      A.push(Array.from({ length: r }, (_, k) => terms[n + r - 1 - k]));
+      b.push(terms[n + r]);
+    }
+    // solve first r x r block, then verify the rest
+    const sol = solveLinear(A.slice(0, r), b.slice(0, r), QF);
+    if (!sol) continue;
+    let ok = true;
+    for (let n = 0; n < rows; n++) {
+      let s = Q.zero;
+      for (let k = 0; k < r; k++) s = s.add(sol[k].mul(terms[n + r - 1 - k]));
+      if (!s.eq(terms[n + r])) { ok = false; break; }
+    }
+    if (!ok) continue;
+    const coeffs = Array(r + 1).fill(Q.zero);
+    for (let k = 1; k <= r; k++) coeffs[k] = sol[k - 1];
+    return { order: r, coeffs, init: terms.slice(0, r) };
+  }
+  return null;
+}
+
+function closedToRec(ep) {
+  // char poly = prod over components (z - base)^(deg+1)
+  let cp = [Q.one];
+  for (const { base, poly } of ep)
+    for (let i = 0; i <= P.deg(poly); i++) cp = P.mul(cp, [base.neg(), Q.one]);
+  const r = P.deg(cp);
+  if (r === 0) throw new Error('empty closed form');
+  const coeffs = Array(r + 1).fill(Q.zero);
+  for (let k = 1; k <= r; k++) coeffs[k] = cp[r - k].neg();
+  const init = [];
+  for (let n = 0n; n < BigInt(r); n++) init.push(EP.evalAt(ep, n));
+  return { order: r, coeffs, init };
+}
+
+
+
+// ---------------- pretty printing ----------------
+function fmtQ(q, paren) {
+  const s = q.toString();
+  return (paren && (q.n < 0n || q.d !== 1n)) ? '(' + s + ')' : s;
+}
+function polyTerms(coeffs, v, asc, html) {
+  const idx = [...coeffs.keys()];
+  if (!asc) idx.reverse();
+  const out = [];
+  for (const i of idx) {
+    const c = coeffs[i];
+    if (c.isZero()) continue;
+    const neg = c.n < 0n;
+    const mag = new Q(neg ? -c.n : c.n, c.d);
+    let body;
+    if (i === 0) body = mag.toString();
+    else {
+      const cs = mag.isOne() ? '' : (html ? mag.toString() + '\u00b7'
+                 : (mag.d === 1n ? mag.toString() + '*' : '(' + mag + ')*'));
+      body = cs + v + (i > 1 ? (html ? '<sup>' + i + '</sup>' : '^' + i) : '');
+    }
+    out.push({ neg, body });
+  }
+  return out;
+}
+function joinTerms(ts, html) {
+  if (!ts.length) return '0';
+  const m = html ? '\u2212' : '-';
+  let s = (ts[0].neg ? m : '') + ts[0].body;
+  for (let i = 1; i < ts.length; i++)
+    s += (ts[i].neg ? ' ' + m + ' ' : ' + ') + ts[i].body;
+  return s;
+}
+function fmtPoly(coeffs, v, asc) { return joinTerms(polyTerms(coeffs, v, asc, true), true); }
+function fmtPolyPlain(coeffs, v, asc) { return joinTerms(polyTerms(coeffs, v, asc, false), false); }
+function gfDisplayNormalize(gf) {
+  let num = gf.num, den = gf.den;
+  const d0 = den[0];
+  num = P.scale(num, Q.one.div(d0)); den = P.scale(den, Q.one.div(d0));  // den(0)=1
+  const inum = P.integerize(num), iden = P.integerize(den);
+  // keep exact ratio: reconstruct with common scaling
+  const nq = num.map(x => x), dq = den.map(x => x);
+  return { num: nq, den: dq };
+}
+function fmtGFPlain(gf) {
+  const g = gfDisplayNormalize(gf);
+  const numS = fmtPolyPlain(g.num, 'x', true), denS = fmtPolyPlain(g.den, 'x', true);
+  return '(' + numS + ') / (' + denS + ')';
+}
+function fmtGF(gf) {
+  const g = gfDisplayNormalize(gf);
+  return '<span class="frac"><span>' + fmtPoly(g.num, 'x', true) + '</span><span>' + fmtPoly(g.den, 'x', true) + '</span></span>';
+}
+function fmtRecPlain(rec) {
+  const parts = [];
+  for (let k = 1; k <= rec.order; k++) {
+    const c = rec.coeffs[k];
+    if (c.isZero()) continue;
+    const sign = c.n < 0n ? '- ' : (parts.length ? '+ ' : '');
+    const mag = new Q(c.n < 0n ? -c.n : c.n, c.d);
+    const cs = mag.isOne() ? '' : (mag.d === 1n ? mag + '*' : '(' + mag + ')*');
+    parts.push(sign + cs + 'a(n-' + k + ')');
+  }
+  let s = 'a(n) = ' + (parts.join(' ') || '0');
+  const inits = rec.init.map((v, j) => 'a(' + j + ')=' + v).join(', ');
+  return s + (inits ? ', ' + inits : '');
+}
+function fmtEPPlain(ep) {
+  const chunks = [];
+  for (const { base, poly } of ep) {
+    const ps = fmtPolyPlain(poly, 'n');
+    if (base.isOne()) { chunks.push(ps); continue; }
+    const b = base.eq(Q.mone) ? '(-1)' : fmtQ(base, true);
+    const pw = b + '^n';
+    if (P.deg(poly) === 0) {
+      const c = poly[0];
+      if (c.isOne()) { chunks.push(pw); continue; }
+      if (c.eq(Q.mone)) { chunks.push('-' + pw); continue; }
+      const neg = c.n < 0n, mag = new Q(neg ? -c.n : c.n, c.d);
+      const cs = mag.d === 1n ? mag.toString() : '(' + mag + ')';
+      chunks.push((neg ? '-' : '') + cs + '*' + pw);
+      continue;
+    }
+    chunks.push('(' + ps + ')*' + pw);
+  }
+  return chunks.join(' + ').replace(/\+ -/g, '- ');
+}
+function fmtEP(ep) {
+  const chunks = [];
+  for (const { base, poly } of ep) {
+    const ps = fmtPoly(poly, 'n');
+    if (base.isOne()) { chunks.push(ps); continue; }
+    const b = (base.eq(Q.mone) ? '(−1)' : fmtQ(base, true)) + '<sup>n</sup>';
+    chunks.push(P.deg(poly) === 0 && poly[0].isOne() ? b :
+      (P.deg(poly) === 0 ? fmtPoly(poly, 'n') + '·' + b : '(' + ps + ')·' + b));
+  }
+  return 'a(n) = ' + (chunks.join(' + ').replace(/\+ −/g, '− ') || '0');
+}
+function fmtSurd(x, D) {
+  const a = x.a, b = x.b;
+  const root = '\u221a' + fmtQ(D, D.d !== 1n);
+  const bterm = q => {
+    if (q.isZero()) return null;
+    const neg = q.n < 0n, mag = new Q(neg ? -q.n : q.n, q.d);
+    let t = (mag.n === 1n ? root : mag.n + root) + (mag.d !== 1n ? '/' + mag.d : '');
+    return { neg, t };
+  };
+  const bt = bterm(b);
+  if (!bt) return a.toString();
+  if (a.isZero()) return (bt.neg ? '\u2212' : '') + bt.t;
+  return '(' + a + (bt.neg ? ' \u2212 ' : ' + ') + bt.t + ')';
+}
+function fmtBinet(cf) {
+  const [r1, r2] = cf.roots, [c1, c2] = cf.coef, D = cf.D;
+  const root = (r) => {
+    // r = a + b sqrt(D); print ((2a·q ± √D')/…) style: just a + b√D
+    return fmtSurd(r, D);
+  };
+  const piece = (c, r) => {
+    const cs = fmtSurd(c, D);
+    return (cs === '1' ? '' : cs + '·') + '(' + root(r) + ')<sup>n</sup>';
+  };
+  const p1 = piece(c1, r1), p2 = piece(c2, r2);
+  return 'a(n) = ' + p1 + (p2.startsWith('\u2212') ? ' \u2212 ' + p2.slice(1) : ' + ' + p2);
+}
+function fmtQuasi(cf) {
+  const lines = [];
+  for (let c = 0; c < cf.M; c++) {
+    const ep = cf.cases[c];
+    // ep is in t where n = M t + c  ->  substitute
+    const chunks = [];
+    for (const { base, poly } of ep) {
+      // poly in t: rewrite in n exactly: t = (n - c)/M
+      const sub = substLinear(poly, new Q(1n, BigInt(cf.M)), new Q(BigInt(-c), BigInt(cf.M)));
+      const ps = fmtPoly(sub, 'n');
+      if (base.isOne()) { chunks.push(ps); continue; }
+      const b = fmtQ(base, true) + '<sup>(n−' + c + ')/' + cf.M + '</sup>';
+      chunks.push(P.deg(sub) === 0 && sub[0].isOne() ? b : '(' + ps + ')·' + b);
+    }
+    lines.push('n ≡ ' + c + ' (mod ' + cf.M + '):&nbsp;&nbsp;a(n) = ' + chunks.join(' + ').replace(/\+ −/g, '− '));
+  }
+  return lines.join('<br>');
+}
+function substLinear(poly, m, b) {   // p(t) with t = m n + b  -> poly in n
+  let acc = [Q.zero], lin = [b, m], pw = [Q.one];
+  for (let i = 0; i <= P.deg(poly); i++) {
+    acc = P.add(acc, P.scale(pw, poly[i]));
+    pw = P.mul(pw, lin);
+  }
+  return P.trim(acc);
+}
+// numeric roots for irreducible factors (Durand–Kerner)
+function numericRoots(poly) {
+  const n = P.deg(poly), c = poly.map(q => q.toNumber());
+  const lead = c[n]; const a = c.map(x => x / lead);
+  let z = Array.from({ length: n }, (_, k) => {
+    const th = 2 * Math.PI * k / n + 0.4;
+    return { re: 1.3 * Math.cos(th), im: 1.3 * Math.sin(th) };
+  });
+  const cmul = (x, y) => ({ re: x.re * y.re - x.im * y.im, im: x.re * y.im + x.im * y.re });
+  const csub = (x, y) => ({ re: x.re - y.re, im: x.im - y.im });
+  const cdiv = (x, y) => { const d = y.re * y.re + y.im * y.im;
+    return { re: (x.re * y.re + x.im * y.im) / d, im: (x.im * y.re - x.re * y.im) / d }; };
+  const evalp = z0 => { let v = { re: a[n], im: 0 };
+    for (let i = n - 1; i >= 0; i--) v = { re: v.re * z0.re - v.im * z0.im + a[i], im: v.re * z0.im + v.im * z0.re };
+    return v; };  // careful: need temp
+  const evalp2 = z0 => { let re = a[n], im = 0;
+    for (let i = n - 1; i >= 0; i--) { const r2 = re * z0.re - im * z0.im + a[i]; im = re * z0.im + im * z0.re; re = r2; }
+    return { re, im }; };
+  for (let it = 0; it < 300; it++) {
+    let moved = 0;
+    for (let k = 0; k < n; k++) {
+      let den = { re: 1, im: 0 };
+      for (let j = 0; j < n; j++) if (j !== k) den = cmul(den, csub(z[k], z[j]));
+      const step = cdiv(evalp2(z[k]), den);
+      z[k] = csub(z[k], step);
+      moved += Math.hypot(step.re, step.im);
+    }
+    if (moved < 1e-13) break;
+  }
+  return z;
+}
+
+
+// ---------------- Stirling lens ----------------
+function stirlingTable(N) {
+  const S = Array.from({ length: N + 2 }, () => Array(N + 2).fill(0n));
+  S[0][0] = 1n;
+  for (let n = 1; n <= N + 1; n++)
+    for (let m = 1; m <= n; m++)
+      S[n][m] = BigInt(m) * S[n - 1][m] + S[n - 1][m - 1];
+  return S;
+}
+function chooseBig(n, m) {
+  if (m < 0 || m > n) return 0n;
+  let r = 1n;
+  for (let i = 0n; i < BigInt(m); i++) r = r * (BigInt(n) - i) / (i + 1n);
+  return r;
+}
+function lensKernels(N) {
+  const S = stirlingTable(N + 1);
+  const F = [1n]; for (let i = 1; i <= N + 1; i++) F.push(F[i - 1] * BigInt(i));
+  const bang = m => m <= 1 ? '' : (m === 2 ? '2\u00b7' : m + '!\u00b7');
+  return [
+    { id: 'S2',    label: 'S(n,m)',              K: (n, m) => S[n][m],
+      labelAt: m => 'S(n,' + m + ')', dedupe: null },
+    { id: 'SURJ',  label: 'm!\u00b7S(n,m)',      K: (n, m) => F[m] * S[n][m],
+      labelAt: m => bang(m) + 'S(n,' + m + ')', dedupe: 'S2' },
+    { id: 'S2S',   label: 'S(n+1,m+1)',          K: (n, m) => S[n + 1][m + 1],
+      labelAt: m => 'S(n+1,' + (m + 1) + ')', dedupe: null },
+    { id: 'SURJS', label: 'm!\u00b7S(n+1,m+1)',  K: (n, m) => F[m] * S[n + 1][m + 1],
+      labelAt: m => bang(m) + 'S(n+1,' + (m + 1) + ')', dedupe: 'S2S' },
+    { id: 'BIN',   label: 'C(n,m)',              K: (n, m) => chooseBig(n, m),
+      labelAt: m => 'C(n,' + m + ')', dedupe: null },
+    { id: 'ABIN',  label: '(\u22121)\u207f\u207b\u1d50\u00b7C(n,m)',
+      K: (n, m) => ((n - m) % 2 ? -1n : 1n) * chooseBig(n, m),
+      labelAt: m => '(\u22121)<sup>n\u2212' + m + '</sup>\u00b7C(n,' + m + ')', dedupe: null },
+  ];
+}
+function lensInvert(terms, K) {   // terms: Q[], K -> BigInt
+  const lam = [];
+  for (let n = 0; n < terms.length; n++) {
+    let s = terms[n];
+    for (let m = 0; m < n; m++) s = s.sub(lam[m].mul(new Q(K(n, m))));
+    const d = K(n, n);
+    if (d === 0n) return null;
+    lam.push(s.div(new Q(d)));
+  }
+  return lam;
+}
+// --- recognizers on lambda (Q[]). Each returns {kind, html, evalAt} or null.
+function recFiniteSupport(lam) {
+  let last = -1;
+  for (let i = 0; i < lam.length; i++) if (!lam[i].isZero()) last = i;
+  if (last < 0 || lam.length - 1 - last < 8 || last > 6) return null;
+  return { kind: 'finite', support: last,
+           vals: lam.slice(0, last + 1),
+           evalAt: m => m <= last ? lam[m] : Q.zero };
+}
+function recPolynomial(lam, slack) {
+  let D = lam.slice();
+  for (let deg = 0; deg <= lam.length - slack - 1 && deg <= 8; deg++) {
+    if (D.every(x => x.isZero())) {
+      const A = [], b = [];
+      for (let i = 0; i <= deg; i++) {
+        A.push(Array.from({ length: deg + 1 }, (_, j) => new Q(BigInt(i)).pow(j)));
+        b.push(lam[i]);
+      }
+      const sol = solveLinear(A, b, QF);
+      if (!sol) return null;
+      const poly = P.trim(sol);
+      const evalAt = m => P.evalAt(poly, new Q(BigInt(m)));
+      for (let m = 0; m < lam.length; m++) if (!evalAt(m).eq(lam[m])) return null;
+      return { kind: 'poly', poly, evalAt };
+    }
+    D = D.slice(1).map((x, i) => x.sub(D[i]));
+  }
+  return null;
+}
+function recExpPoly(lam, slack) {
+  const fr = fitRecFromTerms(lam, 4);
+  if (!fr || lam.length - 2 * fr.order < slack) return null;
+  const cf = recToClosed(fr);
+  if (cf.kind !== 'exp-poly') return null;
+  const evalAt = m => EP.evalAt(cf.ep, BigInt(m));
+  for (let m = 0; m < lam.length; m++) if (!evalAt(m).eq(lam[m])) return null;
+  return { kind: 'expoly', ep: cf.ep, evalAt };
+}
+function recHyper(lam, slack) {
+  if (lam.some(x => x.isZero())) return null;
+  for (let d = 0; d <= 3; d++) {
+    const nc = 2 * (d + 1);
+    if (lam.length - nc - 1 < slack) break;
+    // q(m) lam(m+1) = p(m) lam(m); normalize each unknown to 1 in turn
+    for (let norm = nc - 1; norm >= 0; norm--) {
+      const A = [], b = [];
+      for (let r = 0; r < nc - 1 + 1; r++) {
+        const row = [];
+        let rhs = Q.zero;
+        for (let c = 0; c < nc; c++) {
+          const j = c <= d ? c : c - (d + 1);
+          const mono = new Q(BigInt(r)).pow(j);
+          const val = c <= d ? mono.mul(lam[r]) : mono.mul(lam[r + 1]).neg();
+          if (c === norm) rhs = rhs.sub(val);
+          else row.push(val);
+        }
+        A.push(row); b.push(rhs);
+      }
+      const sol = solveLinear(A.slice(0, nc - 1), b.slice(0, nc - 1), QF);
+      if (!sol) continue;
+      const full = [];
+      let si = 0;
+      for (let c = 0; c < nc; c++) full.push(c === norm ? Q.one : sol[si++]);
+      const pc = full.slice(0, d + 1), qc = full.slice(d + 1);
+      const evR = (co, m) => { let s = Q.zero, pw = Q.one;
+        for (const c of co) { s = s.add(c.mul(pw)); pw = pw.mul(new Q(BigInt(m))); }
+        return s; };
+      let ok = true;
+      for (let m = 0; m < lam.length - 1; m++) {
+        const qv = evR(qc, m);
+        if (qv.isZero() || !evR(pc, m).mul(lam[m]).eq(qv.mul(lam[m + 1]))) { ok = false; break; }
+      }
+      if (!ok) continue;
+      const { roots: rp, rest: restp } = rationalRoots(P.trim(pc));
+      const { roots: rq, rest: restq } = rationalRoots(P.trim(qc));
+      if (P.deg(restp) > 0 || P.deg(restq) > 0) continue;
+      const z = restp[0].div(restq[0]);
+      const evalAt = m => {   // lam(0) * z^m * prod rf / prod rf
+        let v = lam[0];
+        for (let j = 0; j < m; j++) v = v.mul(evR(pc, j)).div(evR(qc, j));
+        return v;
+      };
+      return { kind: 'hyper', z, rp, rq, lam0: lam[0], evalAt };
+    }
+  }
+  return null;
+}
+function fmtEPm(ep) {   // exp-poly in variable m
+  const chunks = [];
+  for (const { base, poly } of ep) {
+    const ps = fmtPoly(poly, 'm');
+    if (base.isOne()) { chunks.push(ps); continue; }
+    const b = (base.eq(Q.mone) ? '(\u22121)' : fmtQ(base, true)) + '<sup>m</sup>';
+    chunks.push(P.deg(poly) === 0 && poly[0].isOne() ? b :
+      (P.deg(poly) === 0 ? ps + '\u00b7' + b : '(' + ps + ')\u00b7' + b));
+  }
+  return chunks.join(' + ').replace(/\+ \u2212/g, '\u2212 ');
+}
+function fmtRF(rootNeg, mult) {   // (a)_m^mult with a = -root
+  const a = rootNeg.neg();
+  if (a.isOne()) return mult === 1 ? 'm!' : 'm!<sup>' + mult + '</sup>';
+  const base = '(' + a + ')<sub>m</sub>';
+  return mult === 1 ? base : base + '<sup>' + mult + '</sup>';
+}
+function fmtHyper(h) {
+  const bits = [];
+  if (!h.lam0.isOne()) bits.push(fmtQ(h.lam0, true));
+  if (!h.z.isOne()) bits.push(fmtQ(h.z, true) + '<sup>m</sup>');
+  const num = h.rp.map(([r, m]) => fmtRF(r, m));
+  const den = h.rq.map(([r, m]) => fmtRF(r, m));
+  let core = num.join('\u00b7') || (bits.length ? '' : '1');
+  if (den.length) core = (core || '1') + ' / ' + den.join('\u00b7');
+  return [...bits, core].filter(Boolean).join('\u00b7');
+}
+function recognizeLambda(lam) {
+  return recFiniteSupport(lam) || recPolynomial(lam, 6) || recExpPoly(lam, 6) || recHyper(lam, 6);
+}
+function runLens() {
+  const out = els('lens-out');
+  if (!lastRec) { out.innerHTML = '<span class="note">Convert a sequence first \u2014 the lens reads the current recurrence.</span>'; return; }
+  const N = 30;
+  const T = recTerms(lastRec, N);
+  const kernels = lensKernels(N);
+  const lines = [];
+  const finiteHit = {};
+  for (const k of kernels) {
+    const lam = lensInvert(T, k.K);
+    if (!lam) continue;
+    const rec = recognizeLambda(lam);
+    if (!rec) continue;
+    // certify: inversion is exact, and the recognizer matched every inverted value,
+    // so the sum reproduces every term; re-check a few anyway.
+    let ok = true;
+    for (let n = 0; n < Math.min(N, 14); n++) {
+      let s = Q.zero;
+      for (let m = 0; m <= n; m++) s = s.add(rec.evalAt(m).mul(new Q(k.K(n, m))));
+      if (!s.eq(T[n])) { ok = false; break; }
+    }
+    if (!ok) continue;
+    let lamHTML, upper = 'n';
+    if (rec.kind === 'finite') {
+      if (k.dedupe && finiteHit[k.dedupe]) continue;   // same identity, coefficients merged
+      finiteHit[k.id] = true;
+      const parts = rec.vals.map((v, m) => v.isZero() ? null :
+        { neg: v.n < 0n,
+          body: ((v.isOne() || v.eq(Q.mone)) ? '' : fmtQ(new Q(v.n < 0n ? -v.n : v.n, v.d), true) + '\u00b7') + k.labelAt(m) })
+        .filter(Boolean);
+      lines.push('<div class="lens-hit"><b>[' + k.id + ']</b> finite sum: a(n) = ' + joinTerms(parts, true) + '</div>');
+      continue;
+    }
+    if (rec.kind === 'poly') lamHTML = fmtPoly(rec.poly, 'm');
+    else if (rec.kind === 'expoly') lamHTML = fmtEPm(rec.ep);
+    else lamHTML = fmtHyper(rec);
+    lines.push('<div class="lens-hit"><b>[' + k.id + ']</b> a(n) = \u03a3<sub>m=0..' + upper + '</sub> (' +
+      lamHTML + ') \u00b7 ' + k.label + '<span class="ok"> \u2713 verified on ' + N + ' terms</span></div>');
+  }
+  let extra = '';
+  if (pbK !== null) extra = brewbakerDerivation();
+  out.innerHTML = (lines.length ? lines.join('') :
+    '<span class="note">No kernel produced a recognizable coefficient sequence \u2014 for this sequence the six transforms yield nothing simpler than the closed form above.</span>') + extra;
+}
+function brewbakerDerivation() {
+  const D = 16;
+  const S = stirlingTable(D + 2);
+  const K = (n, m) => S[n + 1][m + 1];
+  const A = [];
+  for (let n = 0; n < D; n++) {
+    const row = [];
+    for (let k = 0; k < D; k++) {
+      let v = 0n, f = 1n;
+      const Sn = S;
+      let s = 0n;
+      for (let j = 0; j <= n; j++) {
+        if (j > 0) f *= BigInt(j);
+        const sign = ((n + j) % 2 === 0) ? 1n : -1n;
+        s += sign * f * Sn[n][j] * (BigInt(j + 1) ** BigInt(k));
+      }
+      row.push(new Q(s));
+    }
+    A.push(row);
+  }
+  const cols = [];
+  for (let k = 0; k < D; k++) {
+    const c = lensInvert(A.map(r => r[k]), K);
+    if (!c) return '';
+    cols.push(c);
+  }
+  const rows = [];
+  for (let n = 0; n < D; n++) {
+    const r = lensInvert(cols.map(c => c[n]), K);
+    if (!r) return '';
+    rows.push(r);
+  }
+  let diagOK = true;
+  for (let i = 0; i < D && diagOK; i++)
+    for (let j = 0; j < D; j++)
+      if (i !== j && !rows[i][j].isZero()) { diagOK = false; break; }
+  if (!diagOK) return '';
+  const diag = Array.from({ length: D }, (_, i) => rows[i][i]);
+  const h = recHyper(diag, 4);
+  const lamHTML = h ? fmtHyper(h) : diag.slice(0, 6).map(String).join(', ') + ', \u2026';
+  return '<div class="lens-hit lens-bi"><b>[bivariate]</b> Inverting the full poly-Bernoulli array under S(\u00b7+1,m+1) ' +
+    'in both variables gives a <i>diagonal</i> coefficient matrix, so ' +
+    'B<sub>n</sub><sup>(\u2212k)</sup> = \u03a3<sub>m</sub> (' + lamHTML +
+    ') \u00b7 S(n+1,m+1) \u00b7 S(k+1,m+1) \u2014 Brewbaker\u2019s lonesum formula, derived from the values alone.' +
+    '<span class="ok"> \u2713 diagonal verified on a 16\u00d716 array</span></div>';
+}
+let lastRec = null;
+
+// ---------------- page logic ----------------
+const els = id => document.getElementById(id);
+const REC = els('rec'), GF = els('gf'), CF = els('cf');
+const NROW = 12;
+
+function setStatus(msg, isErr) {
+  const st = els('status');
+  st.textContent = msg || '';
+  st.className = isErr ? 'err' : '';
+}
+
+function convertFrom(which, keepPB) {
+  if (!keepPB) pbK = null;
+  setStatus('');
+  els('cf-render').innerHTML = '';
+  let rec = null, gf = null, cfDisplay = null, cfTerms = null, note = [];
+  try {
+    if (which === 'rec') {
+      rec = parseRecurrence(REC.value);
+      gf = recToGF(rec);
+    } else if (which === 'gf') {
+      gf = parseGF(GF.value);
+      rec = gfToRec(gf);
+      if (rec.validFrom > rec.order)
+        note.push('recurrence holds for n ≥ ' + rec.validFrom + ' (numerator degree ≥ denominator degree), so extra initial values are listed');
+    } else {
+      const ep = parseClosedForm(CF.value);
+      rec = closedToRec(ep);
+      gf = recToGF(rec);
+      cfDisplay = { kind: 'exp-poly', ep };
+    }
+  } catch (e) { setStatus(e.message, true); return; }
+
+  // closed form (derive when not the source)
+  let cf = cfDisplay;
+  if (!cf) {
+    try { cf = recToClosed(rec); } catch (e) { cf = { kind: 'fail', note: e.message }; }
+  }
+
+  lastRec = rec;
+  els('lens-out').innerHTML = '';
+  // fill panels
+  if (which !== 'rec') REC.value = fmtRecPlain(rec);
+  if (which !== 'gf') GF.value = fmtGFPlain(gf);
+  els('gf-render').innerHTML = 'A(x) = ' + fmtGF(gf);
+
+  let cfHTML = '', cfPlain = '';
+  if (cf.kind === 'exp-poly') {
+    cfHTML = fmtEP(cf.ep); cfPlain = fmtEPPlain(cf.ep);
+    cfTerms = n => EP.evalAt(cf.ep, BigInt(n));
+  } else if (cf.kind === 'binet' || cf.kind === 'binet-mixed') {
+    if (cf.kind === 'binet') cfHTML = fmtBinet(cf);
+    else {
+      const F = surdField(cf.D);
+      const bits = cf.basis.map((e, i) => {
+        const c = cf.coef[i]; if (F.isZero(c)) return null;
+        const cs = fmtSurd(c, cf.D);
+        if (e.q !== undefined) {
+          const bb = e.q.isOne() ? '' : '·' + fmtQ(e.q, true) + '<sup>n</sup>';
+          const nn = e.t > 0 ? '·n' + (e.t > 1 ? '<sup>' + e.t + '</sup>' : '') : '';
+          return cs + nn + bb;
+        }
+        return (cs === '1' ? '' : cs + '·') + '(' + fmtSurd(e.s, cf.D) + ')<sup>n</sup>';
+      }).filter(Boolean);
+      cfHTML = 'a(n) = ' + bits.join(' + ').replace(/\+ −/g, '− ');
+    }
+    cfPlain = '(exact Binet form with √' + cf.D + ' — shown below; not re-enterable as input)';
+    const F = surdField(cf.D);
+    cfTerms = n => {
+      let v = F.fromQ(Q.zero);
+      if (cf.kind === 'binet') {
+        v = F.add(F.mul(cf.coef[0], powS(F, cf.roots[0], n)), F.mul(cf.coef[1], powS(F, cf.roots[1], n)));
+      } else {
+        cf.basis.forEach((e, i) => {
+          if (e.q !== undefined) {
+            let bp = Q.one; for (let j = 0; j < n; j++) bp = bp.mul(e.q);
+            v = F.add(v, F.mul(cf.coef[i], F.fromQ(new Q(BigInt(n)).pow(e.t).mul(bp))));
+          } else v = F.add(v, F.mul(cf.coef[i], powS(F, e.s, n)));
+        });
+      }
+      return v.b.isZero() ? v.a : null;
+    };
+  } else if (cf.kind === 'quasi') {
+    cfHTML = fmtQuasi(cf);
+    cfPlain = '(quasi-polynomial by residue class mod ' + cf.M + ' — shown below)';
+    cfTerms = n => EP.evalAt(cf.cases[n % cf.M], BigInt(Math.floor(n / cf.M)));
+  } else if (cf.kind === 'irreducible') {
+    const zs = numericRoots(cf.rest);
+    const zstr = zs.map(z => Math.abs(z.im) < 1e-9 ? z.re.toFixed(6) : z.re.toFixed(4) + (z.im < 0 ? '−' : '+') + Math.abs(z.im).toFixed(4) + 'i').join(', ');
+    cfHTML = '<span class="note">' + cf.note + '.</span><br>Characteristic roots (numeric): ' + zstr +
+      '<br>General shape: a(n) = Σ c<sub>i</sub>·r<sub>i</sub><sup>n</sup> with the r<sub>i</sub> above.';
+    cfPlain = '(no elementary closed form — see note below)';
+  } else {
+    cfHTML = '<span class="note">' + (cf.note || 'no closed form derived') + '</span>';
+    cfPlain = '(no closed form derived)';
+  }
+  if (which !== 'cf') CF.value = cfPlain;
+  els('cf-render').innerHTML = cfHTML;
+
+  // agreement strip: n, from-recurrence, from-gf, from-closed-form
+  const t1 = recTerms(rec, NROW);
+  const t2 = gfSeries(gf, NROW);
+  const rows = [['n', ...Array.from({ length: NROW }, (_, i) => i)],
+    ['recurrence', ...t1.map(String)],
+    ['generating function', ...t2.map(String)]];
+  let cfRow = ['closed form'], allOK = true;
+  for (let i = 0; i < NROW; i++) {
+    if (!cfTerms) { cfRow.push('—'); continue; }
+    let v = null;
+    try { v = cfTerms(i); } catch (e) { v = null; }
+    if (v === null) { cfRow.push('—'); }
+    else {
+      cfRow.push(v.toString());
+      if (!v.eq(t1[i])) allOK = false;
+    }
+    if (!t1[i].eq(t2[i])) allOK = false;
+  }
+  rows.push(cfRow);
+  if (pbK !== null) {
+    const bRow = ['Brewbaker \u03a3(j!)\u00b2S\u00b7S'];
+    for (let i = 0; i < NROW; i++) {
+      const v = polyBernoulliSum(i, pbK);
+      bRow.push(v.toString());
+      if (!t1[i].eq(new Q(v))) allOK = false;
+    }
+    rows.push(bRow);
+  }
+  const pad = (s, w) => String(s).padStart(w);
+  const widths = Array.from({ length: NROW + 1 }, (_, j) =>
+    Math.max(...rows.map(r => String(r[j] ?? '').length)));
+  const lines = rows.map(r => r.map((c, j) =>
+    j === 0 ? String(c).padEnd(20) : pad(c, widths[j])).join('  '));
+  const mark = cfTerms ? (allOK ? '  ✓ all three representations agree on these terms'
+                                : '  ✗ MISMATCH — please report this')
+                       : '  ✓ recurrence and generating function agree' + (allOK ? '' : ' — MISMATCH');
+  els('terms').textContent = lines.join('\n') + '\n' + mark;
+  if (note.length) setStatus(note.join('; '));
+}
+
+// ---------------- poly-Bernoulli (Brewbaker) ----------------
+function stirling2Row(N) {   // S(N, 0..N) as BigInt
+  let row = [1n];
+  for (let n = 1; n <= N; n++) {
+    const next = [0n];
+    for (let j = 1; j <= n; j++)
+      next.push(BigInt(j) * (row[j] ?? 0n) + (row[j - 1] ?? 0n));
+    row = next;
+  }
+  return row;
+}
+function polyBernoulliEP(k) {  // B_n^(-k) = sum_j (-1)^(j+k) j! S(k,j) (j+1)^n
+  const S = stirling2Row(k);
+  const ep = [];
+  let fact = 1n;
+  for (let j = 1; j <= k; j++) {
+    fact *= BigInt(j);
+    const sign = ((j + k) % 2 === 0) ? 1n : -1n;
+    const c = sign * fact * S[j];
+    if (c !== 0n) ep.push({ base: new Q(BigInt(j + 1)), poly: [new Q(c)] });
+  }
+  if (k === 0) ep.push({ base: Q.one, poly: [Q.one] });
+  return EP.norm(ep);
+}
+function polyBernoulliSum(n, k) {  // Brewbaker double-Stirling lonesum count
+  const Sn = stirling2Row(n + 1), Sk = stirling2Row(k + 1);
+  let s = 0n, fact = 1n;
+  for (let j = 0; j <= Math.min(n, k); j++) {
+    if (j > 0) fact *= BigInt(j);
+    s += fact * fact * Sn[j + 1] * Sk[j + 1];
+  }
+  return s;
+}
+let pbK = null;
+
+const EXAMPLES = [
+  ['Fibonacci (recurrence)', 'rec', 'a(n) = a(n-1) + a(n-2), a(0)=0, a(1)=1'],
+  ['Ladder matchings A030186 (g.f.)', 'gf', '(1 - x)/(1 - 3*x - x^2 + x^3)'],
+  ['Quasi-polynomial A173294 (closed form)', 'cf', '4*(-1)^n*(n+1) + 4*n^2 + 8*n + 3'],
+  ['Mod-3 pattern A297464 (recurrence)', 'rec', 'a(n) = a(n-1) + a(n-3) - a(n-4), a(0)=1, a(1)=4, a(2)=8, a(3)=11'],
+  ['Polynomial A253680 (closed form)', 'cf', '32*n^5 + 80*n^4 + 68*n^3 + 22*n^2 + 2*n'],
+  ['Poly × geometric (closed form)', 'cf', '(3*n + 1)*2^n - n^2'],
+];
+const exWrap = els('examples');
+for (const [label, which, text] of EXAMPLES) {
+  const b = document.createElement('button');
+  b.textContent = label;
+  b.onclick = () => {
+    REC.value = GF.value = CF.value = '';
+    ({ rec: REC, gf: GF, cf: CF })[which].value = text;
+    convertFrom(which);
+    [...exWrap.children].forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+  };
+  exWrap.appendChild(b);
+}
+els('pb-btn').onclick = () => {
+  const k = Math.max(1, Math.min(12, parseInt(els('pb-k').value || '2', 10)));
+  els('pb-k').value = k;
+  REC.value = GF.value = '';
+  const ep = polyBernoulliEP(k);
+  CF.value = fmtEPPlain(ep);
+  pbK = k;
+  [...exWrap.children].forEach(x => x.classList.remove('active'));
+  convertFrom('cf', true);
+};
+els('lens-btn').onclick = runLens;
+for (const [id, key] of [['rec-btn', 'rec'], ['gf-btn', 'gf'], ['cf-btn', 'cf']])
+  els(id).onclick = () => convertFrom(key);
+for (const [ta, key] of [[REC, 'rec'], [GF, 'gf'], [CF, 'cf']])
+  ta.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) convertFrom(key); });
+exWrap.children[0].onclick();
+
+</script>
+</body>
+</html>
