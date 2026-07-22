@@ -35,6 +35,10 @@ textarea { width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, Consol
 code { background: #f6f8fa; padding: 1px 4px; border-radius: 4px;
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12.5px; }
 .note { color: #57606a; font-size: 13px; margin-top: 6px; }
+.lint-box { background: #fff8f0; border: 1px solid #d4a72c; border-radius: 8px; padding: 8px 14px; font-size: 13.5px; margin: 8px 0; }
+.lint-box ul { margin: 6px 0 2px; padding-left: 20px; }
+.lint-high { color: #953800; }
+.lint-med { color: #7d4e00; }
 .about { margin-top: 26px; border-top: 1px solid #ddd; padding-top: 14px; }
 .about h2 { font-size: 18px; }
 .about h3 { font-size: 15px; margin: 18px 0 6px; }
@@ -71,6 +75,7 @@ feature on this page.</p>
 <div class="controls"><button id="check-btn">3&ensp;Check consistency (exact, WASM)</button></div>
 
 <div id="status"></div>
+<div id="lint"></div>
 <div id="verdict"></div>
 
 <section class="about">
@@ -319,14 +324,72 @@ function derivation(ctx) {
   return { steps, ruleStr };
 }
 
+// ---------------- extraction lint (deterministic checks on the seam) ----------------
+function lintClauses(prog, sourceText) {
+  const warns = [];
+  const zero = a => a.args.length === 0;
+  const factSet = new Set(prog.facts.filter(zero).map(f => f.name));
+  const headSet = new Set(prog.rules.filter(r => zero(r.head)).map(r => r.head.name));
+  const allAtoms = new Set([...factSet, ...headSet]);
+  for (const r of prog.rules) for (const b of r.body) if (zero(b)) allAtoms.add(b.name);
+  const negAtoms = [...allAtoms].filter(a => a.startsWith('not_'));
+  const negCue = /\b(?:not|never|no longer|hasn'?t|haven'?t|isn'?t|wasn'?t|didn'?t|doesn'?t|don'?t|without|except|denied|no)\b/i;
+  if (!negAtoms.length && sourceText && negCue.test(sourceText))
+    warns.push({ sev: 'high', msg: 'The source text contains negation words but the extraction has no not_ atoms \u2014 a contradiction is impossible to derive from this formalization. The model likely dropped the negative statements.' });
+  for (const na of negAtoms) {
+    const pos = na.slice(4);
+    // the positive twin must be derivable-in-principle: a fact or some rule's head.
+    // merely appearing in rule bodies cannot make it true, so the pair can never clash.
+    if (!factSet.has(pos) && !headSet.has(pos)) {
+      const near = [...allAtoms].find(a => a !== na && (a.includes(pos) || pos.includes(a)));
+      warns.push({ sev: 'high', msg: 'Orphan negation: <code>' + na + '</code> has no matching positive atom <code>' +
+        pos + '</code> anywhere' + (near ? ' \u2014 did the model mean <code>' + near + '</code>? p/not_p must share an exact name to clash' : '') + '.' });
+    }
+  }
+  const dead = [];
+  for (const r of prog.rules) {
+    if (r.head.name === 'inconsistent') continue;
+    const undef_ = r.body.filter(b => zero(b) && !factSet.has(b.name) && !headSet.has(b.name));
+    if (undef_.length) dead.push(r.head.name + ' :- \u2026 (needs ' + undef_.map(b => b.name).join(', ') + ', which nothing asserts or derives)');
+  }
+  if (dead.length)
+    warns.push({ sev: 'med', msg: 'Dead rules \u2014 these can never fire: ' + dead.map(d => '<code>' + d + '</code>').join('; ') + '.' });
+  const vac = prog.rules.filter(r => zero(r.head) && factSet.has(r.head.name) && r.head.name !== 'inconsistent');
+  if (vac.length >= 2 || (prog.rules.length && vac.length === prog.rules.length))
+    warns.push({ sev: 'med', msg: 'Rule heads are also asserted as unconditional facts (' +
+      vac.map(r => '<code>' + r.head.name + '</code>').join(', ') + ') \u2014 the "everything is a fact" pattern: conditional policy statements were probably asserted outright, which can hide contradictions.' });
+  return warns;
+}
+function renderLint(warns) {
+  const box = els('lint');
+  if (!warns.length) { box.innerHTML = ''; return; }
+  box.innerHTML = '<div class="lint-box"><b>Extraction quality checks' +
+    (warns.some(w => w.sev === 'high') ? ' \u2014 verdict below is unreliable until these are addressed' : '') +
+    ':</b><ul>' + warns.map(w => '<li class="lint-' + w.sev + '">' + w.msg + '</li>').join('') + '</ul></div>';
+}
+
 // ---------------- on-device model ----------------
 let session = null;
-const SYSTEM = 'You turn prose (policies, specs, meeting notes, chat logs) into propositional Horn logic. ' +
-  'Extract only what is stated or clearly implied. Atom names: short snake_case, lowercase. ' +
-  'For a negated statement use the not_ prefix on the same atom (example: works_friday and not_works_friday). ' +
-  'Quote the exact source words for every atom. Facts are atoms asserted true. ' +
-  'Rules capture stated if-then relationships (head follows when all body atoms hold). ' +
-  'Do not invent facts, rules, or world knowledge that is not in the text.';
+const SYSTEM =
+  'You convert prose (policies, specs, meeting notes, chat logs) into propositional Horn logic as JSON. ' +
+  'Follow these rules exactly:\n' +
+  '1. FACTS are only unconditional statements about specific named entities or events.\n' +
+  '2. Conditional or policy statements ("X requires Y", "anyone who X has Y", "X only if Y", ' +
+  '"people who X are Y") are RULES, never facts. "X requires Y" becomes rule y :- x.\n' +
+  '3. Ground atoms on the named entity: dave_trained, karen_excused \u2014 not generic phrases.\n' +
+  '4. When the text denies something, use the not_ prefix on EXACTLY the same atom name as the ' +
+  'positive version. A contradiction is only detectable when p and not_p share a name.\n' +
+  '5. One statement per atom. Never join phrases into one long atom name.\n' +
+  '6. Quote the exact source words for every atom. Extract nothing the text does not say.';
+const FEWSHOT_USER = 'Text:\nPolicy: gym access requires a signed waiver. ' +
+  'Access log: Ana used the gym on Tuesday. Records: Ana has never signed a waiver.';
+const FEWSHOT_ASSISTANT = JSON.stringify({
+  atoms: [
+    { id: 'ana_used_gym', quote: 'Ana used the gym on Tuesday' },
+    { id: 'ana_waiver', quote: 'gym access requires a signed waiver' },
+    { id: 'not_ana_waiver', quote: 'Ana has never signed a waiver' }],
+  facts: ['ana_used_gym', 'not_ana_waiver'],
+  rules: [{ head: 'ana_waiver', body: ['ana_used_gym'] }] });
 const SCHEMA = { type: 'object', properties: {
   atoms: { type: 'array', items: { type: 'object', properties: {
     id: { type: 'string' }, quote: { type: 'string' } }, required: ['id', 'quote'] } },
@@ -418,7 +481,9 @@ async function extract(transcript, onProgress) {
   let raw;
   if (shape === 'LanguageModel') {
     session = await LanguageModel.create({
-      initialPrompts: [{ role: 'system', content: SYSTEM }],
+      initialPrompts: [{ role: 'system', content: SYSTEM },
+                       { role: 'user', content: FEWSHOT_USER },
+                       { role: 'assistant', content: FEWSHOT_ASSISTANT }],
       monitor(m) { m.addEventListener('downloadprogress', e => onProgress && onProgress(e.loaded)); },
     });
     try {
@@ -430,7 +495,7 @@ async function extract(transcript, onProgress) {
       }
     } finally { session.destroy && session.destroy(); session = null; }
   } else {
-    const s = await window.ai.languageModel.create({ systemPrompt: SYSTEM });
+    const s = await window.ai.languageModel.create({ systemPrompt: SYSTEM + '\n\nExample:\n' + FEWSHOT_USER + '\n' + FEWSHOT_ASSISTANT });
     try {
       raw = await s.prompt('Text:\n' + transcript +
         '\n\nRespond with ONLY a JSON object: {"atoms":[{"id","quote"}],"facts":[],"rules":[{"head","body":[]}]}');
@@ -455,6 +520,7 @@ function check() {
   let prog, ctx;
   try { prog = parseClauses(els('clauses').value); }
   catch (e) { setStatus('clause parse error: ' + e.message, true); return; }
+  renderLint(lintClauses(prog, els('transcript').value));
   try { ctx = solve(prog); }
   catch (e) { setStatus(e.message, true); return; }
   if (!ctx.inconsistent) {
@@ -486,16 +552,38 @@ function check() {
   html += '</ol>';
   out.innerHTML = html;
 }
+function lintOf(clauseText, source) {
+  try { return lintClauses(parseClauses(clauseText), source); }
+  catch (e) { return [{ sev: 'high', msg: 'clauses do not parse: ' + e.message }]; }
+}
 async function analyze() {
   setStatus('');
   els('verdict').innerHTML = '';
+  els('lint').innerHTML = '';
   const t = els('transcript').value.trim();
   if (!t) { setStatus('paste some source text first', true); return; }
   setStatus('asking the on-device model\u2026');
   try {
     const j = await extract(t, loaded => setStatus('downloading model\u2026 ' + Math.round(loaded * 100) + '%'));
-    els('clauses').value = jsonToClauses(j);
-    setStatus('extraction complete \u2014 review or edit the clauses, then check consistency');
+    let clauses = jsonToClauses(j);
+    let warns = lintOf(clauses, t);
+    if (warns.some(w => w.sev === 'high')) {
+      setStatus('extraction has problems \u2014 asking the model to repair (1 retry)\u2026');
+      try {
+        const report = warns.map(w => '- ' + w.msg.replace(/<[^>]+>/g, '')).join('\n');
+        const j2 = await extract(t + '\n\nYour previous extraction had these problems:\n' + report +
+          '\nProduce a corrected extraction. Remember: denied statements need not_ on the SAME atom name as the positive; policy statements are rules, not facts.');
+        const clauses2 = jsonToClauses(j2);
+        const warns2 = lintOf(clauses2, t);
+        const score = w => w.filter(x => x.sev === 'high').length * 10 + w.length;
+        if (score(warns2) < score(warns)) { clauses = clauses2; warns = warns2; }
+      } catch (e) { /* keep the first attempt */ }
+    }
+    els('clauses').value = clauses;
+    renderLint(warns);
+    setStatus(warns.some(w => w.sev === 'high')
+      ? 'extraction complete, with warnings \u2014 edit the clauses (or re-run), then check consistency'
+      : 'extraction complete \u2014 review or edit the clauses, then check consistency');
   } catch (e) { setStatus('extraction failed: ' + e.message + ' \u2014 use a sample extraction or write clauses by hand', true); }
 }
 const EXAMPLES = [
@@ -563,7 +651,7 @@ beer_reimbursable :- client_dinner_tuesday.
 
 % contradiction constraints for p / not_p pairs are added automatically` },
 ];
-if (typeof window !== 'undefined') window.__cc = { jsonToClauses, parseClauses, normalize };
+if (typeof window !== 'undefined') window.__cc = { jsonToClauses, parseClauses, normalize, lintClauses };
 window.addEventListener('load', async () => {
   await bootEngine();
   const st = await modelStatus();
@@ -584,6 +672,7 @@ window.addEventListener('load', async () => {
       els('transcript').value = ex.transcript;
       els('clauses').value = '';
       els('verdict').innerHTML = '';
+      els('lint').innerHTML = '';
       [...exWrap.children].forEach(x => x.classList.remove('active'));
       b.classList.add('active');
       setStatus('example loaded \u2014 Analyze with the model, or load the sample extraction');
